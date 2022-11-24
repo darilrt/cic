@@ -1,0 +1,467 @@
+import "vector";
+import "Token.bic";
+import "Lexer.bic";
+import "AST.bic";
+
+class ParserState {
+    pub mut state : std::string;
+    pub mut token : Token*;
+    pub mut current : int;
+
+    pub ParserState(state : std::string, current : int) {
+        .state = state;
+        .current = current;
+    }
+}
+
+class Parser {
+    mut lexer : Lexer*;
+    mut tokens : std::vector<Token>;
+    mut current : int;
+    mut currentToken : Token*;
+    mut stateStack : std::vector<ParserState>;
+    mut state : std::string;
+
+    pub Parser(lexer : Lexer*) {
+        .lexer = lexer;
+        .tokens = lexer->Parse();
+        .current = 0;
+        .currentToken = &.tokens[.current];
+    }
+
+    PushState(state : std::string) {
+        .state = state;
+        .stateStack.push_back(ParserState(.state, .current));
+    }
+
+    PopState(drop : bool) {
+        if ((.stateStack.size()) > 0) {
+            .state = (.stateStack.back()).state;
+
+            if (!drop) {
+                .current = (.stateStack.back()).current;
+                .currentToken = &.tokens[.current];
+            }
+        }
+
+        .stateStack.pop_back();
+    }
+
+    Eat(tokenType : TokenType) -> void {
+        if ((.currentToken->tokenType) == tokenType) {
+            .current += 1;
+            .currentToken = &.tokens[.current];
+        }
+        else {
+            .Error("Unexpected " + (.currentToken->ToString()));
+        }
+    }
+
+    Backtrack() {
+        if (.current > 0) {
+            .current -= 1;
+            .currentToken = &.tokens[.current];
+        }
+    }
+
+    Error(msg : std::string) -> void {
+        std::cout << "Error: " << msg << std::endl;
+    }
+
+    IsAtEnd() -> bool {
+        ret (.currentToken->tokenType) == (TokenType::EndOfFile);
+    }
+
+    IsType(tokenType : TokenType) -> bool {
+        ret (.currentToken->tokenType) == tokenType;
+    }
+
+    IsKeyword() -> bool {
+        ret (.currentToken->tokenType) > (TokenType::StartKeyword) && (.currentToken->tokenType) < (TokenType::EndKeyword);
+    }
+
+    IsState(state : std::string) -> bool {
+        ret .state == state;
+    }
+
+    pub Parse() -> ASTNode* {
+        ret .Statement();
+    }
+
+    // Expr: Term 
+    Expr() -> ASTNode* {
+        ret .AssignExpr();
+    }
+
+    // AssignExpr: CompExpr (("=" | "+=" | "-=" | "*=" | "/=" | "%=") CompExpr)*
+    AssignExpr() -> ASTNode* {
+        mut node : ASTNode* = .CompExpr();
+
+        while ((.IsType(TokenType::Assign)) || 
+               (.IsType(TokenType::AddAssign)) || 
+               (.IsType(TokenType::SubAssign)) || 
+               (.IsType(TokenType::MulAssign)) || 
+               (.IsType(TokenType::DivAssign)) || 
+               (.IsType(TokenType::ModAssign))) {
+            let op : Token* = .currentToken;
+            .Eat(.currentToken->tokenType);
+            let right : ASTNode* = .CompExpr();
+            node = new ASTBinaryOp(node, *op, right);
+        }
+
+        ret node;
+    }
+
+    // CompExpr: Term ("==" | "!=" | "<" | "<=" | ">" | ">=") Expr
+    CompExpr() -> ASTNode* {
+        mut node : ASTNode* = .Term();
+
+        if ((.IsType(TokenType::Equal)) ||
+            (.IsType(TokenType::NotEqual)) || 
+            (.IsType(TokenType::Less)) || 
+            (.IsType(TokenType::LessEqual)) ||
+            (.IsType(TokenType::Greater)) || 
+            (.IsType(TokenType::GreaterEqual))) {
+            
+            if (.state == "TemplateArgs" && (.IsType(TokenType::Greater))) {
+                ret node;
+            }
+
+            let op : Token* = .currentToken;
+            .Eat(op->tokenType);
+
+            let right : ASTNode* = .Expr();
+            node = new ASTBinaryOp(node, *op, right);
+        }
+
+        ret node;
+    }
+
+    // Term: Factor ('+' | '-') Expr 
+    Term() -> ASTNode* {
+        mut node : ASTNode* = .Factor();
+
+        if ((.IsType(TokenType::Add)) || (.IsType(TokenType::Sub))) {
+            let token : Token* = .currentToken;
+            .Eat(token->tokenType);
+            
+            let right : ASTNode* = .Expr();
+            node = new ASTBinaryOp(node, *token, right);
+        }
+
+        ret node;
+    }
+
+    // Factor: Unary ('*' | '/' | '%') Factor
+    Factor() -> ASTNode* {
+        mut node : ASTNode* = .Unary();
+
+        if ((.IsType(TokenType::Mul)) || (.IsType(TokenType::Div)) || (.IsType(TokenType::Mod))) {
+            let token : Token* = .currentToken;
+            .Eat(token->tokenType);
+            
+            let right : ASTNode* = Factor();
+            node = new ASTBinaryOp(node, *token, right);
+        }
+
+        ret node;
+    }
+
+    // Unary: ('+' | '-' | '!' | '~' ) Unary | FunctionCall
+    Unary() -> ASTNode* {
+        if ((.IsType(TokenType::Add)) ||
+            (.IsType(TokenType::Sub)) || 
+            (.IsType(TokenType::Not)) || 
+            (.IsType(TokenType::BitNot))) {
+            let token : Token* = .currentToken;
+            .Eat(token->tokenType);
+            
+            let right : ASTNode* = .Unary();
+            ret new ASTUnaryOp(*token, right);
+        }
+        elif ((.IsType(TokenType::And)) || (.IsType(TokenType::Mul))) {
+            let token : Token* = .currentToken;
+            .Eat(token->tokenType);
+            
+            let right : ASTNode* = .Unary();
+            ret new ASTUnaryOp(*token, right);
+        }
+        
+        ret .FunctionCall();
+    }
+
+    // FunctionCall: DotAccess ('(' ArgsValue? ')') | DotAccess
+    FunctionCall() -> ASTNode* {
+        mut node : ASTNode* = .DotAccess();
+
+        if (.IsType(TokenType::LParen)) {
+            .Eat(TokenType::LParen);
+            if (.IsType(TokenType::RParen)) {
+                .Eat(TokenType::RParen);
+                ret new ASTFunctionCall(node);
+            }
+
+            let args : std::vector<ASTNode*> = .ArgsValue();
+            .Eat(TokenType::RParen);
+            ret new ASTFunctionCall(node, args);
+        }
+
+        ret node;
+    }
+
+    // DotAccess: IndexAccess (('.' | '->') Identifier)*
+    DotAccess() -> ASTNode* {
+        mut node : ASTNode* = .IndexAccess();
+
+        while ((.IsType(TokenType::Dot)) || (.IsType(TokenType::Arrow))) {
+            let token : Token* = .currentToken;
+            .Eat(token->tokenType);
+            
+            let right : ASTNode* = .Primary();
+            node = new ASTDotAccess(node, *token, right);
+        }
+
+        ret node;
+    }
+
+    // IndexAccess: Primary ('[' Expr ']')*
+    IndexAccess() -> ASTNode* {
+        mut node : ASTNode* = .Primary();
+
+        while (.IsType(TokenType::LBracket)) {
+            let token : Token* = .currentToken;
+            .Eat(token->tokenType);
+
+            let index : ASTNode* = .Expr();
+            .Eat(TokenType::RBracket);
+            
+            node = new ASTIndexOp(node, index);
+        }
+
+        ret node;
+    }
+
+    // Primary: Int | Float | '(' Expr ')' | Variable
+    Primary() -> ASTNode* {
+        mut node : ASTNode*;
+
+        if (.IsType(TokenType::Int)) {
+            node = new ASTConstant(.currentToken->literal);
+            .Eat(TokenType::Int);
+        }
+        elif (.IsType(TokenType::Float)) {
+            node = new ASTConstant(.currentToken->literal);
+            .Eat(TokenType::Float);
+        }
+        elif (.IsType(TokenType::True)) {
+            node = new ASTConstant(.currentToken->literal);
+            .Eat(TokenType::True);
+        }
+        elif (.IsType(TokenType::Null)) {
+            node = new ASTConstant(.currentToken->literal);
+            .Eat(TokenType::Null);
+        }
+        elif (.IsType(TokenType::False)) {
+            node = new ASTConstant(.currentToken->literal);
+            .Eat(TokenType::False);
+        }
+        elif (.IsType(TokenType::LParen)) {
+            .Eat(TokenType::LParen);
+            node = .Expr();
+            .Eat(TokenType::RParen);
+        } 
+        elif (.IsType(TokenType::Ident)) {
+            node = .ScopeResolution();
+        }
+        else {
+            .Error("Expected an expression");
+        }
+
+        ret node;
+    }
+
+    // Variable: Identifier ('<' TemplateArgs '>')?
+    Variable() -> ASTNode* {
+        mut node : ASTNode*;
+
+        if (.IsType(TokenType::Ident)) {
+            node = new ASTVariable(.currentToken->literal);
+            .Eat(TokenType::Ident);
+        }
+        elif (.IsType(TokenType::Class)) {
+            node = new ASTVariable(.currentToken->literal);
+            .Eat(TokenType::Class);
+        }
+        elif (.IsType(TokenType::Type)) {
+            node = new ASTVariable(.currentToken->literal);
+            .Eat(TokenType::Type);
+        }
+        else {
+            .Error("Expected an identifier");
+        }
+
+        if (.IsType(TokenType::Less)) {
+            let tmp : ASTNode* = .TemplateArgs(node);
+
+            if (tmp != null) {
+                node = tmp;
+            }
+        }
+
+        ret node;
+    }
+
+    // ScopeResolution: Variable ('::' Variable)* '*'* '&'+
+    ScopeResolution() -> ASTNode* {
+        mut node : ASTNode* = .Variable();
+        while (.IsType(TokenType::ScopeResolution)) {
+            .Eat(TokenType::ScopeResolution);
+            node = new ASTScopeResolution(node, .Variable());
+        }
+
+        while (.IsType(TokenType::Mul)) {
+            .Eat(TokenType::Mul);
+            node = new ASTPointerDecl(node);
+        }
+        
+        if (.IsType(TokenType::And)) {
+            .Eat(TokenType::And);
+            node = new ASTReferenceDecl(node);
+        }
+
+        ret node;
+    }
+
+    // TemplateArgs: node '<' ArgsValue '>'
+    TemplateArgs(node : ASTNode*) -> ASTNode* {
+        .PushState("TemplateArgs");
+        .Eat(TokenType::Less);
+        let args : std::vector<ASTNode*> = .ArgsValue();
+        
+        if (.IsType(TokenType::Greater)) {
+            .Eat(TokenType::Greater);
+            .PopState(true);
+            ret new ASTTemplateArgs(node, args);
+        }
+        .PopState(false);
+        
+        mut i : int = 0;
+        while ((i) < args.size()) {
+            del args[i];
+            i += 1;
+        }
+
+        ret null;
+    }
+
+    // ArgsValue: Expr (',' Expr)*
+    ArgsValue() -> std::vector<ASTNode*> {
+        mut args : std::vector<ASTNode*>;
+
+        args.push_back(.Expr());
+
+        while (.IsType(TokenType::Comma)) {
+            .Eat(TokenType::Comma);
+            args.push_back(.Expr());
+        }
+
+        ret args;
+    }
+
+    // End of expresion parsing
+
+    // Start of statement parsing
+
+    // Statement: Expr;
+    Statement() -> ASTNode* {
+        let node : ASTNode* = .Expr();
+        // .Eat(TokenType::Semicolon);
+        
+        ret node;
+    }
+
+    // Body: '{' (Statement)* '}'
+    Body() -> ASTNode* {
+        .Eat(TokenType::LBrace);
+        mut body : ASTBody = ASTBody();
+
+        while (!.IsType(TokenType::RBrace)) {
+            body.AddStatement(.Statement());
+        }
+
+        .Eat(TokenType::RBrace);
+        ret new ASTBody(body);
+    }
+
+    // Type: Variable
+    Type() -> ASTNode* {
+        let left : ASTNode* = .Variable();
+
+        ret new ASTType(left);
+    }
+
+    // ArgDecl: Identifier : Type
+    ArgDecl() -> ASTNode* {
+        let name : ASTNode* = new ASTVariable(.currentToken->literal);
+        .Eat(TokenType::Colon);
+        let _type : ASTNode* = .Type();
+
+        ret new ASTArgDecl(name, _type);
+    }
+
+    // TypedArgs: ArgDecl (',' ArgDecl)*
+    TypedArgs() -> std::vector<ASTNode*> {
+        mut args : std::vector<ASTNode*>;
+
+        args.push_back(.ArgDecl());
+
+        while (.IsType(TokenType::Comma)) {
+            .Eat(TokenType::Comma);
+            args.push_back(.ArgDecl());
+        }
+
+        ret args;
+    }
+
+    // TemplateDecl: '<' TypedArgs '>' 
+    TemplateDecl() -> ASTNode* {
+        .PushState("TemplateDecl");
+        .Eat(TokenType::Less);
+        let args : std::vector<ASTNode*> = .TypedArgs();
+        
+        if (.IsType(TokenType::Greater)) {
+            .Eat(TokenType::Greater);
+            .PopState(true);
+            ret new ASTTemplateDecl(args);
+        }
+        .PopState(false);
+        
+        mut i : int = 0;
+        while ((i) < args.size()) {
+            del args[i];
+            i += 1;
+        }
+
+        ret null;
+    }
+
+    // FunctionDecl: Identifier TemplateDecl? '(' TypedArgs ')' ':' Type Body
+    FunctionDecl() -> ASTNode* {
+        let name : ASTNode* = new ASTVariable(.currentToken->literal);
+        .Eat(TokenType::Ident);
+
+        mut templateDecl : ASTNode* = null;
+        if (.IsType(TokenType::Less)) {
+            templateDecl = .TemplateDecl();
+        }
+
+        .Eat(TokenType::LParen);
+        let args : std::vector<ASTNode*> = .TypedArgs();
+        .Eat(TokenType::RParen);
+        .Eat(TokenType::Colon);
+        let _type : ASTNode* = .Type();
+        let body : ASTNode* = .Body();
+
+        ret new ASTFunctionDecl(name, templateDecl, args, _type, body);
+    }
+}

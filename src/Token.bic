@@ -1,0 +1,125 @@
+import "iostream";
+
+enum TokenType {
+    EndOfFile, // End of file
+    Unknown, // Unknown token
+
+    Ident, // Identifier
+
+    Int, // Integer
+    Float, // Float
+    Char, // Char
+    String, // String
+    True, // True
+    False, // False
+    Null, // Null
+
+    // Keywords
+    StartKeyword, // Start of keywords
+    If, // if
+    Elif, // elif
+    Else, // else
+    While, // while
+    For, // for
+    In, // in
+    Break, // break
+    Continue, // continue
+    Ret, // ret
+    Type, // type
+    Const, // const
+    Let, // let
+    Mut, // mut
+    Import, // import
+    Class, // class
+    Pub, // pub
+    Priv, // priv
+    Static, // static
+    Virtual, // virtual
+    New, // new
+    Del, // del
+    Operator, // operator
+    Enum, // enum
+    EndKeyword, // End of keywords
+
+    // Operators
+    Add, // +
+    Sub, // -
+    Mul, // *
+    Div, // /
+    Mod, // %
+    Not, // !
+    BitNot, // ~
+    Amp, // &
+    Pipe, // |
+    Xor, // ^
+    Less, // <
+    Greater, // >
+    And, // &&
+    Or, // ||
+    LShift, // <<
+    RShift, // >>
+    Assign, // =
+    AddAssign, // +=
+    SubAssign, // -=
+    MulAssign, // *=
+    DivAssign, // /=
+    ModAssign, // %=
+    AndAssign, // &=
+    OrAssign, // |=
+    XorAssign, // ^=
+    LShiftAssign, // <<=
+    RShiftAssign, // >>=
+    Equal, // ==
+    NotEqual, // !=
+    LessEqual, // <=
+    GreaterEqual, // >=
+    Inc, // ++
+    Dec, // --
+    Dot, // .
+    Comma, // ,
+    Colon, // :
+    Semicolon, // ;
+    Question, // ?
+    At, // @
+    Hash, // #
+    Dollar, // $
+    LParen, // (
+    RParen, // )
+    LBracket, // [
+    RBracket, // ]
+    LBrace, // {
+    RBrace, // }
+    Arrow, // ->
+    Ellipsis, // ...
+    ScopeResolution, // ::
+}
+
+class Token {
+    pub mut tokenType : TokenType;
+    pub mut literal : std::string;
+    pub mut column : int;
+    pub mut line : int;
+
+    pub Token() {
+        .tokenType = TokenType::Unknown;
+        .literal = "";
+        .column = 0;
+        .line = 0;
+    }
+
+    pub Token(t : TokenType, literal : const std::string&) {
+        .tokenType = t;
+        .literal = literal;
+    }
+
+    pub Token(t : TokenType, literal : const std::string&, column : int, line : int) {
+        .tokenType = t;
+        .literal = literal;
+        .column = column;
+        .line = line;
+    }
+
+    pub ToString() const -> std::string {
+        ret "'" + .literal + "'";
+    }
+}

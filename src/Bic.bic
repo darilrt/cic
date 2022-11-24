@@ -1,0 +1,26 @@
+import "iostream";
+import "vector";
+import "fstream";
+
+import "Token.bic";
+import "Lexer.bic";
+import "Parser.bic";
+import "AST.bic";
+
+main(argc : int, argv[] : char*) -> int {
+    mut file : std::ifstream = std::ifstream("test.bic");
+    mut fileContents : std::string = "";
+    mut line : std::string = "";
+
+    while (std::getline(file, line)) {
+        fileContents += line + "\n";
+    }
+    
+    mut lexer : Lexer* = new Lexer(fileContents); 
+    mut parser : Parser* = new Parser(lexer);
+    let root : ASTNode* = parser->Parse(); 
+
+    std::cout << root->ToString() << std::endl;
+
+    ret 0;
+}

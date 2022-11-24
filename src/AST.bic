@@ -1,0 +1,435 @@
+import "iostream";
+import "vector";
+import "Token.bic";
+
+// Base class for all AST nodes
+class ASTNode {
+    pub ASTNode() {
+    }
+
+    pub virtual ToString() const -> std::string {
+        ret "ASTNode";
+    }
+}
+
+// Constant integer, float, string, char, etc.
+class ASTConstant(pub ASTNode) {
+    pub mut value : std::string;
+
+    pub ASTConstant(value : std::string) {
+        .value = value;
+    }
+
+    pub ToString() const -> std::string {
+        ret "'" + .value + "'";
+    }
+}
+
+// Variable
+class ASTVariable(pub ASTNode) {
+    pub mut name : std::string;
+
+    pub ASTVariable(name : std::string) {
+        .name = name;
+    }
+
+    pub ToString() const -> std::string {
+        ret "'" + .name + "'";
+    }
+}
+
+// Binary operation
+class ASTBinaryOp(pub ASTNode) {
+    pub mut left : ASTNode*;
+    pub mut op : Token;
+    pub mut right : ASTNode*;
+
+    pub ASTBinaryOp(left : ASTNode*, op : Token, right : ASTNode*) {
+        .left = left;
+        .op = op;
+        .right = right;
+    }
+
+    pub ~ASTBinaryOp() {
+        del .left;
+        del .right;
+    }
+
+    pub ToString() const -> std::string {
+        ret "[" + (.left->ToString()) + " " + (.op.ToString()) + " " + (.right->ToString()) + "]";
+    }
+}
+
+// Unary operation
+class ASTUnaryOp(pub ASTNode) {
+    pub mut op : Token;
+    pub mut right : ASTNode*;
+
+    pub ASTUnaryOp(op : Token, right : ASTNode*) {
+        .op = op;
+        .right = right;
+    }
+
+    pub ~ASTUnaryOp() {
+        del .right;
+    }
+
+    pub ToString() const -> std::string {
+        ret "[" + (.op.ToString()) + " " + (.right->ToString()) + "]";
+    }
+}
+
+// Indexing operation
+class ASTIndexOp(pub ASTNode) {
+    pub mut left : ASTNode*;
+    pub mut right : ASTNode*;
+
+    pub ASTIndexOp(left : ASTNode*, right : ASTNode*) {
+        .left = left;
+        .right = right;
+    }
+
+    pub ~ASTIndexOp() {
+        del .left;
+        del .right;
+    }
+
+    pub ToString() const -> std::string {
+        ret "[" + (.left->ToString()) + "[" + (.right->ToString()) + "]]";
+    }
+}
+
+// Function call
+class ASTFunctionCall(pub ASTNode) {
+    pub mut func : ASTNode*;
+    pub mut args : std::vector<ASTNode*>;
+
+    pub ASTFunctionCall(func : ASTNode*) {
+        .func = func;
+    }
+
+    pub ASTFunctionCall(func : ASTNode*, args : std::vector<ASTNode*>) {
+        .func = func;
+        .args = args;
+    }
+
+    pub ~ASTFunctionCall() {
+        del .func;
+        mut i : int = 0;
+        while ((i) < .args.size()) {
+            del .args[i];
+        }
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = (.func->ToString()) + "(";
+
+        mut i : int = 0;
+        while ((i) < .args.size()) {
+            str += (.args[i])->ToString();
+
+            if ((i) < (.args.size()) - 1) {
+                str += ", "; 
+            }
+
+            i++;
+        }
+
+        str += ")";
+        ret str;
+    }
+}
+
+// Dot access
+class ASTDotAccess(pub ASTNode) {
+    pub mut left : ASTNode*;
+    pub mut op : Token;
+    pub mut right : ASTNode*;
+
+    pub ASTDotAccess(left : ASTNode*, op : Token, right : ASTNode*) {
+        .left = left;
+        .op = op;
+        .right = right;
+    }
+
+    pub ~ASTDotAccess() {
+        del .left;
+        del .right;
+    }
+
+    pub ToString() const -> std::string {
+        ret "[" + (.left->ToString()) + (.op.ToString()) + (.right->ToString()) + "]";
+    }
+}
+
+// Scope Resolution
+class ASTScopeResolution(pub ASTNode) {
+    pub mut left : ASTNode*;
+    pub mut right : ASTNode*;
+
+    pub ASTScopeResolution(left : ASTNode*, right : ASTNode*) {
+        .left = left;
+        .right = right;
+    }
+
+    pub ~ASTScopeResolution() {
+        del .left;
+        del .right;
+    }
+
+    pub ToString() const -> std::string {
+        ret "[" + (.left->ToString()) + "::" + (.right->ToString()) + "]";
+    }
+}
+
+// Template Arguments
+class ASTTemplateArgs(pub ASTNode) {
+    pub mut left : ASTNode*;
+    pub mut args : std::vector<ASTNode*>;
+
+    pub ASTTemplateArgs(left : ASTNode*) {
+        .left = left;
+    }
+
+    pub ASTTemplateArgs(left : ASTNode*, args : std::vector<ASTNode*>) {
+        .left = left;
+        .args = args;
+    }
+
+    pub ~ASTTemplateArgs() {
+        del .left;
+        mut i : int = 0;
+        while ((i) < .args.size()) {
+            del .args[i];
+        }
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = (.left->ToString()) + "<";
+
+        mut i : int = 0;
+        while ((i) < .args.size()) {
+            str += (.args[i])->ToString();
+
+            if ((i) < (.args.size()) - 1) {
+                str += ", "; 
+            }
+
+            i++;
+        }
+
+        str += ">";
+        ret str;
+    }
+}
+
+// Pointer Declaration
+class ASTPointerDecl(pub ASTNode) {
+    pub mut left : ASTNode*;
+
+    pub ASTPointerDecl(left : ASTNode*) {
+        .left = left;
+    }
+
+    pub ~ASTPointerDecl() {
+        del .left;
+    }
+
+    pub ToString() const -> std::string {
+        ret (.left->ToString()) + "*";
+    }
+}
+
+// Reference Declaration
+class ASTReferenceDecl(pub ASTNode) {
+    pub mut left : ASTNode*;
+
+    pub ASTReferenceDecl(left : ASTNode*) {
+        .left = left;
+    }
+
+    pub ~ASTReferenceDecl() {
+        del .left;
+    }
+
+    pub ToString() const -> std::string {
+        ret (.left->ToString()) + "&";
+    }
+}
+
+// Type Declaration
+class ASTTypeDecl(pub ASTNode) {
+    pub mut left : ASTNode*;
+    pub mut right : ASTNode*;
+
+    pub ASTTypeDecl(left : ASTNode*, right : ASTNode*) {
+        .left = left;
+        .right = right;
+    }
+
+    pub ~ASTTypeDecl() {
+        del .left;
+        del .right;
+    }
+
+    pub ToString() const -> std::string {
+        ret (.left->ToString()) + " " + (.right->ToString());
+    }
+}
+
+// Body of a function
+class ASTBody(pub ASTNode) {
+    pub mut body : std::vector<ASTNode*>;
+ 
+    pub ASTBody(body : std::vector<ASTNode*>) {
+        .body = body;
+    }
+
+    pub ~ASTBody() {
+        mut i : int = 0;
+        while ((i) < .body.size()) {
+            del .body[i];
+        }
+    }
+
+    pub AddStatement(stmt : ASTNode*) -> void {
+        .body.push_back(stmt);
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "{";
+
+        mut i : int = 0;
+        while ((i) < .body.size()) {
+            str += (.body[i])->ToString();
+
+            if ((i) < (.body.size()) - 1) {
+                str += ", ";
+            }
+        }
+
+        str += "}";
+        ret str;
+    }
+}
+
+// Type 
+class ASTType(pub ASTNode) {
+    pub mut left : ASTNode*;
+
+    pub ASTType(left : ASTNode*) {
+        .left = left;
+    }
+
+    pub ~ASTType() {
+        del .left;
+    }
+
+    pub ToString() const -> std::string {
+        ret (.left->ToString());
+    }
+}
+
+// Argument Declaration
+class ASTArgDecl(pub ASTNode) {
+    pub mut left : ASTNode*;
+    pub mut right : ASTNode*;
+
+    pub ASTArgDecl(left : ASTNode*, right : ASTNode*) {
+        .left = left;
+        .right = right;
+    }
+
+    pub ~ASTArgDecl() {
+        del .left;
+        del .right;
+    }
+
+    pub ToString() const -> std::string {
+        ret (.left->ToString()) + " " + (.right->ToString());
+    }
+}
+
+// Template Declaration
+class ASTTemplateDecl(pub ASTNode) {
+    mut args : std::vector<ASTNode*>;
+
+    pub ASTTemplateDecl(args : std::vector<ASTNode*>) {
+        .args = args;
+    }
+
+    pub ~ASTTemplateDecl() {
+        mut i : int = 0;
+        while ((i) < .args.size()) {
+            del .args[i];
+        }
+    }
+
+    pub AddArg(arg : ASTNode*) -> void {
+        .args.push_back(arg);
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "template<";
+
+        mut i : int = 0;
+        while ((i) < .args.size()) {
+            str += (.args[i])->ToString();
+
+            if ((i) < (.args.size()) - 1) {
+                str += ", ";
+            }
+
+            i++;
+        }
+
+        str += ">";
+        ret str;
+    }
+}
+
+// Function Declaration ASTFunctionDecl(name, templateDecl, args, _type, body)
+class ASTFunctionDecl(pub ASTNode) {
+    pub mut name : ASTNode*;
+    pub mut templateDecl : ASTNode*;
+    pub mut args : std::vector<ASTNode*>;
+    pub mut _type : ASTNode*;
+    pub mut body : ASTNode*;
+
+    pub ASTFunctionDecl(name : ASTNode*, templateDecl : ASTNode*, args : std::vector<ASTNode*>, _type : ASTNode*, body : ASTNode*) {
+        .name = name;
+        .templateDecl = templateDecl;
+        .args = args;
+        ._type = _type;
+        .body = body;
+    }
+
+    pub ~ASTFunctionDecl() {
+        del .name;
+        del .templateDecl;
+        mut i : int = 0;
+        while ((i) < .args.size()) {
+            del .args[i];
+        }
+        del ._type;
+        del .body;
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = (.templateDecl->ToString()) + " " + (.name->ToString()) + "(";
+
+        mut i : int = 0;
+        while ((i) < .args.size()) {
+            str += (.args[i])->ToString();
+
+            if ((i) < (.args.size()) - 1) {
+                str += ", ";
+            }
+
+            i++;
+        }
+
+        str += ") " + (._type->ToString()) + " " + (.body->ToString());
+        ret str;
+    }
+}
