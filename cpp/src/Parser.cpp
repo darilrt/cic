@@ -246,15 +246,15 @@ std::vector<ASTNode*> Parser::ArgsValue() {
     }
     return args;
 }
-ASTNode* Parser::Statement() {
-    ASTNode* const node = this->Expr();
-    return node;
-}
 ASTNode* Parser::Body() {
     this->Eat(TokenType::LBrace);
     ASTBody body = ASTBody();
+    ASTNode* stmt;
     while (!this->IsType(TokenType::RBrace)) {
-        body.AddStatement(this->Statement());
+        body.AddStatement(stmt = this->Statement());
+        if (this->IsType(TokenType::EndOfFile)) {
+            break;
+        }
     }
     this->Eat(TokenType::RBrace);
     return new ASTBody(body);
@@ -298,15 +298,27 @@ ASTNode* Parser::TemplateDecl() {
 ASTNode* Parser::FunctionDecl() {
     ASTNode* const name = new ASTVariable(this->currentToken->literal);
     this->Eat(TokenType::Ident);
-    ASTNode* templateDecl = 0;
-    if (this->IsType(TokenType::Less)) {
-        templateDecl = this->TemplateDecl();
+    if (!(this->IsType(TokenType::LParen))) {
+        return 0;
     }
     this->Eat(TokenType::LParen);
-    std::vector<ASTNode*> const args = this->TypedArgs();
-    this->Eat(TokenType::RParen);
-    this->Eat(TokenType::Colon);
-    ASTNode* const _type = this->Type();
-    ASTNode* const body = this->Body();
-    return new ASTFunctionDecl(name, templateDecl, args, _type, body);
+    std::vector<ASTNode*> args;
+    if (this->IsType(TokenType::RParen)) {
+        this->Eat(TokenType::RParen);
+    } else {
+        args = this->TypedArgs();
+        this->Eat(TokenType::RParen);
+    }
+    return new ASTFunctionDecl(name, 0, args, 0, 0);
+}
+ASTNode* Parser::Statement() {
+    ASTNode* node = 0;
+    if (this->IsType(TokenType::Semicolon)) {
+        this->Eat(TokenType::Semicolon);
+        return 0;
+    } else if (this->IsType(TokenType::Ident)) {
+        node = this->FunctionDecl();
+        return node;
+    }
+    return node;
 }
