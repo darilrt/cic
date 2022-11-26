@@ -6,6 +6,8 @@ import "Token.bic";
 import "Lexer.bic";
 import "Parser.bic";
 import "AST.bic";
+import "IR.bic";
+import "CodeGenerator.bic";
 
 main(argc : int, argv[] : char*) -> int {
     mut file : std::ifstream = std::ifstream("test.bic");
@@ -19,8 +21,14 @@ main(argc : int, argv[] : char*) -> int {
     mut lexer : Lexer* = new Lexer(fileContents); 
     mut parser : Parser* = new Parser(lexer);
     let root : ASTNode* = parser->Parse(); 
+    
+    // add ir generation here
+    mut irGen : IRGenerator* = new IRGenerator();
+    let ir : IRNode* = irGen->Generate(root);
+    del irGen;
 
-    std::cout << root->ToString() << std::endl;
+    mut codeGen : CodeGenerator* = new CodeGenerator();
+    // codeGen->Generate(ir);
 
     ret 0;
 }

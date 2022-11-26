@@ -346,7 +346,7 @@ class ASTArgDecl(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret (.left->ToString()) + " " + (.right->ToString());
+        ret (.right->ToString()) + " " + (.left->ToString());
     }
 }
 
@@ -390,17 +390,22 @@ class ASTTemplateDecl(pub ASTNode) {
 
 // Function Declaration ASTFunctionDecl(name, templateDecl, args, _type, body)
 class ASTFunctionDecl(pub ASTNode) {
-    pub mut name : ASTNode*;
+    pub mut name : ASTVariable*;
     pub mut templateDecl : ASTNode*;
     pub mut args : std::vector<ASTNode*>;
-    pub mut _type : ASTNode*;
+    pub mut fType : ASTNode*;
     pub mut body : ASTNode*;
 
-    pub ASTFunctionDecl(name : ASTNode*, templateDecl : ASTNode*, args : std::vector<ASTNode*>, _type : ASTNode*, body : ASTNode*) {
+    pub ASTFunctionDecl(
+            name : ASTVariable*,
+            templateDecl : ASTTemplateDecl*,
+            args : std::vector<ASTNode*>,
+            fType : ASTType*,
+            body : ASTBody*) {
         .name = name;
         .templateDecl = templateDecl;
         .args = args;
-        ._type = _type;
+        .fType = fType;
         .body = body;
     }
 
@@ -411,12 +416,12 @@ class ASTFunctionDecl(pub ASTNode) {
         while ((i) < .args.size()) {
             del .args[i];
         }
-        del ._type;
+        del .fType;
         del .body;
     }
 
     pub ToString() const -> std::string {
-        mut str : std::string = (.templateDecl->ToString()) + " " + (.name->ToString()) + "(";
+        mut str : std::string = (.templateDecl->ToString()) + " " + (.fType->ToString()) + " " + (.name->ToString()) + "(";
 
         mut i : int = 0;
         while ((i) < .args.size()) {
@@ -429,7 +434,7 @@ class ASTFunctionDecl(pub ASTNode) {
             i++;
         }
 
-        str += ") " + (._type->ToString()) + " " + (.body->ToString());
+        str += ") " + (.body->ToString());
         ret str;
     }
 }

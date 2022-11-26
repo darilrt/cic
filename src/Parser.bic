@@ -378,9 +378,9 @@ class Parser {
     // Start of statement parsing
 
     // Body: '{' (Statement)* '}'
-    Body(bodyType : BodyType) -> ASTNode* {
+    Body(bodyType : BodyType) -> ASTBody* {
         .Eat(TokenType::LBrace);
-        mut body : ASTBody = ASTBody();
+        mut body : ASTBody* = new ASTBody();
         mut stmt : ASTNode*;
 
         while (!(.IsType(TokenType::RBrace))) {
@@ -390,7 +390,7 @@ class Parser {
             elif (bodyType == BodyType::Impl) {
                 stmt = .ImplStatement();
             }
-            body.AddStatement(stmt);
+            body->AddStatement(stmt);
             
             if (.IsType(TokenType::EndOfFile)) {
                 break;
@@ -398,19 +398,20 @@ class Parser {
         }
 
         .Eat(TokenType::RBrace);
-        ret new ASTBody(body);
+        ret body;
     }
 
     // Type: Variable
-    Type() -> ASTNode* {
+    Type() -> ASTType* {
         let left : ASTNode* = .Variable();
 
         ret new ASTType(left);
     }
 
     // ArgDecl: Identifier : Type
-    ArgDecl() -> ASTNode* {
+    ArgDecl() -> ASTArgDecl* {
         let name : ASTNode* = new ASTVariable(.currentToken->literal);
+        .Eat(TokenType::Ident);
         .Eat(TokenType::Colon);
         let _type : ASTNode* = .Type();
 
@@ -432,7 +433,7 @@ class Parser {
     }
 
     // TemplateDecl: '<' TypedArgs '>' 
-    TemplateDecl() -> ASTNode* {
+    TemplateDecl() -> ASTTemplateDecl* {
         .PushState("TemplateDecl");
         .Eat(TokenType::Less);
         let args : std::vector<ASTNode*> = .TypedArgs();
@@ -454,11 +455,11 @@ class Parser {
     }
 
     // FunctionDecl: Identifier TemplateDecl? '(' TypedArgs ')' ('->' Type)? Body
-    FunctionDecl() -> ASTNode* {
-        let name : ASTNode* = new ASTVariable(.currentToken->literal);
+    FunctionDecl() -> ASTFunctionDecl* {
+        let name : ASTVariable* = new ASTVariable(.currentToken->literal);
         .Eat(TokenType::Ident);
 
-        mut tmp : ASTNode* = null;
+        mut tmp : ASTTemplateDecl* = null;
         if (.IsType(TokenType::Less)) {
             tmp = .TemplateDecl();
         }
@@ -474,8 +475,8 @@ class Parser {
         }
 
         .Eat(TokenType::Arrow);
-        let _type : ASTNode* = .Type();
-        let body : ASTNode* = .Body(BodyType::Impl);
+        let _type : ASTType* = .Type();
+        let body : ASTBody* = .Body(BodyType::Impl);
 
         ret new ASTFunctionDecl(name, tmp, args, _type, body);
     }

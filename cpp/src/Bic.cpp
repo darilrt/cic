@@ -6,6 +6,8 @@
 #include "Lexer.hpp"
 #include "Parser.hpp"
 #include "AST.hpp"
+#include "IR.hpp"
+#include "CodeGenerator.hpp"
 int main(int argc, char* argv[]) {
     std::ifstream file = std::ifstream("test.bic");
     std::string fileContents = "";

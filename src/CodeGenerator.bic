@@ -1,0 +1,8 @@
+import "iostream";
+import "AST.bic";
+
+class CodeGenerator {
+    pub Generate(ast : ASTNode*) {
+        std::cout << "Generating code..." << std::endl;
+    }
+}

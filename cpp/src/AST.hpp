@@ -116,12 +116,12 @@ public: void AddArg(ASTNode* arg);
 public: [[nodiscard]] std::string ToString() const ;
 };
 class ASTFunctionDecl : public ASTNode {
-public: ASTNode* name;
+public: ASTVariable* name;
 public: ASTNode* templateDecl;
 public: std::vector<ASTNode*> args;
-public: ASTNode* _type;
+public: ASTNode* fType;
 public: ASTNode* body;
-public: ASTFunctionDecl(ASTNode* name, ASTNode* templateDecl, std::vector<ASTNode*> args, ASTNode* _type, ASTNode* body);
+public: ASTFunctionDecl(ASTVariable* name, ASTTemplateDecl* templateDecl, std::vector<ASTNode*> args, ASTType* fType, ASTBody* body);
 public: ASTFunctionDecl();
 public: [[nodiscard]] std::string ToString() const ;
 };

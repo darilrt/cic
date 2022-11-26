@@ -247,9 +247,9 @@ std::vector<ASTNode*> Parser::ArgsValue() {
     }
     return args;
 }
-ASTNode* Parser::Body(BodyType bodyType) {
+ASTBody* Parser::Body(BodyType bodyType) {
     this->Eat(TokenType::LBrace);
-    ASTBody body = ASTBody();
+    ASTBody* body = new ASTBody();
     ASTNode* stmt;
     while (!(this->IsType(TokenType::RBrace))) {
         if (bodyType == BodyType::Decl) {
@@ -257,20 +257,21 @@ ASTNode* Parser::Body(BodyType bodyType) {
         } else if (bodyType == BodyType::Impl) {
             stmt = this->ImplStatement();
         }
-        body.AddStatement(stmt);
+        body->AddStatement(stmt);
         if (this->IsType(TokenType::EndOfFile)) {
             break;
         }
     }
     this->Eat(TokenType::RBrace);
-    return new ASTBody(body);
+    return body;
 }
-ASTNode* Parser::Type() {
+ASTType* Parser::Type() {
     ASTNode* const left = this->Variable();
     return new ASTType(left);
 }
-ASTNode* Parser::ArgDecl() {
+ASTArgDecl* Parser::ArgDecl() {
     ASTNode* const name = new ASTVariable(this->currentToken->literal);
+    this->Eat(TokenType::Ident);
     this->Eat(TokenType::Colon);
     ASTNode* const _type = this->Type();
     return new ASTArgDecl(name, _type);
@@ -284,7 +285,7 @@ std::vector<ASTNode*> Parser::TypedArgs() {
     }
     return args;
 }
-ASTNode* Parser::TemplateDecl() {
+ASTTemplateDecl* Parser::TemplateDecl() {
     this->PushState("TemplateDecl");
     this->Eat(TokenType::Less);
     std::vector<ASTNode*> const args = this->TypedArgs();
@@ -301,10 +302,10 @@ ASTNode* Parser::TemplateDecl() {
     }
     return 0;
 }
-ASTNode* Parser::FunctionDecl() {
-    ASTNode* const name = new ASTVariable(this->currentToken->literal);
+ASTFunctionDecl* Parser::FunctionDecl() {
+    ASTVariable* const name = new ASTVariable(this->currentToken->literal);
     this->Eat(TokenType::Ident);
-    ASTNode* tmp = 0;
+    ASTTemplateDecl* tmp = 0;
     if (this->IsType(TokenType::Less)) {
         tmp = this->TemplateDecl();
     }
@@ -317,8 +318,8 @@ ASTNode* Parser::FunctionDecl() {
         this->Eat(TokenType::RParen);
     }
     this->Eat(TokenType::Arrow);
-    ASTNode* const _type = this->Type();
-    ASTNode* const body = this->Body(BodyType::Impl);
+    ASTType* const _type = this->Type();
+    ASTBody* const body = this->Body(BodyType::Impl);
     return new ASTFunctionDecl(name, tmp, args, _type, body);
 }
 ASTNode* Parser::ImplStatement() {
