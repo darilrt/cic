@@ -13,6 +13,9 @@ Parser::Parser(Lexer* lexer) {
     this->current = 0;
     this->currentToken = &this->tokens[this->current];
 }
+ASTNode* Parser::Parse() {
+    return this->DeclStatement();
+}
 auto Parser::PushState(std::string state) {
     this->state = state;
     this->stateStack.push_back(ParserState(this->state, this->current));
@@ -43,6 +46,7 @@ auto Parser::Backtrack() {
 }
 void Parser::Error(std::string msg) {
     std::cout << "Error: " << msg << std::endl;
+    exit(0);
 }
 bool Parser::IsAtEnd() {
     return (this->currentToken->tokenType) == (TokenType::EndOfFile);
@@ -55,9 +59,6 @@ bool Parser::IsKeyword() {
 }
 bool Parser::IsState(std::string state) {
     return this->state == state;
-}
-ASTNode* Parser::Parse() {
-    return this->Statement();
 }
 ASTNode* Parser::Expr() {
     return this->AssignExpr();
@@ -246,12 +247,17 @@ std::vector<ASTNode*> Parser::ArgsValue() {
     }
     return args;
 }
-ASTNode* Parser::Body() {
+ASTNode* Parser::Body(BodyType bodyType) {
     this->Eat(TokenType::LBrace);
     ASTBody body = ASTBody();
     ASTNode* stmt;
-    while (!this->IsType(TokenType::RBrace)) {
-        body.AddStatement(stmt = this->Statement());
+    while (!(this->IsType(TokenType::RBrace))) {
+        if (bodyType == BodyType::Decl) {
+            stmt = this->DeclStatement();
+        } else if (bodyType == BodyType::Impl) {
+            stmt = this->ImplStatement();
+        }
+        body.AddStatement(stmt);
         if (this->IsType(TokenType::EndOfFile)) {
             break;
         }
@@ -298,8 +304,9 @@ ASTNode* Parser::TemplateDecl() {
 ASTNode* Parser::FunctionDecl() {
     ASTNode* const name = new ASTVariable(this->currentToken->literal);
     this->Eat(TokenType::Ident);
-    if (!(this->IsType(TokenType::LParen))) {
-        return 0;
+    ASTNode* tmp = 0;
+    if (this->IsType(TokenType::Less)) {
+        tmp = this->TemplateDecl();
     }
     this->Eat(TokenType::LParen);
     std::vector<ASTNode*> args;
@@ -309,16 +316,27 @@ ASTNode* Parser::FunctionDecl() {
         args = this->TypedArgs();
         this->Eat(TokenType::RParen);
     }
-    return new ASTFunctionDecl(name, 0, args, 0, 0);
+    this->Eat(TokenType::Arrow);
+    ASTNode* const _type = this->Type();
+    ASTNode* const body = this->Body(BodyType::Impl);
+    return new ASTFunctionDecl(name, tmp, args, _type, body);
 }
-ASTNode* Parser::Statement() {
+ASTNode* Parser::ImplStatement() {
     ASTNode* node = 0;
     if (this->IsType(TokenType::Semicolon)) {
         this->Eat(TokenType::Semicolon);
         return 0;
-    } else if (this->IsType(TokenType::Ident)) {
-        node = this->FunctionDecl();
-        return node;
+    } else {
+        return this->Expr();
     }
     return node;
+}
+ASTNode* Parser::DeclStatement() {
+    if (this->IsType(TokenType::Semicolon)) {
+        this->Eat(TokenType::Semicolon);
+        return 0;
+    } else if (this->IsType(TokenType::Ident)) {
+        return this->FunctionDecl();
+    }
+    return 0;
 }

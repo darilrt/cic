@@ -14,6 +14,11 @@ class ParserState {
     }
 }
 
+enum BodyType {
+    Decl,
+    Impl
+}
+
 class Parser {
     mut lexer : Lexer*;
     mut tokens : std::vector<Token>;
@@ -27,6 +32,10 @@ class Parser {
         .tokens = lexer->Parse();
         .current = 0;
         .currentToken = &.tokens[.current];
+    }
+
+    pub Parse() -> ASTNode* {
+        ret .DeclStatement();
     }
 
     PushState(state : std::string) {
@@ -66,6 +75,7 @@ class Parser {
 
     Error(msg : std::string) -> void {
         std::cout << "Error: " << msg << std::endl;
+        exit(0);
     }
 
     IsAtEnd() -> bool {
@@ -82,10 +92,6 @@ class Parser {
 
     IsState(state : std::string) -> bool {
         ret .state == state;
-    }
-
-    pub Parse() -> ASTNode* {
-        ret .Statement();
     }
 
     // Expr: Term 
@@ -369,18 +375,23 @@ class Parser {
     }
 
     // End of expresion parsing
-
     // Start of statement parsing
 
     // Body: '{' (Statement)* '}'
-    Body() -> ASTNode* {
+    Body(bodyType : BodyType) -> ASTNode* {
         .Eat(TokenType::LBrace);
         mut body : ASTBody = ASTBody();
         mut stmt : ASTNode*;
 
-        while (!.IsType(TokenType::RBrace)) {
-            body.AddStatement(stmt = .Statement());
-
+        while (!(.IsType(TokenType::RBrace))) {
+            if (bodyType == BodyType::Decl) {
+                stmt = .DeclStatement();
+            }
+            elif (bodyType == BodyType::Impl) {
+                stmt = .ImplStatement();
+            }
+            body.AddStatement(stmt);
+            
             if (.IsType(TokenType::EndOfFile)) {
                 break;
             }
@@ -442,14 +453,17 @@ class Parser {
         ret null;
     }
 
-    // FunctionDecl: Identifier '(' TypedArgs ')' ('->' Type)? Body
+    // FunctionDecl: Identifier TemplateDecl? '(' TypedArgs ')' ('->' Type)? Body
     FunctionDecl() -> ASTNode* {
         let name : ASTNode* = new ASTVariable(.currentToken->literal);
         .Eat(TokenType::Ident);
-        
-        if (!(.IsType(TokenType::LParen))) { ret null; }
+
+        mut tmp : ASTNode* = null;
+        if (.IsType(TokenType::Less)) {
+            tmp = .TemplateDecl();
+        }
+
         .Eat(TokenType::LParen);
-        
         mut args : std::vector<ASTNode*>;
         if (.IsType(TokenType::RParen)) {
             .Eat(TokenType::RParen);
@@ -459,23 +473,38 @@ class Parser {
             .Eat(TokenType::RParen);
         }
 
-        ret new ASTFunctionDecl(name, null, args, null, null);
+        .Eat(TokenType::Arrow);
+        let _type : ASTNode* = .Type();
+        let body : ASTNode* = .Body(BodyType::Impl);
+
+        ret new ASTFunctionDecl(name, tmp, args, _type, body);
     }
 
-    
-    // Statement: Expr;
-    Statement() -> ASTNode* {
+    // ImplStatement:
+    ImplStatement() -> ASTNode* {
         mut node : ASTNode* = null;
 
         if (.IsType(TokenType::Semicolon)) {
             .Eat(TokenType::Semicolon);
             ret null;
         }
-        elif (.IsType(TokenType::Ident)) {
-            node = .FunctionDecl();
-            ret node;
+        else {
+            ret .Expr();
         }
         
         ret node;
+    }
+
+    // DeclStatement:
+    DeclStatement() -> ASTNode* {
+        if (.IsType(TokenType::Semicolon)) {
+            .Eat(TokenType::Semicolon);
+            ret null;
+        }
+        elif (.IsType(TokenType::Ident)) {
+            ret .FunctionDecl();
+        }
+
+        ret null;
     }
 }
