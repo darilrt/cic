@@ -1,12 +1,12 @@
 import "iostream";
 import "vector";
 import "fstream";
+import "tuple";
 
 import "Token.bic";
 import "Lexer.bic";
 import "Parser.bic";
 import "AST.bic";
-import "IR.bic";
 import "CodeGenerator.bic";
 
 main(argc : int, argv[] : char*) -> int {
@@ -21,14 +21,20 @@ main(argc : int, argv[] : char*) -> int {
     mut lexer : Lexer* = new Lexer(fileContents); 
     mut parser : Parser* = new Parser(lexer);
     let root : ASTNode* = parser->Parse(); 
-    
-    // add ir generation here
-    mut irGen : IRGenerator* = new IRGenerator();
-    let ir : IRNode* = irGen->Generate(root);
-    del irGen;
 
-    mut codeGen : CodeGenerator* = new CodeGenerator();
-    // codeGen->Generate(ir);
+    mut codeGenerator : CodeGenerator* = new CodeGenerator();
+    let code : std::tuple<std::string, std::string> = codeGenerator->Generate(root);
+
+    std::cout << "Generated code:" << std::endl;
+    std::cout << std::get<0>(code) << std::endl;
+
+    std::cout << "Generated header:" << std::endl;
+    std::cout << std::get<1>(code) << std::endl;
+    
+    del lexer;
+    del parser;
+    del root;
+    del codeGenerator;
 
     ret 0;
 }

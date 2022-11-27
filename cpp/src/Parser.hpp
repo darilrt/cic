@@ -43,7 +43,7 @@ protected: [[nodiscard]] ASTNode* IndexAccess();
 protected: [[nodiscard]] ASTNode* Primary();
 protected: [[nodiscard]] ASTNode* Variable();
 protected: [[nodiscard]] ASTNode* ScopeResolution();
-protected: [[nodiscard]] ASTNode* TemplateArgs(ASTNode* node);
+protected: [[nodiscard]] ASTTemplateArgs* TemplateArgs(ASTNode* node);
 protected: [[nodiscard]] std::vector<ASTNode*> ArgsValue();
 protected: [[nodiscard]] ASTBody* Body(BodyType bodyType);
 protected: [[nodiscard]] ASTType* Type();

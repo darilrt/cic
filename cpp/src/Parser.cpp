@@ -198,7 +198,7 @@ ASTNode* Parser::Variable() {
         this->Error("Expected an identifier");
     }
     if (this->IsType(TokenType::Less)) {
-        ASTNode* const tmp = this->TemplateArgs(node);
+        ASTTemplateArgs* const tmp = this->TemplateArgs(node);
         if (tmp != 0) {
             node = tmp;
         }
@@ -221,7 +221,7 @@ ASTNode* Parser::ScopeResolution() {
     }
     return node;
 }
-ASTNode* Parser::TemplateArgs(ASTNode* node) {
+ASTTemplateArgs* Parser::TemplateArgs(ASTNode* node) {
     this->PushState("TemplateArgs");
     this->Eat(TokenType::Less);
     std::vector<ASTNode*> const args = this->ArgsValue();

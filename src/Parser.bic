@@ -307,7 +307,7 @@ class Parser {
         }
 
         if (.IsType(TokenType::Less)) {
-            let tmp : ASTNode* = .TemplateArgs(node);
+            let tmp : ASTTemplateArgs* = .TemplateArgs(node);
 
             if (tmp != null) {
                 node = tmp;
@@ -339,7 +339,7 @@ class Parser {
     }
 
     // TemplateArgs: node '<' ArgsValue '>'
-    TemplateArgs(node : ASTNode*) -> ASTNode* {
+    TemplateArgs(node : ASTNode*) -> ASTTemplateArgs* {
         .PushState("TemplateArgs");
         .Eat(TokenType::Less);
         let args : std::vector<ASTNode*> = .ArgsValue();
