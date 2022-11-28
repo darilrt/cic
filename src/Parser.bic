@@ -35,7 +35,7 @@ class Parser {
     }
 
     pub Parse() -> ASTNode* {
-        ret .DeclStatement();
+        ret .Program();
     }
 
     PushState(state : std::string) {
@@ -93,6 +93,18 @@ class Parser {
     IsState(state : std::string) -> bool {
         ret .state == state;
     }
+
+    // Program -> Decl*
+    Program() -> ASTNode* {
+        mut decls : std::vector<ASTNode*>;
+
+        while (!.IsAtEnd()) {
+            decls.push_back(.DeclStatement());
+        }
+
+        ret new ASTProgram(decls);
+    }
+
 
     // Expr: Term 
     Expr() -> ASTNode* {
@@ -419,8 +431,8 @@ class Parser {
     }
 
     // TypedArgs: ArgDecl (',' ArgDecl)*
-    TypedArgs() -> std::vector<ASTNode*> {
-        mut args : std::vector<ASTNode*>;
+    TypedArgs() -> std::vector<ASTArgDecl*> {
+        mut args : std::vector<ASTArgDecl*>;
 
         args.push_back(.ArgDecl());
 
@@ -436,7 +448,7 @@ class Parser {
     TemplateDecl() -> ASTTemplateDecl* {
         .PushState("TemplateDecl");
         .Eat(TokenType::Less);
-        let args : std::vector<ASTNode*> = .TypedArgs();
+        let args : std::vector<ASTArgDecl*> = .TypedArgs();
         
         if (.IsType(TokenType::Greater)) {
             .Eat(TokenType::Greater);
@@ -465,7 +477,7 @@ class Parser {
         }
 
         .Eat(TokenType::LParen);
-        mut args : std::vector<ASTNode*>;
+        mut args : std::vector<ASTArgDecl*>;
         if (.IsType(TokenType::RParen)) {
             .Eat(TokenType::RParen);
         }

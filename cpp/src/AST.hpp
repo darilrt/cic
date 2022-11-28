@@ -5,12 +5,12 @@
 class ASTNode {
 public: ASTNode();
 public: [[nodiscard]] virtual std::string ToString() const ;
-public: template <typename T> [[nodiscard]] bool IsA(){
-    return dynamic_cast<T*>(this) != 0;
-}
-public: template <typename T> [[nodiscard]] T* As(){
-    return dynamic_cast<T*>(this);
-}
+public: [[nodiscard]] virtual std::string Get() const ;
+};
+class ASTProgram : public ASTNode {
+public: std::vector<ASTNode*> decls;
+public: ASTProgram(std::vector<ASTNode*> declList);
+public: [[nodiscard]] std::string ToString() const ;
 };
 class ASTConstant : public ASTNode {
 public: std::string value;
@@ -21,6 +21,7 @@ class ASTVariable : public ASTNode {
 public: std::string name;
 public: ASTVariable(std::string name);
 public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
 };
 class ASTBinaryOp : public ASTNode {
 public: ASTNode* left;
@@ -74,6 +75,7 @@ public: ASTTemplateArgs(ASTNode* left);
 public: ASTTemplateArgs(ASTNode* left, std::vector<ASTNode*> args);
 public: ASTTemplateArgs();
 public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
 };
 class ASTPointerDecl : public ASTNode {
 public: ASTNode* left;
@@ -95,8 +97,8 @@ public: ASTTypeDecl();
 public: [[nodiscard]] std::string ToString() const ;
 };
 class ASTBody : public ASTNode {
-public: std::vector<ASTNode*> body;
-public: ASTBody(std::vector<ASTNode*> body);
+public: std::vector<ASTNode*> decls;
+public: ASTBody(std::vector<ASTNode*> decls);
 public: ASTBody();
 public: void AddStatement(ASTNode* stmt);
 public: [[nodiscard]] std::string ToString() const ;
@@ -106,6 +108,7 @@ public: ASTNode* left;
 public: ASTType(ASTNode* left);
 public: ASTType();
 public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
 };
 class ASTArgDecl : public ASTNode {
 public: ASTNode* left;
@@ -115,19 +118,19 @@ public: ASTArgDecl();
 public: [[nodiscard]] std::string ToString() const ;
 };
 class ASTTemplateDecl : public ASTNode {
-protected: std::vector<ASTNode*> args;
-public: ASTTemplateDecl(std::vector<ASTNode*> args);
+protected: std::vector<ASTArgDecl*> args;
+public: ASTTemplateDecl(std::vector<ASTArgDecl*> args);
 public: ASTTemplateDecl();
-public: void AddArg(ASTNode* arg);
+public: void AddArg(ASTArgDecl* arg);
 public: [[nodiscard]] std::string ToString() const ;
 };
 class ASTFunctionDecl : public ASTNode {
 public: ASTVariable* name;
 public: ASTNode* templateDecl;
-public: std::vector<ASTNode*> args;
-public: ASTNode* fType;
-public: ASTNode* body;
-public: ASTFunctionDecl(ASTVariable* name, ASTTemplateDecl* templateDecl, std::vector<ASTNode*> args, ASTType* fType, ASTBody* body);
+public: std::vector<ASTArgDecl*> args;
+public: ASTType* fType;
+public: ASTBody* body;
+public: ASTFunctionDecl(ASTVariable* name, ASTTemplateDecl* templateDecl, std::vector<ASTArgDecl*> args, ASTType* fType, ASTBody* body);
 public: ASTFunctionDecl();
 public: [[nodiscard]] std::string ToString() const ;
 };

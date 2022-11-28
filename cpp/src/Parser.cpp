@@ -14,7 +14,7 @@ Parser::Parser(Lexer* lexer) {
     this->currentToken = &this->tokens[this->current];
 }
 ASTNode* Parser::Parse() {
-    return this->DeclStatement();
+    return this->Program();
 }
 auto Parser::PushState(std::string state) {
     this->state = state;
@@ -59,6 +59,13 @@ bool Parser::IsKeyword() {
 }
 bool Parser::IsState(std::string state) {
     return this->state == state;
+}
+ASTNode* Parser::Program() {
+    std::vector<ASTNode*> decls;
+    while (!this->IsAtEnd()) {
+        decls.push_back(this->DeclStatement());
+    }
+    return new ASTProgram(decls);
 }
 ASTNode* Parser::Expr() {
     return this->AssignExpr();
@@ -276,8 +283,8 @@ ASTArgDecl* Parser::ArgDecl() {
     ASTNode* const _type = this->Type();
     return new ASTArgDecl(name, _type);
 }
-std::vector<ASTNode*> Parser::TypedArgs() {
-    std::vector<ASTNode*> args;
+std::vector<ASTArgDecl*> Parser::TypedArgs() {
+    std::vector<ASTArgDecl*> args;
     args.push_back(this->ArgDecl());
     while (this->IsType(TokenType::Comma)) {
         this->Eat(TokenType::Comma);
@@ -288,7 +295,7 @@ std::vector<ASTNode*> Parser::TypedArgs() {
 ASTTemplateDecl* Parser::TemplateDecl() {
     this->PushState("TemplateDecl");
     this->Eat(TokenType::Less);
-    std::vector<ASTNode*> const args = this->TypedArgs();
+    std::vector<ASTArgDecl*> const args = this->TypedArgs();
     if (this->IsType(TokenType::Greater)) {
         this->Eat(TokenType::Greater);
         this->PopState(true);
@@ -310,7 +317,7 @@ ASTFunctionDecl* Parser::FunctionDecl() {
         tmp = this->TemplateDecl();
     }
     this->Eat(TokenType::LParen);
-    std::vector<ASTNode*> args;
+    std::vector<ASTArgDecl*> args;
     if (this->IsType(TokenType::RParen)) {
         this->Eat(TokenType::RParen);
     } else {

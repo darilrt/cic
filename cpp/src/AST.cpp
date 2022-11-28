@@ -7,6 +7,24 @@ ASTNode::ASTNode() {
 std::string ASTNode::ToString()  const {
     return "ASTNode";
 }
+std::string ASTNode::Get()  const {
+    return "ASTNode";
+}
+ASTProgram::ASTProgram(std::vector<ASTNode*> declList) {
+    this->decls = declList;
+}
+std::string ASTProgram::ToString()  const {
+    std::string str = "";
+    int i = 0;
+    while ((i) < this->decls.size()) {
+        str += ((this->decls[i])->ToString()) + "\n";
+        if ((i) < ((this->decls.size()) - 1)) {
+            str += "\n";
+        }
+        i++;
+    }
+    return str;
+}
 ASTConstant::ASTConstant(std::string value) {
     this->value = value;
 }
@@ -18,6 +36,9 @@ ASTVariable::ASTVariable(std::string name) {
 }
 std::string ASTVariable::ToString()  const {
     return "'" + this->name + "'";
+}
+std::string ASTVariable::Get()  const {
+    return this->name;
 }
 ASTBinaryOp::ASTBinaryOp(ASTNode* left, Token op, ASTNode* right) {
     this->left = left;
@@ -129,6 +150,9 @@ std::string ASTTemplateArgs::ToString()  const {
     str += ">";
     return str;
 }
+std::string ASTTemplateArgs::Get()  const {
+    return "ASTTemplateArgs";
+}
 ASTPointerDecl::ASTPointerDecl(ASTNode* left) {
     this->left = left;
 }
@@ -158,24 +182,24 @@ ASTTypeDecl::ASTTypeDecl() {
 std::string ASTTypeDecl::ToString()  const {
     return (this->left->ToString()) + " " + (this->right->ToString());
 }
-ASTBody::ASTBody(std::vector<ASTNode*> body) {
-    this->body = body;
+ASTBody::ASTBody(std::vector<ASTNode*> decls) {
+    this->decls = decls;
 }
 ASTBody::ASTBody() {
     int i = 0;
-    while ((i) < this->body.size()) {
-        delete this->body[i];
+    while ((i) < this->decls.size()) {
+        delete this->decls[i];
     }
 }
 void ASTBody::AddStatement(ASTNode* stmt) {
-    this->body.push_back(stmt);
+    this->decls.push_back(stmt);
 }
 std::string ASTBody::ToString()  const {
     std::string str = "{";
     int i = 0;
-    while ((i) < this->body.size()) {
-        str += (this->body[i])->ToString();
-        if ((i) < (this->body.size()) - 1) {
+    while ((i) < this->decls.size()) {
+        str += (this->decls[i])->ToString();
+        if ((i) < (this->decls.size()) - 1) {
             str += ", ";
         }
     }
@@ -191,6 +215,9 @@ ASTType::ASTType() {
 std::string ASTType::ToString()  const {
     return (this->left->ToString());
 }
+std::string ASTType::Get()  const {
+    return (this->left->Get());
+}
 ASTArgDecl::ASTArgDecl(ASTNode* left, ASTNode* right) {
     this->left = left;
     this->right = right;
@@ -202,7 +229,7 @@ ASTArgDecl::ASTArgDecl() {
 std::string ASTArgDecl::ToString()  const {
     return (this->right->ToString()) + " " + (this->left->ToString());
 }
-ASTTemplateDecl::ASTTemplateDecl(std::vector<ASTNode*> args) {
+ASTTemplateDecl::ASTTemplateDecl(std::vector<ASTArgDecl*> args) {
     this->args = args;
 }
 ASTTemplateDecl::ASTTemplateDecl() {
@@ -211,7 +238,7 @@ ASTTemplateDecl::ASTTemplateDecl() {
         delete this->args[i];
     }
 }
-void ASTTemplateDecl::AddArg(ASTNode* arg) {
+void ASTTemplateDecl::AddArg(ASTArgDecl* arg) {
     this->args.push_back(arg);
 }
 std::string ASTTemplateDecl::ToString()  const {
@@ -227,7 +254,7 @@ std::string ASTTemplateDecl::ToString()  const {
     str += ">";
     return str;
 }
-ASTFunctionDecl::ASTFunctionDecl(ASTVariable* name, ASTTemplateDecl* templateDecl, std::vector<ASTNode*> args, ASTType* fType, ASTBody* body) {
+ASTFunctionDecl::ASTFunctionDecl(ASTVariable* name, ASTTemplateDecl* templateDecl, std::vector<ASTArgDecl*> args, ASTType* fType, ASTBody* body) {
     this->name = name;
     this->templateDecl = templateDecl;
     this->args = args;

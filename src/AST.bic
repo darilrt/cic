@@ -11,12 +11,34 @@ class ASTNode {
         ret "ASTNode";
     }
 
-    pub IsA<T : type>() -> bool {
-        ret dynamic_cast<T*>(this) != null;
+    pub virtual Get() const -> std::string {
+        ret "ASTNode";
+    }
+}
+
+// Program, contains a list of declarations
+class ASTProgram(pub ASTNode) {
+    pub mut decls : std::vector<ASTNode*>;
+
+    pub ASTProgram(declList : std::vector<ASTNode*>) {
+        .decls = declList;
     }
 
-    pub As<T : type>() -> T* {
-        ret dynamic_cast<T*>(this);
+    pub ToString() const -> std::string {
+        mut str : std::string = "";
+
+        mut i : int = 0;
+        while ((i) < .decls.size()) {
+            str += ((.decls[i])->ToString()) + "\n";
+
+            if ((i) < ((.decls.size()) - 1)) {
+                str += "\n";
+            }
+
+            i++;
+        }
+
+        ret str;
     }
 }
 
@@ -43,6 +65,10 @@ class ASTVariable(pub ASTNode) {
 
     pub ToString() const -> std::string {
         ret "'" + .name + "'";
+    }
+
+    pub Get() const -> std::string {
+        ret .name;
     }
 }
 
@@ -229,6 +255,10 @@ class ASTTemplateArgs(pub ASTNode) {
         str += ">";
         ret str;
     }
+
+    pub Get() const -> std::string {
+        ret "ASTTemplateArgs";
+    }
 }
 
 // Pointer Declaration
@@ -285,33 +315,33 @@ class ASTTypeDecl(pub ASTNode) {
     }
 }
 
-// Body of a function
+// body of a function
 class ASTBody(pub ASTNode) {
-    pub mut body : std::vector<ASTNode*>;
+    pub mut decls : std::vector<ASTNode*>;
  
-    pub ASTBody(body : std::vector<ASTNode*>) {
-        .body = body;
+    pub ASTBody(decls : std::vector<ASTNode*>) {
+        .decls = decls;
     }
 
     pub ~ASTBody() {
         mut i : int = 0;
-        while ((i) < .body.size()) {
-            del .body[i];
+        while ((i) < .decls.size()) {
+            del .decls[i];
         }
     }
 
     pub AddStatement(stmt : ASTNode*) -> void {
-        .body.push_back(stmt);
+        .decls.push_back(stmt);
     }
 
     pub ToString() const -> std::string {
         mut str : std::string = "{";
 
         mut i : int = 0;
-        while ((i) < .body.size()) {
-            str += (.body[i])->ToString();
+        while ((i) < .decls.size()) {
+            str += (.decls[i])->ToString();
 
-            if ((i) < (.body.size()) - 1) {
+            if ((i) < (.decls.size()) - 1) {
                 str += ", ";
             }
         }
@@ -335,6 +365,10 @@ class ASTType(pub ASTNode) {
 
     pub ToString() const -> std::string {
         ret (.left->ToString());
+    }
+
+    pub Get() const -> std::string {
+        ret (.left->Get());
     }
 }
 
@@ -360,9 +394,9 @@ class ASTArgDecl(pub ASTNode) {
 
 // Template Declaration
 class ASTTemplateDecl(pub ASTNode) {
-    mut args : std::vector<ASTNode*>;
+    mut args : std::vector<ASTArgDecl*>;
 
-    pub ASTTemplateDecl(args : std::vector<ASTNode*>) {
+    pub ASTTemplateDecl(args : std::vector<ASTArgDecl*>) {
         .args = args;
     }
 
@@ -373,7 +407,7 @@ class ASTTemplateDecl(pub ASTNode) {
         }
     }
 
-    pub AddArg(arg : ASTNode*) -> void {
+    pub AddArg(arg : ASTArgDecl*) -> void {
         .args.push_back(arg);
     }
 
@@ -396,18 +430,18 @@ class ASTTemplateDecl(pub ASTNode) {
     }
 }
 
-// Function Declaration ASTFunctionDecl(name, templateDecl, args, _type, body)
+// Function Declaration 
 class ASTFunctionDecl(pub ASTNode) {
     pub mut name : ASTVariable*;
     pub mut templateDecl : ASTNode*;
-    pub mut args : std::vector<ASTNode*>;
-    pub mut fType : ASTNode*;
-    pub mut body : ASTNode*;
+    pub mut args : std::vector<ASTArgDecl*>;
+    pub mut fType : ASTType*;
+    pub mut body : ASTBody*;
 
     pub ASTFunctionDecl(
             name : ASTVariable*,
             templateDecl : ASTTemplateDecl*,
-            args : std::vector<ASTNode*>,
+            args : std::vector<ASTArgDecl*>,
             fType : ASTType*,
             body : ASTBody*) {
         .name = name;
