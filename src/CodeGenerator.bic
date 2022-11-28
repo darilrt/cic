@@ -2,11 +2,26 @@ import "iostream";
 import "tuple";
 import "AST.bic";
 
+class IRFunction {
+    pub mut name : std::string;
+
+    pub IRFunction(name : std::string) {
+        .name = name;
+    }
+
+    pub ToString() const -> std::string {
+        ret "IRFunction(" + .name + ")";
+    }
+}
+
 class CodeGenerator {
     pub Generate(ast : ASTNode*) -> std::tuple<std::string, std::string> {
         std::cout << "Generating code..." << std::endl;
 
-        mut code : std::string = "";
+        // process AST and generate IR
+        mut irFunction : IRFunction = IRFunction("main");
+        
+        mut code : std::string = irFunction.ToString();
         mut header : std::string = "";
 
         ret std::make_tuple(code, header);

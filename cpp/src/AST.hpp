@@ -5,6 +5,12 @@
 class ASTNode {
 public: ASTNode();
 public: [[nodiscard]] virtual std::string ToString() const ;
+public: template <typename T> [[nodiscard]] bool IsA(){
+    return dynamic_cast<T*>(this) != 0;
+}
+public: template <typename T> [[nodiscard]] T* As(){
+    return dynamic_cast<T*>(this);
+}
 };
 class ASTConstant : public ASTNode {
 public: std::string value;

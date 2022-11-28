@@ -10,6 +10,14 @@ class ASTNode {
     pub virtual ToString() const -> std::string {
         ret "ASTNode";
     }
+
+    pub IsA<T : type>() -> bool {
+        ret dynamic_cast<T*>(this) != null;
+    }
+
+    pub As<T : type>() -> T* {
+        ret dynamic_cast<T*>(this);
+    }
 }
 
 // Constant integer, float, string, char, etc.
