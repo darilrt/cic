@@ -30,6 +30,8 @@ int main(int argc, char* argv[]) {
     delete lexer;
     delete parser;
     delete root;
+    delete ir;
     delete irGenerator;
+    delete codeGenerator;
     return 0;
 }

@@ -12,6 +12,7 @@ Parser::Parser(Lexer* lexer) {
     this->tokens = lexer->Parse();
     this->current = 0;
     this->currentToken = &this->tokens[this->current];
+    this->prevToken = 0;
 }
 ASTNode* Parser::Parse() {
     return this->Program();
@@ -52,9 +53,22 @@ bool Parser::IsInsideState(std::string state) {
 void Parser::Eat(TokenType tokenType) {
     if ((this->currentToken->tokenType) == tokenType) {
         this->current += 1;
+        this->prevToken = this->currentToken;
         this->currentToken = &this->tokens[this->current];
+        while ((this->currentToken->tokenType) == TokenType::NewLine) {
+            this->current += 1;
+            this->prevToken = this->currentToken;
+            this->currentToken = &this->tokens[this->current];
+        }
     } else {
         this->Error("Expected " + TokenTypeToString(tokenType) + ", got " + TokenTypeToString(this->currentToken->tokenType));
+    }
+}
+void Parser::EatNewLine() {
+    if ((this->prevToken->tokenType) == TokenType::NewLine) {
+        this->prevToken = this->currentToken;
+    } else {
+        this->Error("Expected newline");
     }
 }
 void Parser::Backtrack() {
@@ -488,7 +502,7 @@ ASTNode* Parser::DeclStatement() {
         return 0;
     } else if ((this->IsType(TokenType::Let)) || (this->IsType(TokenType::Mut))) {
         ASTNode* const node = this->VariableDecl();
-        this->Eat(TokenType::Semicolon);
+        this->EatNewLine();
         return node;
     } else if (this->IsType(TokenType::Ident)) {
         return this->FunctionDecl();
@@ -498,19 +512,18 @@ ASTNode* Parser::DeclStatement() {
 ASTNode* Parser::ImplStatement() {
     ASTNode* node = 0;
     if (this->IsType(TokenType::Semicolon)) {
-        this->Eat(TokenType::Semicolon);
         return 0;
     } else if ((this->IsType(TokenType::Let)) || (this->IsType(TokenType::Mut))) {
         node = this->VariableDecl();
-        this->Eat(TokenType::Semicolon);
+        this->EatNewLine();
     } else if (this->IsType(TokenType::Ret)) {
         node = this->ReturnStmt();
-        this->Eat(TokenType::Semicolon);
+        this->EatNewLine();
     } else if (this->IsType(TokenType::If)) {
         node = this->IfStmt();
     } else {
         node = this->Expr();
-        this->Eat(TokenType::Semicolon);
+        this->EatNewLine();
     }
     return node;
 }

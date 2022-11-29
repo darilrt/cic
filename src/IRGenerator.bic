@@ -97,6 +97,18 @@ class IRGenerator {
             i++;
         }
 
+        let tmp : ASTTemplateDecl* = funcDecl->templateDecl;
+        
+        if (tmp) {
+            i = 0;
+            while ((i) < tmp->args.size()) {
+                let arg : ASTArgDecl* = tmp->args[i];
+                let irArg : std::tuple<std::string, std::string> = std::make_tuple(arg->right->Get(), arg->left->Get());
+                func->templateParams.push_back(irArg);
+                i++;
+            }
+        }
+
         func->body = TranslateBody(funcDecl->body);
 
         ret func;

@@ -23,3 +23,4 @@
 ## Ideas
 - &#9744; getter and setter for class properties
 - &#9744; meta programming
+- &#9744; remove the need for semicolons

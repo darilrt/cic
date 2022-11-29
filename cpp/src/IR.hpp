@@ -26,6 +26,7 @@ class IRFunction : public IRNode {
 public: std::string name;
 public: std::string returnType;
 public: std::vector<std::tuple<std::string, std::string>> params;
+public: std::vector<std::tuple<std::string, std::string>> templateParams;
 public: IRBody* body;
 public: int attr = Attribute::None;
 public: [[nodiscard]] std::string ToString() const ;

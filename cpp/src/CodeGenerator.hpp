@@ -18,4 +18,6 @@ protected: void Indent();
 protected: void PushIndent();
 protected: void PopIndent();
 protected: void GenerateProgram(IRProgram* node);
+protected: void GenerateDeclaration(IRNode* node);
+protected: void GenerateFunction(IRFunction* node);
 };

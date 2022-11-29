@@ -89,7 +89,7 @@ class Lexer {
 
             if (.IsNewline()) {
                 .Advance();
-                continue;
+                ret Token(TokenType::NewLine, "\n", .line, .column);
             }
             
             if (.IsAlpha()) {
@@ -307,7 +307,7 @@ class Lexer {
     }
 
     IsWhitespace() -> bool {
-        ret .currentChar == ' ' || .currentChar == '\t' || .currentChar == '\r' || .currentChar == '\n';
+        ret .currentChar == ' ' || .currentChar == '\t';
     }
 
     IsAlpha() -> bool {

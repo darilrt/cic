@@ -541,7 +541,7 @@ class ASTArgDecl(pub ASTNode) {
 
 // Template Declaration
 class ASTTemplateDecl(pub ASTNode) {
-    mut args : std::vector<ASTArgDecl*>;
+    pub mut args : std::vector<ASTArgDecl*>;
 
     pub ASTTemplateDecl(args : std::vector<ASTArgDecl*>) {
         .args = args;
@@ -627,7 +627,7 @@ class ASTExpr(pub ASTNode) {
 // Function Declaration 
 class ASTFunctionDecl(pub ASTNode) {
     pub mut name : ASTVariable*;
-    pub mut templateDecl : ASTNode*;
+    pub mut templateDecl : ASTTemplateDecl*;
     pub mut args : std::vector<ASTArgDecl*>;
     pub mut fType : ASTType*;
     pub mut body : ASTBody*;

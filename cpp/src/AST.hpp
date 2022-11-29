@@ -150,7 +150,7 @@ public: [[nodiscard]] std::string Get() const ;
 public: [[nodiscard]] std::string GetType() const ;
 };
 class ASTTemplateDecl : public ASTNode {
-protected: std::vector<ASTArgDecl*> args;
+public: std::vector<ASTArgDecl*> args;
 public: ASTTemplateDecl(std::vector<ASTArgDecl*> args);
 public: ASTTemplateDecl();
 public: void AddArg(ASTArgDecl* arg);
@@ -168,7 +168,7 @@ public: [[nodiscard]] std::string GetType() const ;
 };
 class ASTFunctionDecl : public ASTNode {
 public: ASTVariable* name;
-public: ASTNode* templateDecl;
+public: ASTTemplateDecl* templateDecl;
 public: std::vector<ASTArgDecl*> args;
 public: ASTType* fType;
 public: ASTBody* body;

@@ -247,6 +247,9 @@ std::string TokenTypeToString(TokenType t) {
     if (t == TokenType::Ellipsis) {
         return "Ellipsis";
     }
+    if (t == TokenType::NewLine) {
+        return "NewLine";
+    }
     return "Mmmm...";
 }
 Token::Token() {

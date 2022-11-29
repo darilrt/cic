@@ -76,6 +76,7 @@ class IRFunction(pub IRNode) {
     pub mut name : std::string;
     pub mut returnType : std::string;
     pub mut params : std::vector<std::tuple<std::string, std::string> >;
+    pub mut templateParams : std::vector<std::tuple<std::string, std::string> >;
     pub mut body : IRBody*;
     pub mut attr : int = Attribute::None;
 

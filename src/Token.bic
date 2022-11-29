@@ -3,6 +3,7 @@ import "iostream";
 enum TokenType {
     EndOfFile, // End of file
     Unknown, // Unknown token
+    NewLine, // New line
 
     Ident, // Identifier
 
@@ -177,6 +178,7 @@ TokenTypeToString(t : TokenType) -> std::string {
     if (t == TokenType::RBrace) { ret "RBrace"; }
     if (t == TokenType::Arrow) { ret "Arrow"; }
     if (t == TokenType::Ellipsis) { ret "Ellipsis"; }
+    if (t == TokenType::NewLine) { ret "NewLine"; }
 
     ret "Mmmm...";
 }

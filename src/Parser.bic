@@ -24,6 +24,7 @@ class Parser {
     mut tokens : std::vector<Token>;
     mut current : int;
     mut currentToken : Token*;
+    mut prevToken : Token*;
     mut stateStack : std::vector<ParserState>;
     mut state : std::string;
 
@@ -32,6 +33,7 @@ class Parser {
         .tokens = lexer->Parse();
         .current = 0;
         .currentToken = &.tokens[.current];
+        .prevToken = null;
     }
 
     pub Parse() -> ASTNode* {
@@ -81,10 +83,25 @@ class Parser {
     Eat(tokenType : TokenType) -> void {
         if ((.currentToken->tokenType) == tokenType) {
             .current += 1;
+            .prevToken = .currentToken;
             .currentToken = &.tokens[.current];
+
+            while ((.currentToken->tokenType) == TokenType::NewLine) {
+                .current += 1;
+                .prevToken = .currentToken;
+                .currentToken = &.tokens[.current];
+            }
         }
         else {
             .Error("Expected " + TokenTypeToString(tokenType) + ", got " + TokenTypeToString(.currentToken->tokenType));
+        }
+    }
+    EatNewLine() -> void {
+        if ((.prevToken->tokenType) == TokenType::NewLine) {
+            .prevToken = .currentToken;
+        }
+        else {
+            .Error("Expected newline");
         }
     }
 
@@ -706,7 +723,7 @@ class Parser {
         }
         elif ((.IsType(TokenType::Let)) || (.IsType(TokenType::Mut))) {
             let node : ASTNode* = .VariableDecl();
-            .Eat(TokenType::Semicolon);
+            .EatNewLine();
             ret node;
         }
         elif (.IsType(TokenType::Ident)) {
@@ -725,23 +742,22 @@ class Parser {
         mut node : ASTNode* = null;
 
         if (.IsType(TokenType::Semicolon)) {
-            .Eat(TokenType::Semicolon);
             ret null;
         }
         elif ((.IsType(TokenType::Let)) || (.IsType(TokenType::Mut))) {
             node = .VariableDecl();
-            .Eat(TokenType::Semicolon);
+            .EatNewLine();
         }
         elif (.IsType(TokenType::Ret)) {
             node = .ReturnStmt();
-            .Eat(TokenType::Semicolon);
+            .EatNewLine();
         }
         elif (.IsType(TokenType::If)) {
             node = .IfStmt();
         }
         else {
             node = .Expr();
-            .Eat(TokenType::Semicolon);
+            .EatNewLine();
         }
         
         ret node;

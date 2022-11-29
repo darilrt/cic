@@ -72,6 +72,16 @@ IRNode* IRGenerator::TranslateFunction(ASTFunctionDecl* funcDecl) {
         func->params.push_back(irParam);
         i++;
     }
+    ASTTemplateDecl* const tmp = funcDecl->templateDecl;
+    if (tmp) {
+        i = 0;
+        while ((i) < tmp->args.size()) {
+            ASTArgDecl* const arg = tmp->args[i];
+            std::tuple<std::string, std::string> const irArg = std::make_tuple(arg->right->Get(), arg->left->Get());
+            func->templateParams.push_back(irArg);
+            i++;
+        }
+    }
     func->body = TranslateBody(funcDecl->body);
     return func;
 }

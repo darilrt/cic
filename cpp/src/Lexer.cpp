@@ -71,7 +71,7 @@ Token Lexer::ParseToken() {
         }
         if (this->IsNewline()) {
             this->Advance();
-            continue;
+            return Token(TokenType::NewLine, "\n", this->line, this->column);
         }
         if (this->IsAlpha()) {
             return this->ParseIdentifier();
@@ -401,7 +401,7 @@ bool Lexer::IsNotNull() {
     return !this->IsNull();
 }
 bool Lexer::IsWhitespace() {
-    return this->currentChar == ' ' || this->currentChar == '\t' || this->currentChar == '\r' || this->currentChar == '\n';
+    return this->currentChar == ' ' || this->currentChar == '\t';
 }
 bool Lexer::IsAlpha() {
     return this->currentChar >= 'a' && this->currentChar <= 'z' || this->currentChar >= 'A' && this->currentChar <= 'Z';

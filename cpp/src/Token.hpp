@@ -3,6 +3,7 @@
 enum class TokenType {
     EndOfFile,
     Unknown,
+    NewLine,
     Ident,
     Int,
     Float,

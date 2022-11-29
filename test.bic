@@ -1,6 +1,12 @@
-main<T : type>() -> int {
-    let ast : ASTNode* = ParseFile("test.bic");
-    let ir : IRNode* = TranslateNode(ast);
-    std::cout << ir->ToString() << std::endl;
-    ret 0;
+print<T : type>(v : T) -> void {
+    std::cout << v << std::endl
+}
+
+main() -> int {
+    mut a : int = 10
+    mut b : int = 25
+    mut c : int = a + b
+
+    print(c)
+    ret 0
 }
