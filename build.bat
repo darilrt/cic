@@ -7,7 +7,10 @@ set cc=gcc
 %cb% src/Lexer.bic -o ./cpp/
 %cb% src/Parser.bic -o ./cpp/
 %cb% src/AST.bic -o ./cpp/
+%cb% src/IR.bic -o ./cpp/
+%cb% src/Common.bic -o ./cpp/
 %cb% src/CodeGenerator.bic -o ./cpp/
+%cb% src/IRGenerator.bic -o ./cpp/
 
 rem create cpp folder
 
@@ -24,7 +27,11 @@ cc -c ./cpp/src/Token.cpp -o ./cpp/obj/src/Token.o
 cc -c ./cpp/src/Lexer.cpp -o ./cpp/obj/src/Lexer.o
 cc -c ./cpp/src/Parser.cpp -o ./cpp/obj/src/Parser.o
 cc -c ./cpp/src/AST.cpp -o ./cpp/obj/src/AST.o
+cc -c ./cpp/src/IR.cpp -o ./cpp/obj/src/IR.o
+cc -c ./cpp/src/Common.cpp -o ./cpp/obj/src/Common.o
 cc -c ./cpp/src/CodeGenerator.cpp -o ./cpp/obj/src/CodeGenerator.o
+cc -c ./cpp/src/IRGenerator.cpp -o ./cpp/obj/src/IRGenerator.o
+
 
 rem link
 
@@ -33,6 +40,9 @@ cc  ./cpp/obj/src/Bic.o ^
     ./cpp/obj/src/Lexer.o ^
     ./cpp/obj/src/Parser.o ^
     ./cpp/obj/src/AST.o ^
+    ./cpp/obj/src/IR.o ^
+    ./cpp/obj/src/Common.o ^
     ./cpp/obj/src/CodeGenerator.o ^
+    ./cpp/obj/src/IRGenerator.o ^
     -o ./bin/Bic.exe ^
     -lstdc++

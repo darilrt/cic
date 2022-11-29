@@ -1,0 +1,7 @@
+
+class Attribute {
+    pub static let None : int = 0;
+    pub static let Static : int = 1;
+    pub static let Virtual : int = 2;
+    pub static let Const : int = 4;
+}

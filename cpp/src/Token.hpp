@@ -87,6 +87,7 @@ enum class TokenType {
     Ellipsis,
     ScopeResolution,
 };
+[[nodiscard]] std::string TokenTypeToString(TokenType t);
 class Token {
 public: TokenType tokenType;
 public: std::string literal;

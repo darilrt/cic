@@ -178,7 +178,7 @@ class Lexer {
         }
 
         if (identifier == "if") { ret Token(TokenType::If, "if"); }
-        if (identifier == "elif") { ret Token(TokenType::Else, "elif"); }
+        if (identifier == "elif") { ret Token(TokenType::Elif, "elif"); }
         if (identifier == "else") { ret Token(TokenType::Else, "else"); }
         if (identifier == "while") { ret Token(TokenType::While, "while"); }
         if (identifier == "for") { ret Token(TokenType::For, "for"); }

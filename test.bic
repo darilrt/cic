@@ -1,3 +1,6 @@
-main<T : type>(a : int) -> int {
-    a = 10;
+main<T : type>() -> int {
+    let ast : ASTNode* = ParseFile("test.bic");
+    let ir : IRNode* = TranslateNode(ast);
+    std::cout << ir->ToString() << std::endl;
+    ret 0;
 }

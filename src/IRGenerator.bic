@@ -1,0 +1,151 @@
+import "iostream";
+import "vector";
+import "tuple";
+import "AST.bic";
+import "IR.bic";
+
+IsA<T : type>(node : ASTNode*) -> bool {
+    ret (dynamic_cast<T*>(node)) != null;
+}
+
+As<T : type>(node : ASTNode*) -> T* {
+    ret dynamic_cast<T*>(node);
+}
+
+class IRGenerator {
+    pub Generate(ast : ASTNode*) -> IRNode* {
+        let ir : IRNode* = TranslateNode(ast);
+        ret ir;
+    }
+
+    TranslateNode(node : ASTNode*) -> IRNode* {
+        if (IsA<ASTProgram>(node)) {
+            ret TranslateProgram(As<ASTProgram>(node));
+        }
+        if (IsA<ASTBody>(node)) {
+            ret TranslateBody(As<ASTBody>(node));
+        }
+        if (IsA<ASTFunctionDecl>(node)) {
+            ret TranslateFunction(As<ASTFunctionDecl>(node));
+        }
+        if (IsA<ASTVariableDecl>(node)) {
+            ret TranslateVariable(As<ASTVariableDecl>(node));
+        }
+        if (IsA<ASTExpr>(node)) {
+            ret TranslateExpr(As<ASTExpr>(node));
+        }
+        if (IsA<ASTReturn>(node)) {
+            ret TranslateReturn(As<ASTReturn>(node));
+        }
+        if (IsA<ASTIf>(node)) {
+            ret TranslateIf(As<ASTIf>(node));
+        }
+
+        if (node != null) {
+            std::cout << "Unknown node type: " << node->GetType() << std::endl;
+        } else {
+            std::cout << "Null node" << std::endl;
+        }
+        
+        ret null;
+    }
+
+    // Simple translation of a expression
+    TranslateExpr(node : ASTExpr*) -> IRExpr* {
+        ret new IRExpr(node->Get());
+    }
+
+    TranslateProgram(node : ASTProgram*) -> IRNode* {
+        mut decls : std::vector<IRNode*>;
+
+        mut i : int = 0;
+        while ((i) < node->decls.size()) {
+            decls.push_back(TranslateNode(node->decls[i]));
+            i++;
+        }
+
+        ret new IRProgram(decls);
+    }
+
+    TranslateBody(body : ASTBody*) -> IRBody* {
+        mut irBody : IRBody* = new IRBody();
+
+        mut i : int = 0;
+        while ((i) < body->decls.size()) {
+            let decl : ASTNode* = body->decls[i];
+            let irDecl : IRNode* = TranslateNode(decl);
+
+            irBody->decls.push_back(irDecl);
+
+            i++;
+        }
+
+        ret irBody;
+    }
+
+    TranslateFunction(funcDecl : ASTFunctionDecl*) -> IRNode* {
+        let func : IRFunction* = new IRFunction();
+        func->name = funcDecl->name->Get();
+        func->returnType = funcDecl->fType->Get();
+        func->attr = funcDecl->attr;
+
+        mut i : int = 0;
+        while ((i) < funcDecl->args.size()) {
+            let param : ASTArgDecl* = funcDecl->args[i];
+            let irParam : std::tuple<std::string, std::string> = std::make_tuple(param->right->Get(), param->left->Get());
+            func->params.push_back(irParam);
+            i++;
+        }
+
+        func->body = TranslateBody(funcDecl->body);
+
+        ret func;
+    }
+
+    TranslateReturn(r : ASTReturn*) -> IRReturn* {
+        let irRet : IRReturn* = new IRReturn();
+        irRet->expr = TranslateExpr(r->expr);
+
+        ret irRet;
+    }
+
+    TranslateVariable(varDecl : ASTVariableDecl*) -> IRNode* {
+        let var : IRVariable* = new IRVariable();
+        var->name = varDecl->name->Get();
+        var->vType = varDecl->vType->Get();
+        
+        if (!varDecl->isMutable) {
+            var->attr |= Attribute::Const;
+        }
+
+        if (varDecl->value != null) {
+            var->value = TranslateExpr(varDecl->value);
+        }
+
+        ret var;
+    }
+
+    TranslateIf(ifNode : ASTIf*) -> IRIf* {
+        let irIf : IRIf* = new IRIf();
+        irIf->cond = TranslateExpr(ifNode->expr);
+        irIf->body = TranslateBody(ifNode->body);
+
+        mut i : int = 0;
+        while ((i) < ifNode->elifs.size()) {
+            let _elif : ASTIf* = ifNode->elifs[i];
+            let irElif : IRIf* = new IRIf();
+            irElif->cond = TranslateExpr(_elif->expr);
+            irElif->body = TranslateBody(_elif->body);
+
+            irIf->elifs.push_back(irElif);
+
+            i++;
+        }
+
+        if (ifNode->elseBody != null) {
+            irIf->elseBody = TranslateBody(ifNode->elseBody);
+        }
+
+        ret irIf;
+    }
+}

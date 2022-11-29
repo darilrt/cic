@@ -1,0 +1,175 @@
+import "iostream";
+import "vector";
+import "tuple";
+import "AST.bic";
+
+// Base class for all IR nodes
+class IRNode {
+    pub IRNode() {
+    }
+
+    pub virtual ToString() const -> std::string {
+        ret "IRNode";
+    }
+}
+
+// Program, contains a list of declarations
+class IRProgram(pub IRNode) {
+    pub mut decls : std::vector<IRNode*>;
+
+    pub IRProgram(declList : std::vector<IRNode*>) {
+        .decls = declList;
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "";
+
+        mut i : int = 0;
+        while ((i) < .decls.size()) {
+            str += ((.decls[i])->ToString());
+
+            if ((i) < ((.decls.size()) - 1)) {
+                str += "\n";
+            }
+
+            i++;
+        }
+
+        ret str;
+    }
+}
+
+// Body, contains a list of declarations or statements
+class IRBody(pub IRNode) {
+    pub mut decls : std::vector<IRNode*>;
+
+    pub IRProgram() {
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "{\n";
+
+        mut i : int = 0;
+        while ((i) < .decls.size()) {
+            str += ((.decls[i])->ToString()) + "\n";
+            i++;
+        }
+
+        str += "}";
+        ret str;
+    }
+}
+
+class IRExpr(pub IRNode) {
+    pub mut expr : std::string;
+
+    pub IRExpr(expr : std::string) {
+        .expr = expr;
+    }
+
+    pub ToString() const -> std::string {
+        ret .expr;
+    }
+}
+
+class IRFunction(pub IRNode) {
+    pub mut name : std::string;
+    pub mut returnType : std::string;
+    pub mut params : std::vector<std::tuple<std::string, std::string> >;
+    pub mut body : IRBody*;
+    pub mut attr : int = Attribute::None;
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "";
+
+        if ((.attr & Attribute::Static) != 0) {
+            str += "static ";
+        }
+
+        if ((.attr & Attribute::Virtual) != 0) {
+            str += "virtual ";
+        }
+
+        str += .returnType + " " + .name + "(";
+
+        mut i : int = 0;
+        while ((i) < .params.size()) {
+            str += (std::get<0>(.params[i])) + " " + (std::get<1>(.params[i]));
+
+            if ((i) < ((.params.size()) - 1)) {
+                str += ", ";
+            }
+
+            i++;
+        }
+
+        str += ")";
+
+        if ((.attr & Attribute::Const) != 0) {
+            str += " const";
+        }
+
+        str += " ";
+        
+        str += .body->ToString();
+
+        ret str;
+    }
+}
+
+class IRReturn(pub IRNode) {
+    pub mut expr : IRExpr*;
+
+    pub ToString() const -> std::string {
+        ret "return " + (.expr->ToString()) + ";";
+    }
+}
+
+class IRIf(pub IRNode) {
+    pub mut cond : IRExpr*;
+    pub mut body : IRBody*;
+    pub mut elifs : std::vector<IRIf*>;
+    pub mut elseBody : IRBody*;
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "if (" + (.cond->ToString()) + ") " + (.body->ToString());
+
+        mut i : int = 0;
+        while ((i) < .elifs.size()) {
+            str += " else " + ((.elifs[i])->ToString());
+            i++;
+        }
+
+        if (.elseBody != null) {
+            str += " else " + (.elseBody->ToString());
+        }
+
+        ret str;
+    }
+}
+
+class IRVariable(pub IRNode) {
+    pub mut name : std::string;
+    pub mut vType : std::string;
+    pub mut value : IRExpr*;
+    pub mut attr : int;
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "";
+
+        str += .vType + " ";
+        
+        if ((.attr & Attribute::Const) != 0) {
+            str += "const ";
+        }
+
+        str += .name;
+
+        if (.value != null) {
+            str += " = " + (.value->ToString());
+        }
+
+        str += ";";
+        ret str;
+    }
+}

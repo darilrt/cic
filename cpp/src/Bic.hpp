@@ -8,4 +8,5 @@
 #include "Parser.hpp"
 #include "AST.hpp"
 #include "CodeGenerator.hpp"
+#include "IRGenerator.hpp"
 

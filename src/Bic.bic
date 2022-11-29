@@ -8,6 +8,7 @@ import "Lexer.bic";
 import "Parser.bic";
 import "AST.bic";
 import "CodeGenerator.bic";
+import "IRGenerator.bic";
 
 main(argc : int, argv[] : char*) -> int {
     mut file : std::ifstream = std::ifstream("test.bic");
@@ -20,21 +21,24 @@ main(argc : int, argv[] : char*) -> int {
     
     mut lexer : Lexer* = new Lexer(fileContents); 
     mut parser : Parser* = new Parser(lexer);
-    let root : ASTNode* = parser->Parse(); 
+    let root : ASTNode* = parser->Parse();
+
+    mut irGenerator : IRGenerator* = new IRGenerator();
+    let ir : IRNode* = irGenerator->Generate(root);
 
     mut codeGenerator : CodeGenerator* = new CodeGenerator();
-    let code : std::tuple<std::string, std::string> = codeGenerator->Generate(root);
+    codeGenerator->Generate(ir);
 
-    std::cout << "Generated code:" << std::endl;
-    std::cout << std::get<0>(code) << std::endl;
+    std::cout << "Source:" << std::endl;
+    std::cout << codeGenerator->sourceBuffer << std::endl;
 
-    std::cout << "Generated header:" << std::endl;
-    std::cout << std::get<1>(code) << std::endl;
-    
+    std::cout << "Header:" << std::endl;
+    std::cout << codeGenerator->headerBuffer << std::endl;
+
     del lexer;
     del parser;
     del root;
-    del codeGenerator;
+    del irGenerator;
 
     ret 0;
 }

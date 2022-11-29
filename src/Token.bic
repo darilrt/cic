@@ -94,6 +94,93 @@ enum TokenType {
     ScopeResolution, // ::
 }
 
+TokenTypeToString(t : TokenType) -> std::string {
+    if (t == TokenType::EndOfFile) { ret "EndOfFile"; }
+    if (t == TokenType::Unknown) { ret "Unknown"; }
+    if (t == TokenType::Ident) { ret "Ident"; }
+    if (t == TokenType::Int) { ret "Int"; }
+    if (t == TokenType::Float) { ret "Float"; }
+    if (t == TokenType::Char) { ret "Char"; }
+    if (t == TokenType::String) { ret "String"; }
+    if (t == TokenType::True) { ret "True"; }
+    if (t == TokenType::False) { ret "False"; }
+    if (t == TokenType::Null) { ret "Null"; }
+    if (t == TokenType::If) { ret "If"; }
+    if (t == TokenType::Elif) { ret "Elif"; }
+    if (t == TokenType::Else) { ret "Else"; }
+    if (t == TokenType::While) { ret "While"; }
+    if (t == TokenType::For) { ret "For"; }
+    if (t == TokenType::In) { ret "In"; }
+    if (t == TokenType::Break) { ret "Break"; }
+    if (t == TokenType::Continue) { ret "Continue"; }
+    if (t == TokenType::Ret) { ret "Ret"; }
+    if (t == TokenType::Type) { ret "Type"; }
+    if (t == TokenType::Const) { ret "Const"; }
+    if (t == TokenType::Let) { ret "Let"; }
+    if (t == TokenType::Mut) { ret "Mut"; }
+    if (t == TokenType::Import) { ret "Import"; }
+    if (t == TokenType::Class) { ret "Class"; }
+    if (t == TokenType::Pub) { ret "Pub"; }
+    if (t == TokenType::Priv) { ret "Priv"; }
+    if (t == TokenType::Static) { ret "Static"; }
+    if (t == TokenType::Virtual) { ret "Virtual"; }
+    if (t == TokenType::New) { ret "New"; }
+    if (t == TokenType::Del) { ret "Del"; }
+    if (t == TokenType::Operator) { ret "Operator"; }
+    if (t == TokenType::Enum) { ret "Enum"; }
+    if (t == TokenType::Add) { ret "Add"; }
+    if (t == TokenType::Sub) { ret "Sub"; }
+    if (t == TokenType::Mul) { ret "Mul"; }
+    if (t == TokenType::Div) { ret "Div"; }
+    if (t == TokenType::Mod) { ret "Mod"; }
+    if (t == TokenType::Not) { ret "Not"; }
+    if (t == TokenType::BitNot) { ret "BitNot"; }
+    if (t == TokenType::Amp) { ret "Amp"; }
+    if (t == TokenType::Pipe) { ret "Pipe"; }
+    if (t == TokenType::Xor) { ret "Xor"; }
+    if (t == TokenType::Less) { ret "Less"; }
+    if (t == TokenType::Greater) { ret "Greater"; }
+    if (t == TokenType::And) { ret "And"; }
+    if (t == TokenType::Or) { ret "Or"; }
+    if (t == TokenType::LShift) { ret "LShift"; }
+    if (t == TokenType::RShift) { ret "RShift"; }
+    if (t == TokenType::Assign) { ret "Assign"; }
+    if (t == TokenType::AddAssign) { ret "AddAssign"; }
+    if (t == TokenType::SubAssign) { ret "SubAssign"; }
+    if (t == TokenType::MulAssign) { ret "MulAssign"; }
+    if (t == TokenType::DivAssign) { ret "DivAssign"; }
+    if (t == TokenType::ModAssign) { ret "ModAssign"; }
+    if (t == TokenType::AndAssign) { ret "AndAssign"; }
+    if (t == TokenType::OrAssign) { ret "OrAssign"; }
+    if (t == TokenType::XorAssign) { ret "XorAssign"; }
+    if (t == TokenType::LShiftAssign) { ret "LShiftAssign"; }
+    if (t == TokenType::RShiftAssign) { ret "RShiftAssign"; }
+    if (t == TokenType::Equal) { ret "Equal"; }
+    if (t == TokenType::NotEqual) { ret "NotEqual"; }
+    if (t == TokenType::LessEqual) { ret "LessEqual"; }
+    if (t == TokenType::GreaterEqual) { ret "GreaterEqual"; }
+    if (t == TokenType::Inc) { ret "Inc"; }
+    if (t == TokenType::Dec) { ret "Dec"; }
+    if (t == TokenType::Dot) { ret "Dot"; }
+    if (t == TokenType::Comma) { ret "Comma"; }
+    if (t == TokenType::Colon) { ret "Colon"; }
+    if (t == TokenType::Semicolon) { ret "Semicolon"; }
+    if (t == TokenType::Question) { ret "Question"; }
+    if (t == TokenType::At) { ret "At"; }
+    if (t == TokenType::Hash) { ret "Hash"; }
+    if (t == TokenType::Dollar) { ret "Dollar"; }
+    if (t == TokenType::LParen) { ret "LParen"; }
+    if (t == TokenType::RParen) { ret "RParen"; }
+    if (t == TokenType::LBracket) { ret "LBracket"; }
+    if (t == TokenType::RBracket) { ret "RBracket"; }
+    if (t == TokenType::LBrace) { ret "LBrace"; }
+    if (t == TokenType::RBrace) { ret "RBrace"; }
+    if (t == TokenType::Arrow) { ret "Arrow"; }
+    if (t == TokenType::Ellipsis) { ret "Ellipsis"; }
+
+    ret "Mmmm...";
+}
+
 class Token {
     pub mut tokenType : TokenType;
     pub mut literal : std::string;

@@ -1,19 +1,14 @@
 import "iostream";
 import "vector";
+import "Common.bic";
 import "Token.bic";
 
 // Base class for all AST nodes
 class ASTNode {
-    pub ASTNode() {
-    }
-
-    pub virtual ToString() const -> std::string {
-        ret "ASTNode";
-    }
-
-    pub virtual Get() const -> std::string {
-        ret "ASTNode";
-    }
+    pub ASTNode() {}
+    pub virtual ToString() const -> std::string { ret "ASTNode"; }
+    pub virtual Get() const -> std::string { ret "ASTNode"; }
+    pub virtual GetType() const -> std::string { ret "ASTNode"; }
 }
 
 // Program, contains a list of declarations
@@ -29,7 +24,7 @@ class ASTProgram(pub ASTNode) {
 
         mut i : int = 0;
         while ((i) < .decls.size()) {
-            str += ((.decls[i])->ToString()) + "\n";
+            str += ((.decls[i])->ToString());
 
             if ((i) < ((.decls.size()) - 1)) {
                 str += "\n";
@@ -39,6 +34,14 @@ class ASTProgram(pub ASTNode) {
         }
 
         ret str;
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTProgram";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTProgram";
     }
 }
 
@@ -52,6 +55,14 @@ class ASTConstant(pub ASTNode) {
 
     pub ToString() const -> std::string {
         ret "'" + .value + "'";
+    }
+
+    pub Get() const -> std::string {
+        ret .value;
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTConstant";
     }
 }
 
@@ -69,6 +80,10 @@ class ASTVariable(pub ASTNode) {
 
     pub Get() const -> std::string {
         ret .name;
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTVariable";
     }
 }
 
@@ -92,6 +107,14 @@ class ASTBinaryOp(pub ASTNode) {
     pub ToString() const -> std::string {
         ret "[" + (.left->ToString()) + " " + (.op.ToString()) + " " + (.right->ToString()) + "]";
     }
+
+    pub Get() const -> std::string {
+        ret (.left->Get()) + " " + (.op.literal) + " " + (.right->Get());
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTBinaryOp";
+    }
 }
 
 // Unary operation
@@ -109,7 +132,15 @@ class ASTUnaryOp(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "[" + (.op.ToString()) + " " + (.right->ToString()) + "]";
+        ret "[" + (.op.literal) + " " + (.right->ToString()) + "]";
+    }
+
+    pub Get() const -> std::string {
+        ret (.op.literal) + " " + (.right->Get());
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTUnaryOp";
     }
 }
 
@@ -130,6 +161,14 @@ class ASTIndexOp(pub ASTNode) {
 
     pub ToString() const -> std::string {
         ret "[" + (.left->ToString()) + "[" + (.right->ToString()) + "]]";
+    }
+
+    pub Get() const -> std::string {
+        ret (.left->Get()) + "[" + (.right->Get()) + "]";
+    }
+    
+    pub GetType() const -> std::string {
+        ret "ASTIndexOp";
     }
 }
 
@@ -172,6 +211,28 @@ class ASTFunctionCall(pub ASTNode) {
         str += ")";
         ret str;
     }
+
+    pub Get() const -> std::string {
+        mut str : std::string = (.func->Get()) + "(";
+
+        mut i : int = 0;
+        while ((i) < .args.size()) {
+            str += (.args[i])->Get();
+
+            if ((i) < (.args.size()) - 1) {
+                str += ", "; 
+            }
+
+            i++;
+        }
+
+        str += ")";
+        ret str;
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTFunctionCall";
+    }
 }
 
 // Dot access
@@ -194,6 +255,14 @@ class ASTDotAccess(pub ASTNode) {
     pub ToString() const -> std::string {
         ret "[" + (.left->ToString()) + (.op.ToString()) + (.right->ToString()) + "]";
     }
+
+    pub Get() const -> std::string {
+        ret (.left->Get()) + (.op.literal) + (.right->Get());
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTDotAccess";
+    }
 }
 
 // Scope Resolution
@@ -213,6 +282,14 @@ class ASTScopeResolution(pub ASTNode) {
 
     pub ToString() const -> std::string {
         ret "[" + (.left->ToString()) + "::" + (.right->ToString()) + "]";
+    }
+
+    pub Get() const -> std::string {
+        ret (.left->Get()) + "::" + (.right->Get());
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTScopeResolution";
     }
 }
 
@@ -257,6 +334,24 @@ class ASTTemplateArgs(pub ASTNode) {
     }
 
     pub Get() const -> std::string {
+        mut str : std::string = (.left->Get()) + "<";
+
+        mut i : int = 0;
+        while ((i) < .args.size()) {
+            str += (.args[i])->Get();
+
+            if ((i) < (.args.size()) - 1) {
+                str += ", "; 
+            }
+
+            i++;
+        }
+
+        str += ">";
+        ret str;
+    }
+
+    pub GetType() const -> std::string {
         ret "ASTTemplateArgs";
     }
 }
@@ -276,6 +371,14 @@ class ASTPointerDecl(pub ASTNode) {
     pub ToString() const -> std::string {
         ret (.left->ToString()) + "*";
     }
+
+    pub Get() const -> std::string {
+        ret (.left->Get()) + "*";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTPointerDecl";
+    }
 }
 
 // Reference Declaration
@@ -292,6 +395,14 @@ class ASTReferenceDecl(pub ASTNode) {
 
     pub ToString() const -> std::string {
         ret (.left->ToString()) + "&";
+    }
+
+    pub Get() const -> std::string {
+        ret (.left->Get()) + "&";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTReferenceDecl";
     }
 }
 
@@ -312,6 +423,14 @@ class ASTTypeDecl(pub ASTNode) {
 
     pub ToString() const -> std::string {
         ret (.left->ToString()) + " " + (.right->ToString());
+    }
+
+    pub Get() const -> std::string {
+        ret (.left->Get()) + " " + (.right->Get());
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTTypeDecl";
     }
 }
 
@@ -342,18 +461,29 @@ class ASTBody(pub ASTNode) {
             str += (.decls[i])->ToString();
 
             if ((i) < (.decls.size()) - 1) {
-                str += ", ";
+                str += "\n";
             }
+
+            i++;
         }
 
         str += "}";
         ret str;
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTBody";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTBody";
     }
 }
 
 // Type 
 class ASTType(pub ASTNode) {
     pub mut left : ASTNode*;
+    pub mut isConst : bool = false;
 
     pub ASTType(left : ASTNode*) {
         .left = left;
@@ -368,7 +498,16 @@ class ASTType(pub ASTNode) {
     }
 
     pub Get() const -> std::string {
-        ret (.left->Get());
+        mut str : std::string = "";
+        if (.isConst) {
+            str = "const ";
+        }
+        str += (.left->Get());
+        ret str;
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTType";
     }
 }
 
@@ -389,6 +528,14 @@ class ASTArgDecl(pub ASTNode) {
 
     pub ToString() const -> std::string {
         ret (.right->ToString()) + " " + (.left->ToString());
+    }
+
+    pub Get() const -> std::string {
+        ret (.right->Get()) + " " + (.left->Get());
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTArgDecl";
     }
 }
 
@@ -428,6 +575,53 @@ class ASTTemplateDecl(pub ASTNode) {
         str += ">";
         ret str;
     }
+
+    pub Get() const -> std::string {
+        mut str : std::string = "template<";
+
+        mut i : int = 0;
+        while ((i) < .args.size()) {
+            str += (.args[i])->Get();
+
+            if ((i) < (.args.size()) - 1) {
+                str += ", ";
+            }
+
+            i++;
+        }
+
+        str += ">";
+        ret str;
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTTemplateDecl";
+    }
+}
+
+// Expression
+class ASTExpr(pub ASTNode) {
+    pub mut expr : ASTNode*;
+
+    pub ASTExpr(expr : ASTNode*) {
+        .expr = expr;
+    }
+
+    pub ~ASTExpr() {
+        del .expr;
+    }
+
+    pub ToString() const -> std::string {
+        ret (.expr->ToString());
+    }
+
+    pub Get() const -> std::string {
+        ret (.expr->Get());
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTExpr";
+    }
 }
 
 // Function Declaration 
@@ -437,6 +631,7 @@ class ASTFunctionDecl(pub ASTNode) {
     pub mut args : std::vector<ASTArgDecl*>;
     pub mut fType : ASTType*;
     pub mut body : ASTBody*;
+    pub mut attr : int;
 
     pub ASTFunctionDecl(
             name : ASTVariable*,
@@ -463,7 +658,13 @@ class ASTFunctionDecl(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        mut str : std::string = (.templateDecl->ToString()) + " " + (.fType->ToString()) + " " + (.name->ToString()) + "(";
+        mut str : std::string = "";
+
+        if (.templateDecl != null) {
+            str += (.templateDecl->ToString()) + " ";
+        }
+
+        str += (.fType->ToString()) + " " + (.name->ToString()) + "(";
 
         mut i : int = 0;
         while ((i) < .args.size()) {
@@ -478,5 +679,131 @@ class ASTFunctionDecl(pub ASTNode) {
 
         str += ") " + (.body->ToString());
         ret str;
+    }
+    
+    pub Get() const -> std::string {
+        ret "ASTFunctionDecl";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTFunctionDecl";
+    }
+}
+
+// Return Statement
+class ASTReturn(pub ASTNode) {
+    pub mut expr : ASTExpr*;
+
+    pub ASTReturn(expr : ASTExpr*) {
+        .expr = expr;
+    }
+
+    pub ~ASTReturn() {
+        del .expr;
+    }
+
+    pub ToString() const -> std::string {
+        ret "return " + (.expr->ToString()) + ";";
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTReturn";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTReturn";
+    }
+}
+
+// If Statement
+class ASTIf(pub ASTNode) {
+    pub mut expr : ASTExpr*;
+    pub mut body : ASTBody*;
+    pub mut elifs : std::vector<ASTIf*>;
+    pub mut elseBody : ASTBody*;
+
+    pub ASTIf(expr : ASTExpr*, body : ASTBody*) {
+        .expr = expr;
+        .body = body;
+    }
+
+    pub ASTIf(expr : ASTExpr*, body : ASTBody*, elifs : std::vector<ASTIf*>, elseBody : ASTBody*) {
+        .expr = expr;
+        .body = body;
+        .elifs = elifs;
+        .elseBody = elseBody;
+    }
+
+    pub ~ASTIf() {
+        del .expr;
+        del .body;
+        del .elseBody;
+
+        mut i : int = 0;
+        while ((i) < .elifs.size()) {
+            del .elifs[i];
+        }
+    }
+
+    pub ToString() const -> std::string {
+        ret "if (" + (.expr->ToString()) + ") " + (.body->ToString());
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTIf";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTIf";
+    }
+}
+
+// Variable Declaration
+class ASTVariableDecl(pub ASTNode) {
+    pub mut name : ASTNode*;
+    pub mut vType : ASTType*;
+    pub mut value : ASTExpr*;
+    pub mut isMutable : bool;
+
+    pub ASTVariableDecl(
+            name : ASTNode*,
+            vType : ASTType*,
+            value : ASTExpr*,
+            isMutable : bool) {
+        .name = name;
+        .vType = vType;
+        .value = value;
+        .isMutable = isMutable;
+    }
+
+    pub ~ASTVariableDecl() {
+        del .name;
+        del .vType;
+        del .value;
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "";
+
+        if (.isMutable) {
+            str += "mut ";
+        }
+
+        str += (.vType->ToString()) + " " + (.name->ToString());
+
+        if (.value != null) {
+            str += " = " + (.value->ToString());
+        }
+
+        str += ";";
+        ret str;
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTVariableDecl";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTVariableDecl";
     }
 }

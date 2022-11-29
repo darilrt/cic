@@ -246,7 +246,7 @@ Token Lexer::ParseIdentifier() {
         return Token(TokenType::If, "if");
     }
     if (identifier == "elif") {
-        return Token(TokenType::Else, "elif");
+        return Token(TokenType::Elif, "elif");
     }
     if (identifier == "else") {
         return Token(TokenType::Else, "else");

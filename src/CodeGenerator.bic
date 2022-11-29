@@ -1,199 +1,48 @@
 import "iostream";
-import "vector";
-import "tuple";
-import "AST.bic";
+import "IR.bic";
+import "Common.bic";
 
-// Base class for all IR nodes
-class IRNode {
-    pub IRNode() {
-    }
-
-    pub virtual ToString() const -> std::string {
-        ret "IRNode";
-    }
-}
-
-// Program, contains a list of declarations
-class IRProgram(pub IRNode) {
-    pub mut decls : std::vector<IRNode*>;
-
-    pub IRProgram(declList : std::vector<IRNode*>) {
-        .decls = declList;
-    }
-
-    pub ToString() const -> std::string {
-        mut str : std::string = "";
-
-        mut i : int = 0;
-        while ((i) < .decls.size()) {
-            str += ((.decls[i])->ToString()) + "\n";
-
-            if ((i) < ((.decls.size()) - 1)) {
-                str += "\n";
-            }
-
-            i++;
-        }
-
-        ret str;
-    }
-}
-
-// Body, contains a list of declarations or statements
-class IRBody(pub IRNode) {
-    pub mut decls : std::vector<IRNode*>;
-
-    pub IRProgram() {
-    }
-
-    pub ToString() const -> std::string {
-        mut str : std::string = "";
-
-        mut i : int = 0;
-        while ((i) < .decls.size()) {
-            str += ((.decls[i])->ToString()) + "\n";
-
-            if ((i) < ((.decls.size()) - 1)) {
-                str += "\n";
-            }
-
-            i++;
-        }
-
-        ret str;
-    }
-}
-
-class FunctionAttr {
-    pub static let None : int = 0;
-    pub static let Static : int = 1;
-    pub static let Virtual : int = 2;
-    pub static let Const : int = 4;
-}
-
-class IRFunction(pub IRNode) {
-    pub mut name : std::string;
-    pub mut returnType : std::string;
-    pub mut params : std::vector<std::tuple<std::string, std::string> >;
-    pub mut body : IRBody*;
-
-    pub mut attr : int = FunctionAttr::None;
-
-    pub ToString() const -> std::string {
-        mut str : std::string = "";
-
-        if ((.attr & FunctionAttr::Static) != 0) {
-            str += "static ";
-        }
-
-        if ((.attr & FunctionAttr::Virtual) != 0) {
-            str += "virtual ";
-        }
-
-        str += .returnType + " " + .name + "(";
-
-        mut i : int = 0;
-        while ((i) < .params.size()) {
-            str += (std::get<0>(.params[i])) + " " + (std::get<1>(.params[i]));
-
-            if ((i) < ((.params.size()) - 1)) {
-                str += ", ";
-            }
-
-            i++;
-        }
-
-        str += ")";
-
-        if ((.attr & FunctionAttr::Const) != 0) {
-            str += " const";
-        }
-
-        str += " ";
-        
-        str += .body->ToString();
-
-        ret str;
-    }
-}
-
-IsA<T : type>(node : ASTNode*) -> bool {
+IsA<T : type>(node : IRNode*) -> bool {
     ret (dynamic_cast<T*>(node)) != null;
 }
 
-As<T : type>(node : ASTNode*) -> T* {
+As<T : type>(node : IRNode*) -> T* {
     ret dynamic_cast<T*>(node);
 }
 
 class CodeGenerator {
-    pub Generate(ast : ASTNode*) -> std::tuple<std::string, std::string> {
+    pub mut sourceBuffer : std::string = "";
+    pub mut headerBuffer : std::string = "";
+    pub mut indentCount : int = 0;
+    pub mut indent : std::string = "";
+
+    pub Generate(ir : IRNode*) -> void {
         std::cout << "Generating code..." << std::endl;
 
-        let ir : IRNode* = TranslateNode(ast);
-
-        mut code : std::string = ir->ToString();
-        mut header : std::string = ""; 
-
-        ret std::make_tuple(code, header);
+        if (IsA<IRProgram>(ir)) {
+            GenerateProgram(As<IRProgram>(ir));
+        }
     }
 
-    TranslateNode(node : ASTNode*) -> IRNode* {
-        if (IsA<ASTProgram>(node)) {
-            ret TranslateProgram(As<ASTProgram>(node));
-        }
-        if (IsA<ASTBody>(node)) {
-            ret TranslateBody(As<ASTBody>(node));
-        }
-        if (IsA<ASTFunctionDecl>(node)) {
-            ret TranslateFunction(As<ASTFunctionDecl>(node));
-        }
-        std::cout << "Unknown node type: " << node->ToString() << std::endl;
-        ret null;
-    }
-
-    TranslateProgram(node : ASTProgram*) -> IRNode* {
-        mut decls : std::vector<IRNode*>;
-
+    Indent() -> void {
         mut i : int = 0;
-        while ((i) < node->decls.size()) {
-            decls.push_back(TranslateNode(node->decls[i]));
+        while ((i) < indentCount) {
+            indent += "    ";
             i++;
         }
-
-        ret new IRProgram(decls);
     }
 
-    TranslateBody(body : ASTBody*) -> IRBody* {
-        mut irBody : IRBody* = new IRBody();
-
-        mut i : int = 0;
-        while ((i) < body->decls.size()) {
-            let decl : ASTNode* = body->decls[i];
-            let irDecl : IRNode* = TranslateNode(decl);
-
-            irBody->decls.push_back(irDecl);
-
-            i++;
-        }
-
-        ret irBody;
+    PushIndent() -> void {
+        indentCount++;
+        Indent();
     }
 
-    TranslateFunction(funcDecl : ASTFunctionDecl*) -> IRNode* {
-        let func : IRFunction* = new IRFunction();
-        func->name = funcDecl->name->Get();
-        func->returnType = funcDecl->fType->Get();
-        
-        mut i : int = 0;
-        while ((i) < funcDecl->args.size()) {
-            let param : ASTArgDecl* = funcDecl->args[i];
-            let irParam : std::tuple<std::string, std::string> = std::make_tuple(param->right->Get(), param->left->Get());
-            func->params.push_back(irParam);
-            i++;
-        }
+    PopIndent() -> void {
+        indentCount--;
+        Indent();
+    }
 
-        func->body = TranslateBody(funcDecl->body);
+    GenerateProgram(node : IRProgram*) -> void {
 
-        ret func;
     }
 }
