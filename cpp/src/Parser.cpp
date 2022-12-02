@@ -12,6 +12,10 @@ Parser::Parser(Lexer* lexer) {
     this->tokens = lexer->Parse();
     this->current = 0;
     this->currentToken = &this->tokens[this->current];
+    while ((this->currentToken->tokenType) == TokenType::NewLine) {
+        this->current += 1;
+        this->currentToken = &this->tokens[this->current];
+    }
     this->prevToken = 0;
 }
 ASTNode* Parser::Parse() {
@@ -496,6 +500,56 @@ ASTIf* Parser::IfStmt() {
     }
     return new ASTIf(cond, body, elifs, elseBody);
 }
+ASTWhile* Parser::WhileStmt() {
+    this->Eat(TokenType::While);
+    ASTExpr* const cond = this->Expr();
+    ASTBody* const body = this->Body(BodyType::Impl);
+    return new ASTWhile(cond, body);
+}
+ASTImport* Parser::ImportStmt() {
+    this->Eat(TokenType::Import);
+    Token* const path = this->currentToken;
+    this->Eat(TokenType::String);
+    return new ASTImport(path);
+}
+ASTInherArg* Parser::InherArg() {
+    Token* protection = 0;
+    if (this->IsType(TokenType::Priv)) {
+        protection = this->currentToken;
+        this->Eat(TokenType::Priv);
+    } else if (this->IsType(TokenType::Pub)) {
+        protection = this->currentToken;
+        this->Eat(TokenType::Pub);
+    }
+    ASTNode* const name = this->ScopeResolution();
+    return new ASTInherArg(protection, name);
+}
+std::vector<ASTInherArg*> Parser::InherArgs() {
+    std::vector<ASTInherArg*> args;
+    args.push_back(this->InherArg());
+    while (this->IsType(TokenType::Comma)) {
+        this->Eat(TokenType::Comma);
+        args.push_back(this->InherArg());
+    }
+    return args;
+}
+ASTClassDecl* Parser::ClassDecl() {
+    this->Eat(TokenType::Class);
+    ASTVariable* const name = new ASTVariable(this->currentToken->literal);
+    this->Eat(TokenType::Ident);
+    ASTTemplateDecl* tmp = 0;
+    if (this->IsType(TokenType::Less)) {
+        tmp = this->TemplateDecl();
+    }
+    std::vector<ASTInherArg*> args;
+    if (this->IsType(TokenType::LParen)) {
+        this->Eat(TokenType::LParen);
+        args = this->InherArgs();
+        this->Eat(TokenType::RParen);
+    }
+    ASTBody* const body = this->Body(BodyType::Impl);
+    return new ASTClassDecl(name, tmp, args, body);
+}
 ASTNode* Parser::DeclStatement() {
     if (this->IsType(TokenType::Semicolon)) {
         this->Eat(TokenType::Semicolon);
@@ -506,6 +560,12 @@ ASTNode* Parser::DeclStatement() {
         return node;
     } else if (this->IsType(TokenType::Ident)) {
         return this->FunctionDecl();
+    } else if (this->IsType(TokenType::Import)) {
+        return this->ImportStmt();
+    } else if (this->IsType(TokenType::Class)) {
+        return this->ClassDecl();
+    } else {
+        this->Error("Expected declaration statement");
     }
     return 0;
 }
@@ -521,6 +581,16 @@ ASTNode* Parser::ImplStatement() {
         this->EatNewLine();
     } else if (this->IsType(TokenType::If)) {
         node = this->IfStmt();
+    } else if (this->IsType(TokenType::While)) {
+        node = this->WhileStmt();
+    } else if (this->IsType(TokenType::Break)) {
+        this->Eat(TokenType::Break);
+        node = new ASTBreak();
+        this->EatNewLine();
+    } else if (this->IsType(TokenType::Continue)) {
+        this->Eat(TokenType::Continue);
+        node = new ASTContinue();
+        this->EatNewLine();
     } else {
         node = this->Expr();
         this->EatNewLine();

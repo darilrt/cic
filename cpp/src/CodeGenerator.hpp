@@ -20,4 +20,6 @@ protected: void PopIndent();
 protected: void GenerateProgram(IRProgram* node);
 protected: void GenerateDeclaration(IRNode* node);
 protected: void GenerateFunction(IRFunction* node);
+protected: void GenerateImport(IRImport* node);
+protected: void GenerateClass(IRClass* node);
 };

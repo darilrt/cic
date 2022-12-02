@@ -33,6 +33,12 @@ class Parser {
         .tokens = lexer->Parse();
         .current = 0;
         .currentToken = &.tokens[.current];
+        
+        while ((.currentToken->tokenType) == TokenType::NewLine) {
+            .current += 1;
+            .currentToken = &.tokens[.current];
+        }
+
         .prevToken = null;
     }
 
@@ -712,9 +718,82 @@ class Parser {
 
         ret new ASTIf(cond, body, elifs, elseBody);
     }
-    
+
+    // WhileStmt: 'while' Expr Body
+    WhileStmt() -> ASTWhile* {
+        .Eat(TokenType::While);
+        let cond : ASTExpr* = .Expr();
+        let body : ASTBody* = .Body(BodyType::Impl);
+
+        ret new ASTWhile(cond, body);
+    }
+
+    // ImportStmt: 'import' String
+    ImportStmt() -> ASTImport* {
+        .Eat(TokenType::Import);
+        let path : Token* = .currentToken;
+        .Eat(TokenType::String);
+
+        ret new ASTImport(path);
+    }
+
+    // InherArg: ('priv' | 'pub')? ScopeResolution
+    InherArg() -> ASTInherArg* {
+        mut protection : Token* = null;
+
+        if (.IsType(TokenType::Priv)) {
+            protection = .currentToken;
+            .Eat(TokenType::Priv);
+        }
+        elif (.IsType(TokenType::Pub)) {
+            protection = .currentToken;
+            .Eat(TokenType::Pub);
+        }
+
+        let name : ASTNode* = .ScopeResolution();
+        
+        ret new ASTInherArg(protection, name);
+    }
+
+    // InherArgs:  InherArg (',' InherArg)*
+    InherArgs() -> std::vector<ASTInherArg*> {
+        mut args : std::vector<ASTInherArg*>;
+
+        args.push_back(.InherArg());
+
+        while (.IsType(TokenType::Comma)) {
+            .Eat(TokenType::Comma);
+            args.push_back(.InherArg());
+        }
+
+        ret args;
+    }
+
+    // ClassDecl: 'class' Identifier TemplateDecl? ('(' InherArgs ')')? Body 
+    ClassDecl() -> ASTClassDecl* {
+        .Eat(TokenType::Class);
+        let name : ASTVariable* = new ASTVariable(.currentToken->literal);
+        .Eat(TokenType::Ident);
+
+        mut tmp : ASTTemplateDecl* = null;
+        if (.IsType(TokenType::Less)) {
+            tmp = .TemplateDecl();
+        }
+
+        mut args : std::vector<ASTInherArg*>;
+        if (.IsType(TokenType::LParen)) {
+            .Eat(TokenType::LParen);
+            args = .InherArgs();
+            .Eat(TokenType::RParen);
+        }
+
+        let body : ASTBody* = .Body(BodyType::Impl);
+
+        ret new ASTClassDecl(name, tmp, args, body);
+    }
+
     // DeclStatement:
-    //     VariableDecl
+    //     VariableDeclc
     //     | FunctionDecl
     DeclStatement() -> ASTNode* {
         if (.IsType(TokenType::Semicolon)) {
@@ -728,6 +807,15 @@ class Parser {
         }
         elif (.IsType(TokenType::Ident)) {
             ret .FunctionDecl();
+        }
+        elif (.IsType(TokenType::Import)) {
+            ret .ImportStmt();
+        }
+        elif (.IsType(TokenType::Class)) {
+            ret .ClassDecl();
+        }
+        else {
+            .Error("Expected declaration statement");
         }
 
         ret null;
@@ -754,6 +842,19 @@ class Parser {
         }
         elif (.IsType(TokenType::If)) {
             node = .IfStmt();
+        }
+        elif (.IsType(TokenType::While)) {
+            node = .WhileStmt();
+        }
+        elif (.IsType(TokenType::Break)) {
+            .Eat(TokenType::Break);
+            node = new ASTBreak();
+            .EatNewLine();
+        }
+        elif (.IsType(TokenType::Continue)) {
+            .Eat(TokenType::Continue);
+            node = new ASTContinue();
+            .EatNewLine();
         }
         else {
             node = .Expr();

@@ -40,6 +40,21 @@ class IRGenerator {
         if (IsA<ASTIf>(node)) {
             ret TranslateIf(As<ASTIf>(node));
         }
+        if (IsA<ASTWhile>(node)) {
+            ret TranslateWhile(As<ASTWhile>(node));
+        }
+        if (IsA<ASTBreak>(node)) {
+            ret TranslateBreak(As<ASTBreak>(node));
+        }
+        if (IsA<ASTContinue>(node)) {
+            ret TranslateContinue(As<ASTContinue>(node));
+        }   
+        if (IsA<ASTImport>(node)) {
+            ret TranslateImport(As<ASTImport>(node));
+        }
+        if (IsA<ASTClassDecl>(node)) {
+            ret TranslateClass(As<ASTClassDecl>(node));
+        }
 
         if (node != null) {
             std::cout << "Unknown node type: " << node->GetType() << std::endl;
@@ -159,5 +174,56 @@ class IRGenerator {
         }
 
         ret irIf;
+    }
+
+    TranslateWhile(whileNode : ASTWhile*) -> IRWhile* {
+        let irWhile : IRWhile* = new IRWhile();
+        irWhile->cond = TranslateExpr(whileNode->expr);
+        irWhile->body = TranslateBody(whileNode->body);
+
+        ret irWhile;
+    }
+
+    TranslateBreak(breakNode : ASTBreak*) -> IRBreak* {
+        ret new IRBreak();
+    }
+
+    TranslateContinue(continueNode : ASTContinue*) -> IRContinue* {
+        ret new IRContinue();
+    }
+
+    TranslateImport(importNode : ASTImport*) -> IRImport* {
+        let irImport : IRImport* = new IRImport();
+        irImport->path = importNode->path->literal;
+
+        ret irImport;
+    }
+
+    TranslateClass(classNode : ASTClassDecl*) -> IRClass* {
+        let irClass : IRClass* = new IRClass();
+        irClass->name = classNode->name->Get();
+        irClass->body = TranslateBody(classNode->body);
+
+        mut i : int = 0;
+        while ((i) < classNode->inherits.size()) {
+            let inherit : ASTInherArg* = classNode->inherits[i];
+            irClass->inherits.push_back(inherit->ToString());
+
+            i++;
+        }
+
+        let tmp : ASTTemplateDecl* = classNode->templateDecl;
+        
+        if (tmp) {
+            i = 0;
+            while ((i) < tmp->args.size()) {
+                let arg : ASTArgDecl* = tmp->args[i];
+                let irArg : std::tuple<std::string, std::string> = std::make_tuple(arg->right->Get(), arg->left->Get());
+                irClass->templateParams.push_back(irArg);
+                i++;
+            }
+        }
+
+        ret irClass;
     }
 }

@@ -42,10 +42,33 @@ public: std::vector<IRIf*> elifs;
 public: IRBody* elseBody;
 public: [[nodiscard]] std::string ToString() const ;
 };
+class IRWhile : public IRNode {
+public: IRExpr* cond;
+public: IRBody* body;
+public: [[nodiscard]] std::string ToString() const ;
+};
+class IRBreak : public IRNode {
+public: [[nodiscard]] std::string ToString() const ;
+};
+class IRContinue : public IRNode {
+public: [[nodiscard]] std::string ToString() const ;
+};
 class IRVariable : public IRNode {
 public: std::string name;
 public: std::string vType;
 public: IRExpr* value;
 public: int attr;
+public: [[nodiscard]] std::string ToString() const ;
+};
+class IRImport : public IRNode {
+public: std::string path;
+public: [[nodiscard]] std::string ToString() const ;
+};
+class IRClass : public IRNode {
+public: std::string name;
+public: std::vector<std::tuple<std::string, std::string>> templateParams;
+public: IRBody* body;
+public: int attr = Attribute::None;
+public: std::vector<std::string> inherits;
 public: [[nodiscard]] std::string ToString() const ;
 };

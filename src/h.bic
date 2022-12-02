@@ -1,0 +1,105 @@
+import "iostream";
+import "vector";
+import "fstream";
+import "tuple";
+
+import "Token.bic";
+import "Lexer.bic";
+import "Parser.bic";
+import "AST.bic";
+import "CodeGenerator.bic";
+import "IRGenerator.bic";
+
+class ProgramOptions {
+    pub mut input : std::string = "";
+    pub mut output : std::string = "";
+}
+
+// parse args
+ParseArgs(args : std::vector<std::string>) -> ProgramOptions {
+    mut options : ProgramOptions;
+    
+    mut i : int = 1;
+    while ((i) < (args.size())) {
+        if (args[i] == "-o") {
+            i++;
+            options.output = args[i];
+        } else {
+            options.input = args[i];
+        }
+        i++;
+    }
+
+    ret options;
+}
+
+main(argc : int, argv[] : char*) -> int {
+    mut args : std::vector<std::string>;
+    mut i : int = 0;
+    while ((i) < argc) {
+        args.push_back(argv[i]);
+        i++;
+    }
+
+    let options : ProgramOptions = ParseArgs(args);
+
+    if (options.input == "") {
+        std::cout << "No input file specified" << std::endl;
+        ret 1;
+    }
+
+    mut file : std::ifstream = std::ifstream(options.input);
+    mut fileContents : std::string = "";
+    mut line : std::string = "";
+
+    while (std::getline(file, line)) {
+        fileContents += line + "\n";
+    }
+    
+    mut lexer : Lexer* = new Lexer(fileContents); 
+    mut parser : Parser* = new Parser(lexer);
+    let root : ASTNode* = parser->Parse();
+
+    mut irGenerator : IRGenerator* = new IRGenerator();
+    let ir : IRNode* = irGenerator->Generate(root);
+
+    mut codeGenerator : CodeGenerator* = new CodeGenerator();
+    codeGenerator->Generate(ir);
+
+    mut output : std::string = options.output;
+
+    if (output == "stdout") {
+        std::cout << "#pragma once" << std::endl;
+        std::cout << codeGenerator->headerBuffer;
+
+        std::cout << "#include \"" << output << ".hpp\"" << std::endl;
+        std::cout << codeGenerator->sourceBuffer;
+    } else {
+        if (output == "") {
+            let dotIndex : int = options.input.find_last_of(".");
+            output = options.input.substr(0, dotIndex);
+            
+            std::cout << "No output file specified, using " << output << std::endl;
+        }
+
+        mut outputSource : std::ofstream = std::ofstream(output + ".cpp");
+        outputSource << "#include \"" << output << ".h\"" << std::endl;
+        outputSource << codeGenerator->sourceBuffer;
+
+        mut outputHeader : std::ofstream = std::ofstream(output + ".h");
+        outputHeader << "#pragma once" << std::endl;
+        outputHeader << codeGenerator->headerBuffer;
+
+        outputSource.close();
+        outputHeader.close();
+    }
+
+    del lexer;
+    del parser;
+    del root;
+    del ir;
+    del irGenerator;
+    del codeGenerator;
+
+    ret 0;
+}

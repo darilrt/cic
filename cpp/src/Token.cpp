@@ -7,6 +7,9 @@ std::string TokenTypeToString(TokenType t) {
     if (t == TokenType::Unknown) {
         return "Unknown";
     }
+    if (t == TokenType::NewLine) {
+        return "NewLine";
+    }
     if (t == TokenType::Ident) {
         return "Ident";
     }
@@ -30,6 +33,9 @@ std::string TokenTypeToString(TokenType t) {
     }
     if (t == TokenType::Null) {
         return "Null";
+    }
+    if (t == TokenType::StartKeyword) {
+        return "StartKeyword";
     }
     if (t == TokenType::If) {
         return "If";
@@ -99,6 +105,9 @@ std::string TokenTypeToString(TokenType t) {
     }
     if (t == TokenType::Enum) {
         return "Enum";
+    }
+    if (t == TokenType::EndKeyword) {
+        return "EndKeyword";
     }
     if (t == TokenType::Add) {
         return "Add";
@@ -247,8 +256,8 @@ std::string TokenTypeToString(TokenType t) {
     if (t == TokenType::Ellipsis) {
         return "Ellipsis";
     }
-    if (t == TokenType::NewLine) {
-        return "NewLine";
+    if (t == TokenType::ScopeResolution) {
+        return "ScopeResolution";
     }
     return "Mmmm...";
 }

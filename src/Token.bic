@@ -98,7 +98,10 @@ enum TokenType {
 TokenTypeToString(t : TokenType) -> std::string {
     if (t == TokenType::EndOfFile) { ret "EndOfFile"; }
     if (t == TokenType::Unknown) { ret "Unknown"; }
+    if (t == TokenType::NewLine) { ret "NewLine"; }
+    
     if (t == TokenType::Ident) { ret "Ident"; }
+
     if (t == TokenType::Int) { ret "Int"; }
     if (t == TokenType::Float) { ret "Float"; }
     if (t == TokenType::Char) { ret "Char"; }
@@ -106,6 +109,8 @@ TokenTypeToString(t : TokenType) -> std::string {
     if (t == TokenType::True) { ret "True"; }
     if (t == TokenType::False) { ret "False"; }
     if (t == TokenType::Null) { ret "Null"; }
+
+    if (t == TokenType::StartKeyword) { ret "StartKeyword"; }
     if (t == TokenType::If) { ret "If"; }
     if (t == TokenType::Elif) { ret "Elif"; }
     if (t == TokenType::Else) { ret "Else"; }
@@ -129,6 +134,8 @@ TokenTypeToString(t : TokenType) -> std::string {
     if (t == TokenType::Del) { ret "Del"; }
     if (t == TokenType::Operator) { ret "Operator"; }
     if (t == TokenType::Enum) { ret "Enum"; }
+    if (t == TokenType::EndKeyword) { ret "EndKeyword"; }
+
     if (t == TokenType::Add) { ret "Add"; }
     if (t == TokenType::Sub) { ret "Sub"; }
     if (t == TokenType::Mul) { ret "Mul"; }
@@ -178,7 +185,7 @@ TokenTypeToString(t : TokenType) -> std::string {
     if (t == TokenType::RBrace) { ret "RBrace"; }
     if (t == TokenType::Arrow) { ret "Arrow"; }
     if (t == TokenType::Ellipsis) { ret "Ellipsis"; }
-    if (t == TokenType::NewLine) { ret "NewLine"; }
+    if (t == TokenType::ScopeResolution) { ret "ScopeResolution"; }
 
     ret "Mmmm...";
 }

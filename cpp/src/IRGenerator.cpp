@@ -30,6 +30,21 @@ IRNode* IRGenerator::TranslateNode(ASTNode* node) {
     if (IsA<ASTIf>(node)) {
         return TranslateIf(As<ASTIf>(node));
     }
+    if (IsA<ASTWhile>(node)) {
+        return TranslateWhile(As<ASTWhile>(node));
+    }
+    if (IsA<ASTBreak>(node)) {
+        return TranslateBreak(As<ASTBreak>(node));
+    }
+    if (IsA<ASTContinue>(node)) {
+        return TranslateContinue(As<ASTContinue>(node));
+    }
+    if (IsA<ASTImport>(node)) {
+        return TranslateImport(As<ASTImport>(node));
+    }
+    if (IsA<ASTClassDecl>(node)) {
+        return TranslateClass(As<ASTClassDecl>(node));
+    }
     if (node != 0) {
         std::cout << "Unknown node type: " << node->GetType() << std::endl;
     } else {
@@ -119,4 +134,43 @@ IRIf* IRGenerator::TranslateIf(ASTIf* ifNode) {
         irIf->elseBody = TranslateBody(ifNode->elseBody);
     }
     return irIf;
+}
+IRWhile* IRGenerator::TranslateWhile(ASTWhile* whileNode) {
+    IRWhile* const irWhile = new IRWhile();
+    irWhile->cond = TranslateExpr(whileNode->expr);
+    irWhile->body = TranslateBody(whileNode->body);
+    return irWhile;
+}
+IRBreak* IRGenerator::TranslateBreak(ASTBreak* breakNode) {
+    return new IRBreak();
+}
+IRContinue* IRGenerator::TranslateContinue(ASTContinue* continueNode) {
+    return new IRContinue();
+}
+IRImport* IRGenerator::TranslateImport(ASTImport* importNode) {
+    IRImport* const irImport = new IRImport();
+    irImport->path = importNode->path->literal;
+    return irImport;
+}
+IRClass* IRGenerator::TranslateClass(ASTClassDecl* classNode) {
+    IRClass* const irClass = new IRClass();
+    irClass->name = classNode->name->Get();
+    irClass->body = TranslateBody(classNode->body);
+    int i = 0;
+    while ((i) < classNode->inherits.size()) {
+        ASTInherArg* const inherit = classNode->inherits[i];
+        irClass->inherits.push_back(inherit->ToString());
+        i++;
+    }
+    ASTTemplateDecl* const tmp = classNode->templateDecl;
+    if (tmp) {
+        i = 0;
+        while ((i) < tmp->args.size()) {
+            ASTArgDecl* const arg = tmp->args[i];
+            std::tuple<std::string, std::string> const irArg = std::make_tuple(arg->right->Get(), arg->left->Get());
+            irClass->templateParams.push_back(irArg);
+            i++;
+        }
+    }
+    return irClass;
 }

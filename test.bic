@@ -1,12 +1,10 @@
-print<T : type>(v : T) -> void {
-    std::cout << v << std::endl
+// this file contains code for test language features
+import "iostream"
+
+class String<T : int>(pub A, priv B, C) {
 }
 
 main() -> int {
-    mut a : int = 10
-    mut b : int = 25
-    mut c : int = a + b
-
-    print(c)
+    std::cout << "Hello, world!" << std::endl
     ret 0
 }

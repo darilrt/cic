@@ -1,4 +1,4 @@
-#include "Bic.hpp"
+#include "h.hpp"
 #include "iostream"
 #include "vector"
 #include "fstream"
@@ -48,8 +48,27 @@ int main(int argc, char* argv[]) {
     IRNode* const ir = irGenerator->Generate(root);
     CodeGenerator* codeGenerator = new CodeGenerator();
     codeGenerator->Generate(ir);
-    std::cout << codeGenerator->headerBuffer << std::endl;
-    std::cout << codeGenerator->sourceBuffer << std::endl;
+    std::string output = options.output;
+    if (output == "stdout") {
+        std::cout << "#pragma once" << std::endl;
+        std::cout << codeGenerator->headerBuffer;
+        std::cout << "#include \"" << output << ".hpp\"" << std::endl;
+        std::cout << codeGenerator->sourceBuffer;
+    } else {
+        if (output == "") {
+            int const dotIndex = options.input.find_last_of(".");
+            output = options.input.substr(0, dotIndex);
+            std::cout << "No output file specified, using " << output << std::endl;
+        }
+        std::ofstream outputSource = std::ofstream(output + ".cpp");
+        outputSource << "#include \"" << output << ".h\"" << std::endl;
+        outputSource << codeGenerator->sourceBuffer;
+        std::ofstream outputHeader = std::ofstream(output + ".h");
+        outputHeader << "#pragma once" << std::endl;
+        outputHeader << codeGenerator->headerBuffer;
+        outputSource.close();
+        outputHeader.close();
+    }
     delete lexer;
     delete parser;
     delete root;

@@ -485,6 +485,41 @@ std::string ASTIf::Get()  const {
 std::string ASTIf::GetType()  const {
     return "ASTIf";
 }
+ASTWhile::ASTWhile(ASTExpr* expr, ASTBody* body) {
+    this->expr = expr;
+    this->body = body;
+}
+ASTWhile::ASTWhile() {
+    delete this->expr;
+    delete this->body;
+}
+std::string ASTWhile::ToString()  const {
+    return "while (" + (this->expr->ToString()) + ") " + (this->body->ToString());
+}
+std::string ASTWhile::Get()  const {
+    return "ASTWhile";
+}
+std::string ASTWhile::GetType()  const {
+    return "ASTWhile";
+}
+std::string ASTBreak::ToString()  const {
+    return "break;";
+}
+std::string ASTBreak::Get()  const {
+    return "ASTBreak";
+}
+std::string ASTBreak::GetType()  const {
+    return "ASTBreak";
+}
+std::string ASTContinue::ToString()  const {
+    return "continue;";
+}
+std::string ASTContinue::Get()  const {
+    return "ASTContinue";
+}
+std::string ASTContinue::GetType()  const {
+    return "ASTContinue";
+}
 ASTVariableDecl::ASTVariableDecl(ASTNode* name, ASTType* vType, ASTExpr* value, bool isMutable) {
     this->name = name;
     this->vType = vType;
@@ -513,4 +548,77 @@ std::string ASTVariableDecl::Get()  const {
 }
 std::string ASTVariableDecl::GetType()  const {
     return "ASTVariableDecl";
+}
+ASTImport::ASTImport(Token* path) {
+    this->path = path;
+}
+std::string ASTImport::ToString()  const {
+    return "import " + (this->path->literal) + ";";
+}
+std::string ASTImport::Get()  const {
+    return "ASTImport";
+}
+std::string ASTImport::GetType()  const {
+    return "ASTImport";
+}
+ASTInherArg::ASTInherArg(Token* protection, ASTNode* name) {
+    this->protection = protection;
+    this->name = name;
+}
+std::string ASTInherArg::ToString()  const {
+    std::string str = "";
+    if (this->protection == 0) {
+        str += "protected ";
+    } else if (this->protection->tokenType == TokenType::Pub) {
+        str += "public ";
+    } else if (this->protection->tokenType == TokenType::Priv) {
+        str += "private ";
+    }
+    return str + (this->name->Get());
+}
+std::string ASTInherArg::Get()  const {
+    return "ASTInherArg";
+}
+std::string ASTInherArg::GetType()  const {
+    return "ASTInherArg";
+}
+ASTClassDecl::ASTClassDecl(ASTNode* name, ASTTemplateDecl* templateDecl, std::vector<ASTInherArg*> inherits, ASTBody* body) {
+    this->name = name;
+    this->templateDecl = templateDecl;
+    this->inherits = inherits;
+    this->body = body;
+}
+ASTClassDecl::ASTClassDecl() {
+    delete this->name;
+    delete this->templateDecl;
+    delete this->body;
+    int i = 0;
+    while ((i) < this->inherits.size()) {
+        delete this->inherits[i];
+    }
+}
+std::string ASTClassDecl::ToString()  const {
+    std::string str = "class " + (this->name->ToString());
+    if (this->templateDecl != 0) {
+        str += (this->templateDecl->ToString());
+    }
+    if ((this->inherits.size()) > 0) {
+        str += " : ";
+        int i = 0;
+        while ((i) < (this->inherits.size())) {
+            str += ((this->inherits[i])->ToString());
+            if ((i + 1) < this->inherits.size()) {
+                str += ", ";
+            }
+            i += 1;
+        }
+    }
+    str += (this->body->ToString());
+    return str;
+}
+std::string ASTClassDecl::Get()  const {
+    return "ASTClassDecl";
+}
+std::string ASTClassDecl::GetType()  const {
+    return "ASTClassDecl";
 }

@@ -3,7 +3,6 @@ import "vector";
 import "tuple";
 import "AST.bic";
 
-// Base class for all IR nodes
 class IRNode {
     pub IRNode() {
     }
@@ -13,7 +12,6 @@ class IRNode {
     }
 }
 
-// Program, contains a list of declarations
 class IRProgram(pub IRNode) {
     pub mut decls : std::vector<IRNode*>;
 
@@ -39,7 +37,6 @@ class IRProgram(pub IRNode) {
     }
 }
 
-// Body, contains a list of declarations or statements
 class IRBody(pub IRNode) {
     pub mut decls : std::vector<IRNode*>;
 
@@ -51,7 +48,8 @@ class IRBody(pub IRNode) {
 
         mut i : int = 0;
         while ((i) < .decls.size()) {
-            str += ((.decls[i])->ToString()) + "\n";
+            str += ((.decls[i])->ToString()) + ";\n";
+            
             i++;
         }
 
@@ -122,7 +120,7 @@ class IRReturn(pub IRNode) {
     pub mut expr : IRExpr*;
 
     pub ToString() const -> std::string {
-        ret "return " + (.expr->ToString()) + ";";
+        ret "return " + (.expr->ToString());
     }
 }
 
@@ -149,6 +147,27 @@ class IRIf(pub IRNode) {
     }
 }
 
+class IRWhile(pub IRNode) {
+    pub mut cond : IRExpr*;
+    pub mut body : IRBody*;
+
+    pub ToString() const -> std::string {
+        ret "while (" + (.cond->ToString()) + ") " + (.body->ToString());
+    }
+}
+
+class IRBreak(pub IRNode) {
+    pub ToString() const -> std::string {
+        ret "break";
+    }
+}
+
+class IRContinue(pub IRNode) {
+    pub ToString() const -> std::string {
+        ret "continue";
+    }
+}
+
 class IRVariable(pub IRNode) {
     pub mut name : std::string;
     pub mut vType : std::string;
@@ -170,7 +189,28 @@ class IRVariable(pub IRNode) {
             str += " = " + (.value->ToString());
         }
 
-        str += ";";
+        ret str;
+    }
+}
+
+class IRImport(pub IRNode) {
+    pub mut path : std::string;
+
+    pub ToString() const -> std::string {
+        ret "import \"" + .path + '\"';
+    }
+}
+
+class IRClass(pub IRNode) {
+    pub mut name : std::string;
+    pub mut templateParams : std::vector<std::tuple<std::string, std::string> >;
+    pub mut body : IRBody*;
+    pub mut attr : int = Attribute::None;
+    pub mut inherits : std::vector<std::string>;
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "";
+
         ret str;
     }
 }

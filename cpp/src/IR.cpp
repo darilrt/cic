@@ -29,7 +29,7 @@ std::string IRBody::ToString()  const {
     std::string str = "{\n";
     int i = 0;
     while ((i) < this->decls.size()) {
-        str += ((this->decls[i])->ToString()) + "\n";
+        str += ((this->decls[i])->ToString()) + ";\n";
         i++;
     }
     str += "}";
@@ -67,7 +67,7 @@ std::string IRFunction::ToString()  const {
     return str;
 }
 std::string IRReturn::ToString()  const {
-    return "return " + (this->expr->ToString()) + ";";
+    return "return " + (this->expr->ToString());
 }
 std::string IRIf::ToString()  const {
     std::string str = "if (" + (this->cond->ToString()) + ") " + (this->body->ToString());
@@ -81,6 +81,15 @@ std::string IRIf::ToString()  const {
     }
     return str;
 }
+std::string IRWhile::ToString()  const {
+    return "while (" + (this->cond->ToString()) + ") " + (this->body->ToString());
+}
+std::string IRBreak::ToString()  const {
+    return "break";
+}
+std::string IRContinue::ToString()  const {
+    return "continue";
+}
 std::string IRVariable::ToString()  const {
     std::string str = "";
     str += this->vType + " ";
@@ -91,6 +100,12 @@ std::string IRVariable::ToString()  const {
     if (this->value != 0) {
         str += " = " + (this->value->ToString());
     }
-    str += ";";
+    return str;
+}
+std::string IRImport::ToString()  const {
+    return "import \"" + this->path + '\"';
+}
+std::string IRClass::ToString()  const {
+    std::string str = "";
     return str;
 }

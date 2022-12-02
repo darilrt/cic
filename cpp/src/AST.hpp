@@ -199,6 +199,25 @@ public: [[nodiscard]] std::string ToString() const ;
 public: [[nodiscard]] std::string Get() const ;
 public: [[nodiscard]] std::string GetType() const ;
 };
+class ASTWhile : public ASTNode {
+public: ASTExpr* expr;
+public: ASTBody* body;
+public: ASTWhile(ASTExpr* expr, ASTBody* body);
+public: ASTWhile();
+public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
+public: [[nodiscard]] std::string GetType() const ;
+};
+class ASTBreak : public ASTNode {
+public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
+public: [[nodiscard]] std::string GetType() const ;
+};
+class ASTContinue : public ASTNode {
+public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
+public: [[nodiscard]] std::string GetType() const ;
+};
 class ASTVariableDecl : public ASTNode {
 public: ASTNode* name;
 public: ASTType* vType;
@@ -206,6 +225,32 @@ public: ASTExpr* value;
 public: bool isMutable;
 public: ASTVariableDecl(ASTNode* name, ASTType* vType, ASTExpr* value, bool isMutable);
 public: ASTVariableDecl();
+public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
+public: [[nodiscard]] std::string GetType() const ;
+};
+class ASTImport : public ASTNode {
+public: Token* path;
+public: ASTImport(Token* path);
+public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
+public: [[nodiscard]] std::string GetType() const ;
+};
+class ASTInherArg : public ASTNode {
+public: Token* protection;
+public: ASTNode* name;
+public: ASTInherArg(Token* protection, ASTNode* name);
+public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
+public: [[nodiscard]] std::string GetType() const ;
+};
+class ASTClassDecl : public ASTNode {
+public: ASTNode* name;
+public: ASTTemplateDecl* templateDecl;
+public: std::vector<ASTInherArg*> inherits;
+public: ASTBody* body;
+public: ASTClassDecl(ASTNode* name, ASTTemplateDecl* templateDecl, std::vector<ASTInherArg*> inherits, ASTBody* body);
+public: ASTClassDecl();
 public: [[nodiscard]] std::string ToString() const ;
 public: [[nodiscard]] std::string Get() const ;
 public: [[nodiscard]] std::string GetType() const ;

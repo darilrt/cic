@@ -758,6 +758,64 @@ class ASTIf(pub ASTNode) {
     }
 }
 
+// While Statement
+class ASTWhile(pub ASTNode) {
+    pub mut expr : ASTExpr*;
+    pub mut body : ASTBody*;
+
+    pub ASTWhile(expr : ASTExpr*, body : ASTBody*) {
+        .expr = expr;
+        .body = body;
+    }
+
+    pub ~ASTWhile() {
+        del .expr;
+        del .body;
+    }
+
+    pub ToString() const -> std::string {
+        ret "while (" + (.expr->ToString()) + ") " + (.body->ToString());
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTWhile";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTWhile";
+    }
+}
+
+// Break Statement
+class ASTBreak(pub ASTNode) {
+    pub ToString() const -> std::string {
+        ret "break;";
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTBreak";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTBreak";
+    }
+}
+
+// Continue Statement
+class ASTContinue(pub ASTNode) {
+    pub ToString() const -> std::string {
+        ret "continue;";
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTContinue";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTContinue";
+    }
+}
+
 // Variable Declaration
 class ASTVariableDecl(pub ASTNode) {
     pub mut name : ASTNode*;
@@ -805,5 +863,125 @@ class ASTVariableDecl(pub ASTNode) {
 
     pub GetType() const -> std::string {
         ret "ASTVariableDecl";
+    }
+}
+
+// Import Statement
+class ASTImport(pub ASTNode) {
+    pub mut path : Token*;
+
+    pub ASTImport(path : Token*) {
+        .path = path;
+    }
+
+    pub ToString() const -> std::string {
+        ret "import " + (.path->literal) + ";";
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTImport";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTImport";
+    }
+}
+
+// Inheritance Argument
+class ASTInherArg(pub ASTNode) {
+    pub mut protection : Token*;
+    pub mut name : ASTNode*;
+    
+    pub ASTInherArg(protection : Token*, name : ASTNode*) {
+        .protection = protection;
+        .name = name;
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "";
+
+        if (.protection == null) {
+            str += "protected ";
+        }
+        elif (.protection->tokenType == TokenType::Pub) {
+            str += "public ";
+        }
+        elif (.protection->tokenType == TokenType::Priv) {
+            str += "private ";
+        }
+
+        ret str + (.name->Get());
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTInherArg";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTInherArg";
+    }
+}
+
+// Class Declaration
+class ASTClassDecl(pub ASTNode) {
+    pub mut name : ASTNode*;
+    pub mut templateDecl : ASTTemplateDecl*;
+    pub mut inherits : std::vector<ASTInherArg*>;
+    pub mut body : ASTBody*;
+
+    pub ASTClassDecl(
+            name : ASTNode*,
+            templateDecl : ASTTemplateDecl*,
+            inherits : std::vector<ASTInherArg*>,
+            body : ASTBody*) {
+        .name = name;
+        .templateDecl = templateDecl;
+        .inherits = inherits;
+        .body = body;
+    }
+
+    pub ~ASTClassDecl() {
+        del .name;
+        del .templateDecl;
+        del .body;
+
+        mut i : int = 0;
+        while ((i) < .inherits.size()) {
+            del .inherits[i];
+        }
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "class " + (.name->ToString());
+
+        if (.templateDecl != null) {
+            str += (.templateDecl->ToString());
+        }
+
+        if ((.inherits.size()) > 0) {
+            str += " : ";
+
+            mut i : int = 0;
+            while ((i) < (.inherits.size())) {
+                str += ((.inherits[i])->ToString());
+
+                if ((i + 1) < .inherits.size()) {
+                    str += ", ";
+                }
+
+                i += 1;
+            }
+        }
+
+        str += (.body->ToString());
+        ret str;
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTClassDecl";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTClassDecl";
     }
 }
