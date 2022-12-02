@@ -73,7 +73,7 @@ class CodeGenerator {
 
     GenerateFunction(node : IRFunction*) -> void {
         headerBuffer += node->GetHeader();
-        headerBuffer += node->GetSource();
+        sourceBuffer += node->GetSource();
     }
 
     GenerateImport(node : IRImport*) -> void {

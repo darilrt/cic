@@ -107,9 +107,16 @@ class IRFunction(pub IRNode) {
     }
 
     pub GetHeader() const -> std::string {
-        ret .GetFullName();
+        let name : std::string = .GetFullName();
+
+        mut str : std::string = "";
+
+        if ((.attr) & (Attribute::Public)) { str += "public: "; }
+        if ((.attr) & (Attribute::Private)) { str += "private: "; }
+
+        
     }
-    
+
     pub GetSource() const -> std::string {
         ret .GetFullName();
     }

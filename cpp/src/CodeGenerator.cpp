@@ -52,7 +52,7 @@ void CodeGenerator::GenerateDeclaration(IRNode* node) {
 }
 void CodeGenerator::GenerateFunction(IRFunction* node) {
     headerBuffer += node->GetHeader();
-    headerBuffer += node->GetSource();
+    sourceBuffer += node->GetSource();
 }
 void CodeGenerator::GenerateImport(IRImport* node) {
     headerBuffer += "#include \"" + node->path + '\"' + '\n';
