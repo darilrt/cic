@@ -5,6 +5,8 @@ import "Token.bic";
 
 // Base class for all AST nodes
 class ASTNode {
+    pub mut attr : int;
+
     pub ASTNode() {}
     pub virtual ToString() const -> std::string { ret "ASTNode"; }
     pub virtual Get() const -> std::string { ret "ASTNode"; }
@@ -195,7 +197,9 @@ class ASTFunctionCall(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        mut str : std::string = (.func->ToString()) + "(";
+        mut str : std::string;
+
+        str += (.func->ToString()) + "(";
 
         mut i : int = 0;
         while ((i) < .args.size()) {
@@ -631,7 +635,6 @@ class ASTFunctionDecl(pub ASTNode) {
     pub mut args : std::vector<ASTArgDecl*>;
     pub mut fType : ASTType*;
     pub mut body : ASTBody*;
-    pub mut attr : int;
 
     pub ASTFunctionDecl(
             name : ASTVariable*,

@@ -16,7 +16,8 @@ class ParserState {
 
 enum BodyType {
     Decl,
-    Impl
+    Impl,
+    Class
 }
 
 class Parser {
@@ -102,6 +103,7 @@ class Parser {
             .Error("Expected " + TokenTypeToString(tokenType) + ", got " + TokenTypeToString(.currentToken->tokenType));
         }
     }
+
     EatNewLine() -> void {
         if ((.prevToken->tokenType) == TokenType::NewLine) {
             .prevToken = .currentToken;
@@ -542,8 +544,11 @@ class Parser {
             if (bodyType == BodyType::Decl) {
                 stmt = .DeclStatement();
             }
-            else {
+            elif (bodyType == BodyType::Impl) {
                 stmt = .ImplStatement();
+            }
+            elif (bodyType == BodyType::Class) {
+                stmt = .ClassStatement();
             }
             body->AddStatement(stmt);
             
@@ -787,11 +792,11 @@ class Parser {
             .Eat(TokenType::RParen);
         }
 
-        let body : ASTBody* = .Body(BodyType::Impl);
+        let body : ASTBody* = .Body(BodyType::Class);
 
         ret new ASTClassDecl(name, tmp, args, body);
     }
-
+    
     // DeclStatement:
     //     VariableDeclc
     //     | FunctionDecl
@@ -864,4 +869,37 @@ class Parser {
         ret node;
     }
 
+    // ClassStatement:
+    //      VariableDecl
+    //      | FunctionDecl
+    //      | pub ClassStatement
+    //      | priv ClassStatement
+    ClassStatement() -> ASTNode* {
+        mut node : ASTNode* = null;
+
+        if (.IsType(TokenType::Pub)) {
+            .Eat(TokenType::Pub);
+            node = .ClassStatement();
+            node->attr |= Attribute::Public;
+        }
+        elif (.IsType(TokenType::Priv)) {
+            .Eat(TokenType::Priv);
+            node = .ClassStatement();
+            node->attr |= Attribute::Private;
+        }
+        elif ((.IsType(TokenType::Let)) || (.IsType(TokenType::Mut))) {
+            node = .VariableDecl();
+            node->attr |= Attribute::Protected;
+            .EatNewLine();
+        }
+        elif (.IsType(TokenType::Ident)) {
+            node = .FunctionDecl();
+            node->attr |= Attribute::Protected;
+        }
+        else {
+            .Error("Expected class statement");
+        }
+        
+        ret node;
+    }
 }

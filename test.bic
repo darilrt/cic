@@ -1,10 +1,5 @@
-// this file contains code for test language features
-import "iostream"
-
-class String<T : int>(pub A, priv B, C) {
-}
-
-main() -> int {
-    std::cout << "Hello, world!" << std::endl
-    ret 0
+class Type<T : int>(pub A, priv B, C) {
+    pub Get() -> T {
+        ret A
+    }
 }

@@ -371,8 +371,10 @@ ASTBody* Parser::Body(BodyType bodyType) {
     while (!(this->IsType(TokenType::RBrace))) {
         if (bodyType == BodyType::Decl) {
             stmt = this->DeclStatement();
-        } else {
+        } else if (bodyType == BodyType::Impl) {
             stmt = this->ImplStatement();
+        } else if (bodyType == BodyType::Class) {
+            stmt = this->ClassStatement();
         }
         body->AddStatement(stmt);
         if (this->IsType(TokenType::EndOfFile)) {
@@ -547,7 +549,7 @@ ASTClassDecl* Parser::ClassDecl() {
         args = this->InherArgs();
         this->Eat(TokenType::RParen);
     }
-    ASTBody* const body = this->Body(BodyType::Impl);
+    ASTBody* const body = this->Body(BodyType::Class);
     return new ASTClassDecl(name, tmp, args, body);
 }
 ASTNode* Parser::DeclStatement() {
@@ -594,6 +596,28 @@ ASTNode* Parser::ImplStatement() {
     } else {
         node = this->Expr();
         this->EatNewLine();
+    }
+    return node;
+}
+ASTNode* Parser::ClassStatement() {
+    ASTNode* node = 0;
+    if (this->IsType(TokenType::Pub)) {
+        this->Eat(TokenType::Pub);
+        node = this->ClassStatement();
+        node->attr |= Attribute::Public;
+    } else if (this->IsType(TokenType::Priv)) {
+        this->Eat(TokenType::Priv);
+        node = this->ClassStatement();
+        node->attr |= Attribute::Private;
+    } else if ((this->IsType(TokenType::Let)) || (this->IsType(TokenType::Mut))) {
+        node = this->VariableDecl();
+        node->attr |= Attribute::Protected;
+        this->EatNewLine();
+    } else if (this->IsType(TokenType::Ident)) {
+        node = this->FunctionDecl();
+        node->attr |= Attribute::Protected;
+    } else {
+        this->Error("Expected class statement");
     }
     return node;
 }

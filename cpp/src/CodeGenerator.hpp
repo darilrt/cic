@@ -1,5 +1,6 @@
 #pragma once
 #include "iostream"
+#include "filesystem"
 #include "IR.hpp"
 #include "Common.hpp"
 template <typename T> [[nodiscard]] bool IsA(IRNode* node){
@@ -18,6 +19,7 @@ protected: void Indent();
 protected: void PushIndent();
 protected: void PopIndent();
 protected: void GenerateProgram(IRProgram* node);
+protected: void GenerateBody(IRBody* node);
 protected: void GenerateDeclaration(IRNode* node);
 protected: void GenerateFunction(IRFunction* node);
 protected: void GenerateImport(IRImport* node);

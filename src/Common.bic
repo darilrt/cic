@@ -4,4 +4,7 @@ class Attribute {
     pub static let Static : int = 1;
     pub static let Virtual : int = 2;
     pub static let Const : int = 4;
+    pub static let Public : int = 8;
+    pub static let Private : int = 16;
+    pub static let Protected : int = 32;
 }

@@ -172,5 +172,6 @@ IRClass* IRGenerator::TranslateClass(ASTClassDecl* classNode) {
             i++;
         }
     }
+    irClass->body = TranslateBody(classNode->body);
     return irClass;
 }

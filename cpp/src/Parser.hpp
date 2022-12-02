@@ -12,6 +12,7 @@ public: ParserState(std::string state, int current);
 enum class BodyType {
     Decl,
     Impl,
+    Class,
 };
 class Parser {
 protected: Lexer* lexer;
@@ -69,4 +70,5 @@ protected: [[nodiscard]] std::vector<ASTInherArg*> InherArgs();
 protected: [[nodiscard]] ASTClassDecl* ClassDecl();
 protected: [[nodiscard]] ASTNode* DeclStatement();
 protected: [[nodiscard]] ASTNode* ImplStatement();
+protected: [[nodiscard]] ASTNode* ClassStatement();
 };

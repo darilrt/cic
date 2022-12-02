@@ -223,6 +223,8 @@ class IRGenerator {
                 i++;
             }
         }
+        
+        irClass->body = TranslateBody(classNode->body);
 
         ret irClass;
     }

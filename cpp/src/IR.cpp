@@ -8,6 +8,18 @@ IRNode::IRNode() {
 std::string IRNode::ToString()  const {
     return "IRNode";
 }
+std::string IRNode::GetFullName()  const {
+    return "IRNode";
+}
+bool IRNode::IsTemplate()  const {
+    return false;
+}
+std::string IRNode::GetHeader()  const {
+    return "";
+}
+std::string IRNode::GetSource()  const {
+    return "";
+}
 IRProgram::IRProgram(std::vector<IRNode*> declList) {
     this->decls = declList;
 }
@@ -41,30 +53,20 @@ IRExpr::IRExpr(std::string expr) {
 std::string IRExpr::ToString()  const {
     return this->expr;
 }
-std::string IRFunction::ToString()  const {
-    std::string str = "";
-    if ((this->attr & Attribute::Static) != 0) {
-        str += "static ";
+std::string IRFunction::GetFullName()  const {
+    if ((this->parent) != nullptr) {
+        return (this->parent->GetFullName()) + "::" + this->name;
     }
-    if ((this->attr & Attribute::Virtual) != 0) {
-        str += "virtual ";
-    }
-    str += this->returnType + " " + this->name + "(";
-    int i = 0;
-    while ((i) < this->params.size()) {
-        str += (std::get<0>(this->params[i])) + " " + (std::get<1>(this->params[i]));
-        if ((i) < ((this->params.size()) - 1)) {
-            str += ", ";
-        }
-        i++;
-    }
-    str += ")";
-    if ((this->attr & Attribute::Const) != 0) {
-        str += " const";
-    }
-    str += " ";
-    str += this->body->ToString();
-    return str;
+    return this->name;
+}
+bool IRFunction::IsTemplate()  const {
+    return (this->templateParams.size()) > 0 || (this->parent) != nullptr && (this->parent->IsTemplate());
+}
+std::string IRFunction::GetHeader()  const {
+    return this->GetFullName();
+}
+std::string IRFunction::GetSource()  const {
+    return this->GetFullName();
 }
 std::string IRReturn::ToString()  const {
     return "return " + (this->expr->ToString());

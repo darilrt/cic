@@ -125,7 +125,8 @@ ASTFunctionCall::ASTFunctionCall() {
     }
 }
 std::string ASTFunctionCall::ToString()  const {
-    std::string str = (this->func->ToString()) + "(";
+    std::string str;
+    str += (this->func->ToString()) + "(";
     int i = 0;
     while ((i) < this->args.size()) {
         str += (this->args[i])->ToString();

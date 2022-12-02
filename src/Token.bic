@@ -135,7 +135,7 @@ TokenTypeToString(t : TokenType) -> std::string {
     if (t == TokenType::Operator) { ret "Operator"; }
     if (t == TokenType::Enum) { ret "Enum"; }
     if (t == TokenType::EndKeyword) { ret "EndKeyword"; }
-
+    
     if (t == TokenType::Add) { ret "Add"; }
     if (t == TokenType::Sub) { ret "Sub"; }
     if (t == TokenType::Mul) { ret "Mul"; }

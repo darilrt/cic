@@ -4,6 +4,7 @@
 #include "Common.hpp"
 #include "Token.hpp"
 class ASTNode {
+public: int attr;
 public: ASTNode();
 public: [[nodiscard]] virtual std::string ToString() const ;
 public: [[nodiscard]] virtual std::string Get() const ;
@@ -172,7 +173,6 @@ public: ASTTemplateDecl* templateDecl;
 public: std::vector<ASTArgDecl*> args;
 public: ASTType* fType;
 public: ASTBody* body;
-public: int attr;
 public: ASTFunctionDecl(ASTVariable* name, ASTTemplateDecl* templateDecl, std::vector<ASTArgDecl*> args, ASTType* fType, ASTBody* body);
 public: ASTFunctionDecl();
 public: [[nodiscard]] std::string ToString() const ;

@@ -10,6 +10,22 @@ class IRNode {
     pub virtual ToString() const -> std::string {
         ret "IRNode";
     }
+
+    pub virtual GetFullName() const -> std::string {
+        ret "IRNode";
+    }
+
+    pub virtual IsTemplate() const -> bool {
+        ret false;
+    }
+
+    pub virtual GetHeader() const -> std::string {
+        ret "";
+    }
+
+    pub virtual GetSource() const -> std::string {
+        ret "";
+    }
 }
 
 class IRProgram(pub IRNode) {
@@ -77,42 +93,25 @@ class IRFunction(pub IRNode) {
     pub mut templateParams : std::vector<std::tuple<std::string, std::string> >;
     pub mut body : IRBody*;
     pub mut attr : int = Attribute::None;
+    pub mut parent : IRNode*;
 
-    pub ToString() const -> std::string {
-        mut str : std::string = "";
-
-        if ((.attr & Attribute::Static) != 0) {
-            str += "static ";
+    pub GetFullName() const -> std::string {
+        if ((.parent) != nullptr) {
+            ret (.parent->GetFullName()) + "::" + .name;
         }
+        ret .name;
+    }
 
-        if ((.attr & Attribute::Virtual) != 0) {
-            str += "virtual ";
-        }
+    pub IsTemplate() const -> bool {
+        ret (.templateParams.size()) > 0 || (.parent) != nullptr && (.parent->IsTemplate());
+    }
 
-        str += .returnType + " " + .name + "(";
-
-        mut i : int = 0;
-        while ((i) < .params.size()) {
-            str += (std::get<0>(.params[i])) + " " + (std::get<1>(.params[i]));
-
-            if ((i) < ((.params.size()) - 1)) {
-                str += ", ";
-            }
-
-            i++;
-        }
-
-        str += ")";
-
-        if ((.attr & Attribute::Const) != 0) {
-            str += " const";
-        }
-
-        str += " ";
-        
-        str += .body->ToString();
-
-        ret str;
+    pub GetHeader() const -> std::string {
+        ret .GetFullName();
+    }
+    
+    pub GetSource() const -> std::string {
+        ret .GetFullName();
     }
 }
 
@@ -210,7 +209,6 @@ class IRClass(pub IRNode) {
 
     pub ToString() const -> std::string {
         mut str : std::string = "";
-
         ret str;
     }
 }

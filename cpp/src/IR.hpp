@@ -6,6 +6,10 @@
 class IRNode {
 public: IRNode();
 public: [[nodiscard]] virtual std::string ToString() const ;
+public: [[nodiscard]] virtual std::string GetFullName() const ;
+public: [[nodiscard]] virtual bool IsTemplate() const ;
+public: [[nodiscard]] virtual std::string GetHeader() const ;
+public: [[nodiscard]] virtual std::string GetSource() const ;
 };
 class IRProgram : public IRNode {
 public: std::vector<IRNode*> decls;
@@ -29,7 +33,11 @@ public: std::vector<std::tuple<std::string, std::string>> params;
 public: std::vector<std::tuple<std::string, std::string>> templateParams;
 public: IRBody* body;
 public: int attr = Attribute::None;
-public: [[nodiscard]] std::string ToString() const ;
+public: IRNode* parent;
+public: [[nodiscard]] std::string GetFullName() const ;
+public: [[nodiscard]] bool IsTemplate() const ;
+public: [[nodiscard]] std::string GetHeader() const ;
+public: [[nodiscard]] std::string GetSource() const ;
 };
 class IRReturn : public IRNode {
 public: IRExpr* expr;
