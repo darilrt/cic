@@ -1,5 +1,5 @@
 ## H programming language
-### Current version: 0.0.1a
+### Current version: 0.0.2a
 <br></br>
 # Road Map
 
@@ -30,18 +30,22 @@
     - &#9745; Constructor
     - &#9745; Destructor
     - &#9745; Static members
-    - &#9744; Nested classes
-    - &#9744; Friend functions
-    - &#9744; Friend classes
     - &#9745; New operator
     - &#9745; Delete operator
     - &#9745; This Access
+- &#9745; Enum declaration
+
+## Version 0.0.3a
 - &#9744; Lambda expressions
 - &#9744; Default arguments
 - &#9744; Variadic templates
-- &#9744; Enum declaration
+- &#9745; Classes
+    - &#9744; Nested classes
+    - &#9744; Nested enum
+    - &#9744; Friend functions
+    - &#9744; Friend classes
 
 ## Ideas
 - &#9744; getter and setter for class properties
 - &#9744; meta programming
-- &#9745; remove the need for semicolons
+- &#9744; remove the need for semicolons
