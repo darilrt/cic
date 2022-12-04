@@ -5,7 +5,7 @@ import "Token.bic";
 
 // Base class for all AST nodes
 class ASTNode {
-    pub mut attr : int;
+    pub mut attr : int = 0;
 
     pub ASTNode() {}
     pub virtual ToString() const -> std::string { ret "ASTNode"; }
@@ -32,7 +32,7 @@ class ASTProgram(pub ASTNode) {
                 str += "\n";
             }
 
-            i++;
+            i += 1;
         }
 
         ret str;
@@ -92,12 +92,12 @@ class ASTVariable(pub ASTNode) {
 // Binary operation
 class ASTBinaryOp(pub ASTNode) {
     pub mut left : ASTNode*;
-    pub mut op : Token;
+    pub mut operation : Token;
     pub mut right : ASTNode*;
 
-    pub ASTBinaryOp(left : ASTNode*, op : Token, right : ASTNode*) {
+    pub ASTBinaryOp(left : ASTNode*, operation : Token, right : ASTNode*) {
         .left = left;
-        .op = op;
+        .operation = operation;
         .right = right;
     }
 
@@ -107,11 +107,11 @@ class ASTBinaryOp(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "[" + (.left->ToString()) + " " + (.op.ToString()) + " " + (.right->ToString()) + "]";
+        ret "[" + (.left->ToString()) + " " + (.operation.ToString()) + " " + (.right->ToString()) + "]";
     }
 
     pub Get() const -> std::string {
-        ret (.left->Get()) + " " + (.op.literal) + " " + (.right->Get());
+        ret (.left->Get()) + " " + (.operation.literal) + " " + (.right->Get());
     }
 
     pub GetType() const -> std::string {
@@ -121,11 +121,12 @@ class ASTBinaryOp(pub ASTNode) {
 
 // Unary operation
 class ASTUnaryOp(pub ASTNode) {
-    pub mut op : Token;
+    pub mut operation : Token;
     pub mut right : ASTNode*;
+    pub mut isPostfix : bool = false;
 
-    pub ASTUnaryOp(op : Token, right : ASTNode*) {
-        .op = op;
+    pub ASTUnaryOp(operation : Token, right : ASTNode*) {
+        .operation = operation;
         .right = right;
     }
 
@@ -134,11 +135,15 @@ class ASTUnaryOp(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "[" + (.op.literal) + " " + (.right->ToString()) + "]";
+        ret "[" + (.operation.literal) + " " + (.right->ToString()) + "]";
     }
 
     pub Get() const -> std::string {
-        ret (.op.literal) + " " + (.right->Get());
+        if (.isPostfix) {
+            ret (.right->Get()) + (.operation.literal);
+        } else {
+            ret (.operation.literal) + (.right->Get());
+        }
     }
 
     pub GetType() const -> std::string {
@@ -166,7 +171,14 @@ class ASTIndexOp(pub ASTNode) {
     }
 
     pub Get() const -> std::string {
-        ret (.left->Get()) + "[" + (.right->Get()) + "]";
+        let left : std::string = (.left->Get());
+        mut right : std::string;
+
+        if (.right != null) {
+            right = (.right->Get());
+        }
+
+        ret left + "[" + right + "]";
     }
     
     pub GetType() const -> std::string {
@@ -209,7 +221,7 @@ class ASTFunctionCall(pub ASTNode) {
                 str += ", "; 
             }
 
-            i++;
+            i += 1;
         }
 
         str += ")";
@@ -242,12 +254,12 @@ class ASTFunctionCall(pub ASTNode) {
 // Dot access
 class ASTDotAccess(pub ASTNode) {
     pub mut left : ASTNode*;
-    pub mut op : Token;
+    pub mut operation : Token;
     pub mut right : ASTNode*;
 
-    pub ASTDotAccess(left : ASTNode*, op : Token, right : ASTNode*) {
+    pub ASTDotAccess(left : ASTNode*, operation : Token, right : ASTNode*) {
         .left = left;
-        .op = op;
+        .operation = operation;
         .right = right;
     }
 
@@ -257,15 +269,40 @@ class ASTDotAccess(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "[" + (.left->ToString()) + (.op.ToString()) + (.right->ToString()) + "]";
+        ret "[" + (.left->ToString()) + (.operation.ToString()) + (.right->ToString()) + "]";
     }
 
     pub Get() const -> std::string {
-        ret (.left->Get()) + (.op.literal) + (.right->Get());
+        ret (.left->Get()) + (.operation.literal) + (.right->Get());
     }
 
     pub GetType() const -> std::string {
         ret "ASTDotAccess";
+    }
+}
+
+// This Access
+class ASTThisAccess(pub ASTNode) {
+    pub mut right : ASTNode*;
+
+    pub ASTThisAccess(right : ASTNode*) {
+        .right = right;
+    }
+
+    pub ~ASTThisAccess() {
+        del .right;
+    }
+
+    pub ToString() const -> std::string {
+        ret "[this->" + (.right->ToString()) + "]";
+    }
+
+    pub Get() const -> std::string {
+        ret "this->" + (.right->Get());
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTThisAccess";
     }
 }
 
@@ -407,6 +444,72 @@ class ASTReferenceDecl(pub ASTNode) {
 
     pub GetType() const -> std::string {
         ret "ASTReferenceDecl";
+    }
+}
+
+// New Expression
+class ASTNew(pub ASTNode) {
+    pub mut node : ASTNode*;
+
+    pub ASTNew(node : ASTNode*) {
+        .node = node;
+    }
+
+    pub ~ASTNew() {
+        del .node;
+    }
+
+    pub ToString() const -> std::string {
+        ret "new " + (.node->ToString());
+    }
+
+    pub Get() const -> std::string {
+        ret "new " + (.node->Get());
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTNew";
+    }
+}
+
+// Del Expression
+class ASTDel(pub ASTNode) {
+    pub mut node : ASTNode*;
+    pub mut isArray : bool;
+
+    pub ASTDel(node : ASTNode*, isArray : bool) {
+        .node = node;
+        .isArray = isArray;
+    }
+
+    pub ~ASTDel() {
+        del .node;
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "delete ";
+
+        if (.isArray) {
+            str += "[] ";
+        }
+
+        str += (.node->ToString());
+        ret str;
+    }
+
+    pub Get() const -> std::string {
+        mut str : std::string = "delete ";
+
+        if (.isArray) {
+            str += "[] ";
+        }
+
+        str += (.node->Get());
+        ret str;
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTDel";
     }
 }
 
@@ -628,6 +731,37 @@ class ASTExpr(pub ASTNode) {
     }
 }
 
+// Operator Declaration
+class ASTOperatorDecl(pub ASTNode) {
+    pub mut operation : std::string;
+    pub mut args : std::vector<ASTArgDecl*>;
+    pub mut returnType : ASTType*;
+    pub mut body : ASTBody*;
+
+    pub ASTOperatorDecl(operation : std::string, args : std::vector<ASTArgDecl*>, returnType : ASTType*, body : ASTBody*) {
+        .operation = operation;
+        .args = args;
+        .returnType = returnType;
+        .body = body;
+    }
+
+    pub ~ASTOperatorDecl() {
+        mut i : int = 0;
+        while ((i) < .args.size()) {
+            del .args[i];
+        }
+
+        del .returnType;
+        del .body;
+    }
+
+    pub ToString() const -> std::string { ret "ASTOperatorDecl"; }
+
+    pub Get() const -> std::string { ret "ASTOperatorDecl"; }
+
+    pub GetType() const -> std::string { ret "ASTOperatorDecl"; }
+}
+
 // Function Declaration 
 class ASTFunctionDecl(pub ASTNode) {
     pub mut name : ASTVariable*;
@@ -662,25 +796,6 @@ class ASTFunctionDecl(pub ASTNode) {
 
     pub ToString() const -> std::string {
         mut str : std::string = "";
-
-        if (.templateDecl != null) {
-            str += (.templateDecl->ToString()) + " ";
-        }
-
-        str += (.fType->ToString()) + " " + (.name->ToString()) + "(";
-
-        mut i : int = 0;
-        while ((i) < .args.size()) {
-            str += (.args[i])->ToString();
-
-            if ((i) < (.args.size()) - 1) {
-                str += ", ";
-            }
-
-            i++;
-        }
-
-        str += ") " + (.body->ToString());
         ret str;
     }
     
@@ -986,5 +1101,80 @@ class ASTClassDecl(pub ASTNode) {
 
     pub GetType() const -> std::string {
         ret "ASTClassDecl";
+    }
+}
+
+// Enum Field
+class ASTEnumField(pub ASTNode) {
+    pub mut name : ASTNode*;
+    pub mut value : ASTExpr*;
+
+    pub ASTEnumField(name : ASTNode*, value : ASTExpr*) {
+        .name = name;
+        .value = value;
+    }
+
+    pub ~ASTEnumField() {
+        del .name;
+        del .value;
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = (.name->ToString());
+
+        if (.value != null) {
+            str += " = " + (.value->ToString());
+        }
+
+        ret str;
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTEnumField";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTEnumField";
+    }
+}
+
+// Enum Declaration
+class ASTEnumDecl(pub ASTNode) {
+    pub mut name : ASTNode*;
+    pub mut values : std::vector<ASTEnumField*>;
+
+    pub ASTEnumDecl(name : ASTNode*, values : std::vector<ASTEnumField*>) {
+        .name = name;
+        .values = values;
+    }
+
+    pub ~ASTEnumDecl() {
+        del .name;
+
+        mut i : int = 0;
+        while ((i) < .values.size()) {
+            del .values[i];
+        }
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "enum " + (.name->ToString()) + " {\n";
+
+        mut i : int = 0;
+        while ((i) < .values.size()) {
+            str += "    " + ((.values[i])->ToString()) + ",\n";
+            i += 1;
+        }
+
+        str += "}";
+        ret str;
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTEnumDecl";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTEnumDecl";
     }
 }

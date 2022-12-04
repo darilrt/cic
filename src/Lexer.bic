@@ -92,7 +92,7 @@ class Lexer {
                 ret Token(TokenType::NewLine, "\n", .line, .column);
             }
             
-            if (.IsAlpha()) {
+            if ((.IsAlpha()) || .IsChar('_')) {
                 ret .ParseIdentifier();
             }
 
@@ -172,7 +172,7 @@ class Lexer {
 
     ParseIdentifier() -> Token {
         mut identifier : std::string;
-        while (IsAlphaNumeric()) {
+        while ((IsAlphaNumeric()) || .IsChar('_')) {
             identifier += .currentChar;
             .Advance();
         }
@@ -197,7 +197,7 @@ class Lexer {
         if (identifier == "virtual") { ret Token(TokenType::Virtual, "virtual"); }
         if (identifier == "new") { ret Token(TokenType::New, "new"); }
         if (identifier == "del") { ret Token(TokenType::Del, "del"); }
-        if (identifier == "operator") { ret Token(TokenType::Operator, "operator"); }
+        if (identifier == "op") { ret Token(TokenType::Operator, "op"); }
         if (identifier == "enum") { ret Token(TokenType::Enum, "enum"); }
 
         ret Token(TokenType::Ident, identifier, .column, .line);
@@ -221,17 +221,18 @@ class Lexer {
         ret Token(TokenType::Int, number, .column, .line);
     }
 
-    // TODO: accept scape sequences
     ParseString() -> Token {
         .Advance();
         mut string : std::string;
-        mut isNotNull : bool = true;
-        mut isNotChar : bool = true;
-        while (isNotNull && isNotChar) {
+        while ((!.IsChar('"'))) {
             string += .currentChar;
+
+            if (.IsChar(92)) { // '\'
+                .Advance();
+                string += .currentChar;
+            }
+
             .Advance();
-            isNotNull = .IsNotNull();
-            isNotChar = !.IsChar('"');
         }
         .Advance();
         ret Token(TokenType::String, string, .column, .line);
@@ -241,13 +242,15 @@ class Lexer {
     ParseChar() -> Token {
         .Advance();
         mut character : std::string;
-        mut isNotNull : bool = true;
-        mut isNotChar : bool = true;
-        while (isNotNull && isNotChar) {
+        while ((!.IsChar(39)) && (.IsNotNull())) {
             character += .currentChar;
+            
+            if (.IsChar(92)) { // '\'
+                .Advance();
+                character += .currentChar;
+            }
+
             .Advance();
-            isNotNull = .IsNotNull();
-            isNotChar = !.IsChar(39);
         }
         .Advance();
         ret Token(TokenType::Char, character, .column, .line);

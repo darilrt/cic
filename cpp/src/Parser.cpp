@@ -65,15 +65,19 @@ void Parser::Eat(TokenType tokenType) {
             this->currentToken = &this->tokens[this->current];
         }
     } else {
-        this->Error("Expected " + TokenTypeToString(tokenType) + ", got " + TokenTypeToString(this->currentToken->tokenType));
+        std::string error = "Expected token type: ";
+        error += TokenTypeToString(tokenType);
+        error += ", got: ";
+        error += TokenTypeToString(this->currentToken->tokenType);
+        error += " at line: ";
+        error += std::to_string(this->currentToken->line);
+        error += ", column: ";
+        error += std::to_string(this->currentToken->column);
+        this->Error(error);
     }
 }
 void Parser::EatNewLine() {
-    if ((this->prevToken->tokenType) == TokenType::NewLine) {
-        this->prevToken = this->currentToken;
-    } else {
-        this->Error("Expected newline");
-    }
+    this->Eat(TokenType::Semicolon);
 }
 void Parser::Backtrack() {
     if (this->current > 0) {
@@ -109,11 +113,11 @@ ASTExpr* Parser::Expr() {
 }
 ASTNode* Parser::AssignExpr() {
     ASTNode* node = this->CompExpr();
-    while ((this->IsType(TokenType::Assign)) || (this->IsType(TokenType::AddAssign)) || (this->IsType(TokenType::SubAssign)) || (this->IsType(TokenType::MulAssign)) || (this->IsType(TokenType::DivAssign)) || (this->IsType(TokenType::ModAssign))) {
-        Token* const op = this->currentToken;
+    while ((this->IsType(TokenType::Assign)) || (this->IsType(TokenType::AddAssign)) || (this->IsType(TokenType::SubAssign)) || (this->IsType(TokenType::MulAssign)) || (this->IsType(TokenType::DivAssign)) || (this->IsType(TokenType::ModAssign)) || (this->IsType(TokenType::AndAssign)) || (this->IsType(TokenType::OrAssign)) || (this->IsType(TokenType::XorAssign)) || (this->IsType(TokenType::LShiftAssign)) || (this->IsType(TokenType::RShiftAssign))) {
+        Token* const operation = this->currentToken;
         this->Eat(this->currentToken->tokenType);
         ASTNode* const right = this->CompExpr();
-        node = new ASTBinaryOp(node, *op, right);
+        node = new ASTBinaryOp(node, *operation, right);
     }
     return node;
 }
@@ -123,20 +127,20 @@ ASTNode* Parser::CompExpr() {
         if ((this->IsInsideState("TemplateArgs")) && (this->IsType(TokenType::Greater))) {
             return node;
         }
-        Token* const op = this->currentToken;
-        this->Eat(op->tokenType);
+        Token* const operation = this->currentToken;
+        this->Eat(operation->tokenType);
         ASTNode* const right = this->Expr();
-        node = new ASTBinaryOp(node, *op, right);
+        node = new ASTBinaryOp(node, *operation, right);
     }
     return node;
 }
 ASTNode* Parser::ShiftExpr() {
     ASTNode* node = this->Term();
     if ((this->IsType(TokenType::LShift)) || (this->IsType(TokenType::RShift))) {
-        Token* const op = this->currentToken;
-        this->Eat(op->tokenType);
+        Token* const operation = this->currentToken;
+        this->Eat(operation->tokenType);
         ASTNode* const right = this->Expr();
-        node = new ASTBinaryOp(node, *op, right);
+        node = new ASTBinaryOp(node, *operation, right);
     }
     return node;
 }
@@ -173,7 +177,7 @@ ASTNode* Parser::BitwiseExpr() {
     return node;
 }
 ASTNode* Parser::Factor() {
-    ASTNode* node = this->Unary();
+    ASTNode* node = this->IncDecExpr();
     if (this->IsType(TokenType::Mul)) {
         Token* const token = this->currentToken;
         this->Eat(token->tokenType);
@@ -191,6 +195,17 @@ ASTNode* Parser::Factor() {
         this->Eat(token->tokenType);
         ASTNode* const right = this->Factor();
         node = new ASTBinaryOp(node, *token, right);
+    }
+    return node;
+}
+ASTNode* Parser::IncDecExpr() {
+    ASTNode* node = this->Unary();
+    if ((this->IsType(TokenType::Inc)) || (this->IsType(TokenType::Dec))) {
+        Token* const token = this->currentToken;
+        this->Eat(token->tokenType);
+        ASTUnaryOp* const un = new ASTUnaryOp(*token, node);
+        un->isPostfix = true;
+        node = un;
     }
     return node;
 }
@@ -273,9 +288,20 @@ ASTNode* Parser::Primary() {
         this->Eat(TokenType::RParen);
     } else if (this->IsType(TokenType::Ident)) {
         node = this->ScopeResolution();
+    } else if (this->IsType(TokenType::New)) {
+        node = this->New();
+    } else if (this->IsType(TokenType::Del)) {
+        node = this->Del();
     } else if (this->IsType(TokenType::String)) {
-        node = new ASTConstant(this->currentToken->literal);
+        node = new ASTConstant('"' + this->currentToken->literal + '"');
         this->Eat(TokenType::String);
+    } else if (this->IsType(TokenType::Char)) {
+        node = new ASTConstant("'" + this->currentToken->literal + "'");
+        this->Eat(TokenType::Char);
+    } else if (this->IsType(TokenType::Dot)) {
+        this->Eat(TokenType::Dot);
+        node = this->ScopeResolution();
+        return new ASTThisAccess(node);
     } else {
         if (this->IsInsideState("CheckingForPointer")) {
             return 0;
@@ -284,14 +310,33 @@ ASTNode* Parser::Primary() {
     }
     return node;
 }
+ASTNode* Parser::New() {
+    this->Eat(TokenType::New);
+    ASTNode* const node = this->Expr();
+    return new ASTNew(node);
+}
+ASTNode* Parser::Del() {
+    this->Eat(TokenType::Del);
+    bool isArray = false;
+    if (this->IsType(TokenType::LBracket)) {
+        this->Eat(TokenType::LBracket);
+        this->Eat(TokenType::RBracket);
+        isArray = true;
+    }
+    ASTNode* const node = this->Expr();
+    return new ASTDel(node, isArray);
+}
 ASTNode* Parser::IdentDecl() {
     ASTNode* node = new ASTVariable(this->currentToken->literal);
     this->Eat(TokenType::Ident);
     while (this->IsType(TokenType::LBracket)) {
         this->Eat(TokenType::LBracket);
-        ASTNode* const index = this->Expr();
+        ASTNode* size = 0;
+        if (!this->IsType(TokenType::RBracket)) {
+            size = this->Expr();
+        }
         this->Eat(TokenType::RBracket);
-        node = new ASTIndexOp(node, index);
+        node = new ASTIndexOp(node, size);
     }
     return node;
 }
@@ -473,9 +518,15 @@ ASTFunctionDecl* Parser::FunctionDecl() {
         this->Eat(TokenType::Const);
         attrs |= Attribute::Const;
     }
-    this->Eat(TokenType::Arrow);
-    ASTType* const _type = this->Type();
-    ASTBody* const body = this->Body(BodyType::Impl);
+    ASTType* _type = 0;
+    if (this->IsType(TokenType::Arrow)) {
+        this->Eat(TokenType::Arrow);
+        _type = this->Type();
+    }
+    ASTBody* body = 0;
+    if (this->IsType(TokenType::LBrace)) {
+        body = this->Body(BodyType::Impl);
+    }
     ASTFunctionDecl* func = new ASTFunctionDecl(name, tmp, args, _type, body);
     func->attr = attrs;
     return func;
@@ -552,6 +603,163 @@ ASTClassDecl* Parser::ClassDecl() {
     ASTBody* const body = this->Body(BodyType::Class);
     return new ASTClassDecl(name, tmp, args, body);
 }
+std::string Parser::Operator() {
+    std::string const operation = "";
+    if (this->IsType(TokenType::Add)) {
+        this->Eat(TokenType::Add);
+        return "+";
+    } else if (this->IsType(TokenType::Sub)) {
+        this->Eat(TokenType::Sub);
+        return "-";
+    } else if (this->IsType(TokenType::Mul)) {
+        this->Eat(TokenType::Mul);
+        return "*";
+    } else if (this->IsType(TokenType::Div)) {
+        this->Eat(TokenType::Div);
+        return "/";
+    } else if (this->IsType(TokenType::Mod)) {
+        this->Eat(TokenType::Mod);
+        return "%";
+    } else if (this->IsType(TokenType::Xor)) {
+        this->Eat(TokenType::Xor);
+        return "^";
+    } else if (this->IsType(TokenType::Amp)) {
+        this->Eat(TokenType::Amp);
+        return "&";
+    } else if (this->IsType(TokenType::Pipe)) {
+        this->Eat(TokenType::Pipe);
+        return "|";
+    } else if (this->IsType(TokenType::BitNot)) {
+        this->Eat(TokenType::BitNot);
+        return "~";
+    } else if (this->IsType(TokenType::Not)) {
+        this->Eat(TokenType::Not);
+        return "!";
+    } else if (this->IsType(TokenType::Assign)) {
+        this->Eat(TokenType::Assign);
+        return "=";
+    } else if (this->IsType(TokenType::Less)) {
+        this->Eat(TokenType::Less);
+        return "<";
+    } else if (this->IsType(TokenType::Greater)) {
+        this->Eat(TokenType::Greater);
+        return ">";
+    } else if (this->IsType(TokenType::AddAssign)) {
+        this->Eat(TokenType::AddAssign);
+        return "+=";
+    } else if (this->IsType(TokenType::SubAssign)) {
+        this->Eat(TokenType::SubAssign);
+        return "-=";
+    } else if (this->IsType(TokenType::MulAssign)) {
+        this->Eat(TokenType::MulAssign);
+        return "*=";
+    } else if (this->IsType(TokenType::DivAssign)) {
+        this->Eat(TokenType::DivAssign);
+        return "/=";
+    } else if (this->IsType(TokenType::ModAssign)) {
+        this->Eat(TokenType::ModAssign);
+        return "%=";
+    } else if (this->IsType(TokenType::XorAssign)) {
+        this->Eat(TokenType::XorAssign);
+        return "^=";
+    } else if (this->IsType(TokenType::AndAssign)) {
+        this->Eat(TokenType::AndAssign);
+        return "&=";
+    } else if (this->IsType(TokenType::OrAssign)) {
+        this->Eat(TokenType::OrAssign);
+        return "|=";
+    } else if (this->IsType(TokenType::LShift)) {
+        this->Eat(TokenType::LShift);
+        return "<<";
+    } else if (this->IsType(TokenType::RShift)) {
+        this->Eat(TokenType::RShift);
+        return ">>";
+    } else if (this->IsType(TokenType::RShiftAssign)) {
+        this->Eat(TokenType::RShiftAssign);
+        return ">>=";
+    } else if (this->IsType(TokenType::LShiftAssign)) {
+        this->Eat(TokenType::LShiftAssign);
+        return "<<=";
+    } else if (this->IsType(TokenType::Equal)) {
+        this->Eat(TokenType::Equal);
+        return "==";
+    } else if (this->IsType(TokenType::NotEqual)) {
+        this->Eat(TokenType::NotEqual);
+        return "!=";
+    } else if (this->IsType(TokenType::LessEqual)) {
+        this->Eat(TokenType::LessEqual);
+        return "<=";
+    } else if (this->IsType(TokenType::GreaterEqual)) {
+        this->Eat(TokenType::GreaterEqual);
+        return ">=";
+    } else if (this->IsType(TokenType::And)) {
+        this->Eat(TokenType::And);
+        return "&&";
+    } else if (this->IsType(TokenType::Or)) {
+        this->Eat(TokenType::Or);
+        return "||";
+    } else if (this->IsType(TokenType::Inc)) {
+        this->Eat(TokenType::Inc);
+        return "++";
+    } else if (this->IsType(TokenType::Dec)) {
+        this->Eat(TokenType::Dec);
+        return "--";
+    } else if (this->IsType(TokenType::Arrow)) {
+        this->Eat(TokenType::Arrow);
+        return "->";
+    } else if (this->IsType(TokenType::LBrace)) {
+        this->Eat(TokenType::LBrace);
+        this->Eat(TokenType::RBrace);
+        return "[]";
+    } else if (this->IsType(TokenType::LParen)) {
+        this->Eat(TokenType::LParen);
+        this->Eat(TokenType::RParen);
+        return "()";
+    } else {
+        this->Error("Expected operator");
+    }
+    return operation;
+}
+ASTOperatorDecl* Parser::OperatorDecl() {
+    this->Eat(TokenType::Operator);
+    std::string const operation = this->Operator();
+    this->Eat(TokenType::LParen);
+    std::vector<ASTArgDecl*> const args = this->TypedArgs();
+    this->Eat(TokenType::RParen);
+    this->Eat(TokenType::Arrow);
+    ASTType* const _type = this->Type();
+    ASTBody* const body = this->Body(BodyType::Impl);
+    return new ASTOperatorDecl(operation, args, _type, body);
+}
+ASTEnumField* Parser::EnumField() {
+    ASTNode* const name = new ASTVariable(this->currentToken->literal);
+    this->Eat(TokenType::Ident);
+    ASTExpr* value = 0;
+    if (this->IsType(TokenType::Assign)) {
+        this->Eat(TokenType::Assign);
+        value = this->Expr();
+    }
+    return new ASTEnumField(name, value);
+}
+std::vector<ASTEnumField*> Parser::EnumFields() {
+    std::vector<ASTEnumField*> fields;
+    while (!this->IsType(TokenType::RBrace)) {
+        fields.push_back(this->EnumField());
+        if (this->IsType(TokenType::Comma)) {
+            this->Eat(TokenType::Comma);
+        }
+    }
+    return fields;
+}
+ASTEnumDecl* Parser::EnumDecl() {
+    this->Eat(TokenType::Enum);
+    ASTNode* const name = new ASTVariable(this->currentToken->literal);
+    this->Eat(TokenType::Ident);
+    this->Eat(TokenType::LBrace);
+    std::vector<ASTEnumField*> const fields = this->EnumFields();
+    this->Eat(TokenType::RBrace);
+    return new ASTEnumDecl(name, fields);
+}
 ASTNode* Parser::DeclStatement() {
     if (this->IsType(TokenType::Semicolon)) {
         this->Eat(TokenType::Semicolon);
@@ -566,6 +774,8 @@ ASTNode* Parser::DeclStatement() {
         return this->ImportStmt();
     } else if (this->IsType(TokenType::Class)) {
         return this->ClassDecl();
+    } else if (this->IsType(TokenType::Enum)) {
+        return this->EnumDecl();
     } else {
         this->Error("Expected declaration statement");
     }
@@ -609,13 +819,25 @@ ASTNode* Parser::ClassStatement() {
         this->Eat(TokenType::Priv);
         node = this->ClassStatement();
         node->attr |= Attribute::Private;
+    } else if (this->IsType(TokenType::Virtual)) {
+        this->Eat(TokenType::Virtual);
+        node = this->ClassStatement();
+        node->attr |= Attribute::Virtual;
+    } else if (this->IsType(TokenType::Static)) {
+        this->Eat(TokenType::Static);
+        node = this->ClassStatement();
+        node->attr |= Attribute::Static;
+    } else if (this->IsType(TokenType::Operator)) {
+        node = this->OperatorDecl();
     } else if ((this->IsType(TokenType::Let)) || (this->IsType(TokenType::Mut))) {
         node = this->VariableDecl();
-        node->attr |= Attribute::Protected;
         this->EatNewLine();
     } else if (this->IsType(TokenType::Ident)) {
         node = this->FunctionDecl();
-        node->attr |= Attribute::Protected;
+    } else if (this->IsType(TokenType::Xor)) {
+        this->Eat(TokenType::Xor);
+        node = this->FunctionDecl();
+        node->attr |= Attribute::Destructor;
     } else {
         this->Error("Expected class statement");
     }

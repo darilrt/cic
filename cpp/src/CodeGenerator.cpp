@@ -37,11 +37,14 @@ void CodeGenerator::GenerateBody(IRBody* node) {
         GenerateDeclaration(node->decls[i]);
         i++;
     }
-    headerBuffer += "}\n";
+    headerBuffer += "}";
 }
 void CodeGenerator::GenerateDeclaration(IRNode* node) {
     if (IsA<IRFunction>(node)) {
         GenerateFunction(As<IRFunction>(node));
+    }
+    if (IsA<IROperator>(node)) {
+        GenerateOperator(As<IROperator>(node));
     }
     if (IsA<IRImport>(node)) {
         GenerateImport(As<IRImport>(node));
@@ -49,8 +52,22 @@ void CodeGenerator::GenerateDeclaration(IRNode* node) {
     if (IsA<IRClass>(node)) {
         GenerateClass(As<IRClass>(node));
     }
+    if (IsA<IRVariable>(node)) {
+        GenerateVariable(As<IRVariable>(node));
+    }
+    if (IsA<IREnum>(node)) {
+        GenerateEnum(As<IREnum>(node));
+    }
 }
 void CodeGenerator::GenerateFunction(IRFunction* node) {
+    headerBuffer += node->GetHeader();
+    sourceBuffer += node->GetSource();
+}
+void CodeGenerator::GenerateOperator(IROperator* node) {
+    headerBuffer += node->GetHeader();
+    sourceBuffer += node->GetSource();
+}
+void CodeGenerator::GenerateEnum(IREnum* node) {
     headerBuffer += node->GetHeader();
     sourceBuffer += node->GetSource();
 }
@@ -88,10 +105,15 @@ void CodeGenerator::GenerateClass(IRClass* node) {
             }
             i++;
         }
-        str += " ";
     }
+    str += " ";
     headerBuffer += str;
     PushIndent();
     this->GenerateBody(node->body);
     PopIndent();
+    headerBuffer += ";\n";
+}
+void CodeGenerator::GenerateVariable(IRVariable* node) {
+    headerBuffer += (node->GetHeader());
+    sourceBuffer += (node->GetSource());
 }

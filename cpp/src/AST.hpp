@@ -4,7 +4,7 @@
 #include "Common.hpp"
 #include "Token.hpp"
 class ASTNode {
-public: int attr;
+public: int attr = 0;
 public: ASTNode();
 public: [[nodiscard]] virtual std::string ToString() const ;
 public: [[nodiscard]] virtual std::string Get() const ;
@@ -33,18 +33,19 @@ public: [[nodiscard]] std::string GetType() const ;
 };
 class ASTBinaryOp : public ASTNode {
 public: ASTNode* left;
-public: Token op;
+public: Token operation;
 public: ASTNode* right;
-public: ASTBinaryOp(ASTNode* left, Token op, ASTNode* right);
+public: ASTBinaryOp(ASTNode* left, Token operation, ASTNode* right);
 public: ASTBinaryOp();
 public: [[nodiscard]] std::string ToString() const ;
 public: [[nodiscard]] std::string Get() const ;
 public: [[nodiscard]] std::string GetType() const ;
 };
 class ASTUnaryOp : public ASTNode {
-public: Token op;
+public: Token operation;
 public: ASTNode* right;
-public: ASTUnaryOp(Token op, ASTNode* right);
+public: bool isPostfix = false;
+public: ASTUnaryOp(Token operation, ASTNode* right);
 public: ASTUnaryOp();
 public: [[nodiscard]] std::string ToString() const ;
 public: [[nodiscard]] std::string Get() const ;
@@ -71,10 +72,18 @@ public: [[nodiscard]] std::string GetType() const ;
 };
 class ASTDotAccess : public ASTNode {
 public: ASTNode* left;
-public: Token op;
+public: Token operation;
 public: ASTNode* right;
-public: ASTDotAccess(ASTNode* left, Token op, ASTNode* right);
+public: ASTDotAccess(ASTNode* left, Token operation, ASTNode* right);
 public: ASTDotAccess();
+public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
+public: [[nodiscard]] std::string GetType() const ;
+};
+class ASTThisAccess : public ASTNode {
+public: ASTNode* right;
+public: ASTThisAccess(ASTNode* right);
+public: ASTThisAccess();
 public: [[nodiscard]] std::string ToString() const ;
 public: [[nodiscard]] std::string Get() const ;
 public: [[nodiscard]] std::string GetType() const ;
@@ -110,6 +119,23 @@ class ASTReferenceDecl : public ASTNode {
 public: ASTNode* left;
 public: ASTReferenceDecl(ASTNode* left);
 public: ASTReferenceDecl();
+public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
+public: [[nodiscard]] std::string GetType() const ;
+};
+class ASTNew : public ASTNode {
+public: ASTNode* node;
+public: ASTNew(ASTNode* node);
+public: ASTNew();
+public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
+public: [[nodiscard]] std::string GetType() const ;
+};
+class ASTDel : public ASTNode {
+public: ASTNode* node;
+public: bool isArray;
+public: ASTDel(ASTNode* node, bool isArray);
+public: ASTDel();
 public: [[nodiscard]] std::string ToString() const ;
 public: [[nodiscard]] std::string Get() const ;
 public: [[nodiscard]] std::string GetType() const ;
@@ -163,6 +189,17 @@ class ASTExpr : public ASTNode {
 public: ASTNode* expr;
 public: ASTExpr(ASTNode* expr);
 public: ASTExpr();
+public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
+public: [[nodiscard]] std::string GetType() const ;
+};
+class ASTOperatorDecl : public ASTNode {
+public: std::string operation;
+public: std::vector<ASTArgDecl*> args;
+public: ASTType* returnType;
+public: ASTBody* body;
+public: ASTOperatorDecl(std::string operation, std::vector<ASTArgDecl*> args, ASTType* returnType, ASTBody* body);
+public: ASTOperatorDecl();
 public: [[nodiscard]] std::string ToString() const ;
 public: [[nodiscard]] std::string Get() const ;
 public: [[nodiscard]] std::string GetType() const ;
@@ -251,6 +288,24 @@ public: std::vector<ASTInherArg*> inherits;
 public: ASTBody* body;
 public: ASTClassDecl(ASTNode* name, ASTTemplateDecl* templateDecl, std::vector<ASTInherArg*> inherits, ASTBody* body);
 public: ASTClassDecl();
+public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
+public: [[nodiscard]] std::string GetType() const ;
+};
+class ASTEnumField : public ASTNode {
+public: ASTNode* name;
+public: ASTExpr* value;
+public: ASTEnumField(ASTNode* name, ASTExpr* value);
+public: ASTEnumField();
+public: [[nodiscard]] std::string ToString() const ;
+public: [[nodiscard]] std::string Get() const ;
+public: [[nodiscard]] std::string GetType() const ;
+};
+class ASTEnumDecl : public ASTNode {
+public: ASTNode* name;
+public: std::vector<ASTEnumField*> values;
+public: ASTEnumDecl(ASTNode* name, std::vector<ASTEnumField*> values);
+public: ASTEnumDecl();
 public: [[nodiscard]] std::string ToString() const ;
 public: [[nodiscard]] std::string Get() const ;
 public: [[nodiscard]] std::string GetType() const ;

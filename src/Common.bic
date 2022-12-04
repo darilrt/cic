@@ -6,5 +6,5 @@ class Attribute {
     pub static let Const : int = 4;
     pub static let Public : int = 8;
     pub static let Private : int = 16;
-    pub static let Protected : int = 32;
+    pub static let Destructor : int = 32;
 }

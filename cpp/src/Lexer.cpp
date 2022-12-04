@@ -73,7 +73,7 @@ Token Lexer::ParseToken() {
             this->Advance();
             return Token(TokenType::NewLine, "\n", this->line, this->column);
         }
-        if (this->IsAlpha()) {
+        if ((this->IsAlpha()) || this->IsChar('_')) {
             return this->ParseIdentifier();
         }
         if (this->IsDigit()) {
@@ -238,7 +238,7 @@ Token Lexer::ParseToken() {
 }
 Token Lexer::ParseIdentifier() {
     std::string identifier;
-    while (IsAlphaNumeric()) {
+    while ((IsAlphaNumeric()) || this->IsChar('_')) {
         identifier += this->currentChar;
         this->Advance();
     }
@@ -302,8 +302,8 @@ Token Lexer::ParseIdentifier() {
     if (identifier == "del") {
         return Token(TokenType::Del, "del");
     }
-    if (identifier == "operator") {
-        return Token(TokenType::Operator, "operator");
+    if (identifier == "op") {
+        return Token(TokenType::Operator, "op");
     }
     if (identifier == "enum") {
         return Token(TokenType::Enum, "enum");
@@ -330,13 +330,13 @@ Token Lexer::ParseNumber() {
 Token Lexer::ParseString() {
     this->Advance();
     std::string string;
-    bool isNotNull = true;
-    bool isNotChar = true;
-    while (isNotNull && isNotChar) {
+    while ((!this->IsChar('"'))) {
         string += this->currentChar;
+        if (this->IsChar(92)) {
+            this->Advance();
+            string += this->currentChar;
+        }
         this->Advance();
-        isNotNull = this->IsNotNull();
-        isNotChar = !this->IsChar('"');
     }
     this->Advance();
     return Token(TokenType::String, string, this->column, this->line);
@@ -344,13 +344,13 @@ Token Lexer::ParseString() {
 Token Lexer::ParseChar() {
     this->Advance();
     std::string character;
-    bool isNotNull = true;
-    bool isNotChar = true;
-    while (isNotNull && isNotChar) {
+    while ((!this->IsChar(39)) && (this->IsNotNull())) {
         character += this->currentChar;
+        if (this->IsChar(92)) {
+            this->Advance();
+            character += this->currentChar;
+        }
         this->Advance();
-        isNotNull = this->IsNotNull();
-        isNotChar = !this->IsChar(39);
     }
     this->Advance();
     return Token(TokenType::Char, character, this->column, this->line);

@@ -50,11 +50,8 @@ int main(int argc, char* argv[]) {
     codeGenerator->Generate(ir);
     std::string output = options.output;
     if (output == "stdout") {
-        std::cout << "Header" << std::endl;
-        std::cout << "#pragma once" << std::endl;
+        std::cout << "Using stdout" << std::endl;
         std::cout << codeGenerator->headerBuffer;
-        std::cout << std::endl << "Source" << std::endl;
-        std::cout << "#include \"" << output << ".hpp\"" << std::endl;
         std::cout << codeGenerator->sourceBuffer;
     } else {
         if (output == "") {

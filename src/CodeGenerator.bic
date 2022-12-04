@@ -56,22 +56,29 @@ class CodeGenerator {
             GenerateDeclaration(node->decls[i]);
             i++;
         }
-        headerBuffer += "}\n";
+        headerBuffer += "}";
     }
 
     GenerateDeclaration(node : IRNode*) -> void {
-        if (IsA<IRFunction>(node)) {
-            GenerateFunction(As<IRFunction>(node));
-        }
-        if (IsA<IRImport>(node)) {
-            GenerateImport(As<IRImport>(node));
-        }
-        if (IsA<IRClass>(node)) {
-            GenerateClass(As<IRClass>(node));
-        }
+        if (IsA<IRFunction>(node)) { GenerateFunction(As<IRFunction>(node)); }
+        if (IsA<IROperator>(node)) { GenerateOperator(As<IROperator>(node)); }
+        if (IsA<IRImport>(node)) { GenerateImport(As<IRImport>(node)); }
+        if (IsA<IRClass>(node)) { GenerateClass(As<IRClass>(node)); }
+        if (IsA<IRVariable>(node)) { GenerateVariable(As<IRVariable>(node)); }
+        if (IsA<IREnum>(node)) { GenerateEnum(As<IREnum>(node)); }
     }
 
     GenerateFunction(node : IRFunction*) -> void {
+        headerBuffer += node->GetHeader();
+        sourceBuffer += node->GetSource();
+    }
+    
+    GenerateOperator(node : IROperator*) -> void {
+        headerBuffer += node->GetHeader();
+        sourceBuffer += node->GetSource();
+    }
+
+    GenerateEnum(node : IREnum*) -> void {
         headerBuffer += node->GetHeader();
         sourceBuffer += node->GetSource();
     }
@@ -116,13 +123,20 @@ class CodeGenerator {
                 }
                 i++;
             }
-            str += " ";
         }
+        str += " ";
 
         headerBuffer += str;
         
         PushIndent();
         .GenerateBody(node->body);
         PopIndent();
+
+        headerBuffer += ";\n";
+    }
+
+    GenerateVariable(node : IRVariable*) -> void {
+        headerBuffer += (node->GetHeader());
+        sourceBuffer += (node->GetSource());
     }
 }

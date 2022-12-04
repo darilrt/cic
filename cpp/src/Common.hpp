@@ -6,5 +6,5 @@ public: static int const Virtual = 2;
 public: static int const Const = 4;
 public: static int const Public = 8;
 public: static int const Private = 16;
-public: static int const Protected = 32;
+public: static int const Destructor = 32;
 };

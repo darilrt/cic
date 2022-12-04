@@ -19,21 +19,27 @@
 - &#9745; Import statement
 
 ## Version 0.0.2a
-- &#9744; Declare classes
-    - &#9744; Inheritance
-    - &#9744; Polymorphism
-    - &#9744; Encapsulation
-    - &#9744; Virtual functions
-    - &#9744; Templates
-    - &#9744; Protection levels
-    - &#9744; Operator overloading
-    - &#9744; Static members
+- &#9745; Declare classes
+    - &#9745; Inheritance
+    - &#9745; Polymorphism
+    - &#9745; Encapsulation
+    - &#9745; Virtual functions
+    - &#9745; Templates
+    - &#9745; Protection levels
+    - &#9745; Operator overloading
+    - &#9745; Constructor
+    - &#9745; Destructor
+    - &#9745; Static members
     - &#9744; Nested classes
     - &#9744; Friend functions
     - &#9744; Friend classes
+    - &#9745; New operator
+    - &#9745; Delete operator
+    - &#9745; This Access
 - &#9744; Lambda expressions
 - &#9744; Default arguments
 - &#9744; Variadic templates
+- &#9744; Enum declaration
 
 ## Ideas
 - &#9744; getter and setter for class properties

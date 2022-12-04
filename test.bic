@@ -1,5 +1,0 @@
-class Type<T : int>(pub A, priv B, C) {
-    pub Get() -> T {
-        ret A
-    }
-}
