@@ -1,0 +1,6 @@
+*.cpp
+*.hpp
+*.h
+*.o
+*.exe
+*.elf
