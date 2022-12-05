@@ -46,5 +46,5 @@ cc  ./cpp/obj/src/Cic.o ^
     ./cpp/obj/src/CodeGenerator.o ^
     ./cpp/obj/src/IRGenerator.o ^
     ./cpp/obj/src/Core.o ^
-    -o ./bin/hc.exe ^
+    -o ./bin/cic.exe ^
     -lstdc++
