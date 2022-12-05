@@ -444,7 +444,7 @@ class Parser {
             node = .Expr();
             .Eat(TokenType::RParen);
         } 
-        elif (.IsType(TokenType::Ident)) {
+        elif (.IsType(TokenType::Ident) | .IsType(TokenType::Type)) {
             node = .ScopeResolution();
         }
         elif (.IsType(TokenType::New)) {
