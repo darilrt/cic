@@ -3,7 +3,7 @@ import "vector";
 import "fstream";
 import "tuple";
 
-import "Core.bic";
+import "Core.cic";
 
 class ProgramOptions {
     pub mut input : std::string = "";

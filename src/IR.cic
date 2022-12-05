@@ -2,7 +2,7 @@ import "iostream";
 import "vector";
 import "string";
 import "tuple";
-import "AST.bic";
+import "AST.cic";
 
 class IRNode {
     pub IRNode() {

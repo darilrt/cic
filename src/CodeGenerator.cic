@@ -1,7 +1,7 @@
 import "iostream";
 import "filesystem";
-import "IR.bic";
-import "Common.bic";
+import "IR.cic";
+import "Common.cic";
 
 IsA<T : type>(node : IRNode*) -> bool {
     ret (dynamic_cast<T*>(node)) != null;
@@ -90,7 +90,7 @@ class CodeGenerator {
         mut path : std::string = node->path;
         mut ext : std::string = path.substr((path.find_last_of(".")) + 1, path.size());
 
-        if (ext == "bic") {
+        if (ext == "cic") {
             mut stem : std::string = path.substr((path.find_last_of(93)) + 1, path.size());
             stem = stem.substr(0, stem.find_last_of("."));
             headerBuffer += "#include \"" + stem + ".hpp" + '\"' + '\n';

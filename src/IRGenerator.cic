@@ -1,8 +1,8 @@
 import "iostream";
 import "vector";
 import "tuple";
-import "AST.bic";
-import "IR.bic";
+import "AST.cic";
+import "IR.cic";
 
 IsA<T : type>(node : ASTNode*) -> bool {
     ret (dynamic_cast<T*>(node)) != null;

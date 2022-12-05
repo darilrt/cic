@@ -1,4 +1,4 @@
-## H programming language
+## CIC programming language
 ### Current version: 0.0.2a
 <br></br>
 # Road Map
@@ -46,6 +46,7 @@
     - &#9744; Friend classes
 
 ## Ideas
-- &#9744; getter and setter for class properties
-- &#9744; meta programming
-- &#9744; remove the need for semicolons
+- &#9744; Getter and setter for class properties
+- &#9744; Meta programming
+- &#9744; Remove the need for semicolons
+- &#9744; Extensions

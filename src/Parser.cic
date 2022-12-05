@@ -1,7 +1,7 @@
 import "vector";
-import "Token.bic";
-import "Lexer.bic";
-import "AST.bic";
+import "Token.cic";
+import "Lexer.cic";
+import "AST.cic";
 
 class ParserState {
     pub mut state : std::string;

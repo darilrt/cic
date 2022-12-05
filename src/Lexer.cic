@@ -1,7 +1,7 @@
 import "iostream";
 import "vector";
 import "string";
-import "Token.bic";
+import "Token.cic";
 
 class Lexer {
     pub mut source : std::string;

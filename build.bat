@@ -1,5 +1,5 @@
 @echo off
-set cb="../cic"
+set cb="./bin/cic"
 rem set cb=python "../bic-lang/main.py"
 set cc=gcc
 
@@ -13,16 +13,16 @@ if not exist cpp\obj\src mkdir cpp\obj\src
 
 rem compile cic
 
-%cb% src/Cic.bic -o ./cpp/src
-%cb% src/Token.bic -o ./cpp/src
-%cb% src/Lexer.bic -o ./cpp/src
-%cb% src/Parser.bic -o ./cpp/src
-%cb% src/AST.bic -o ./cpp/src
-%cb% src/IR.bic -o ./cpp/src
-%cb% src/Common.bic -o ./cpp/src
-%cb% src/CodeGenerator.bic -o ./cpp/src
-%cb% src/IRGenerator.bic -o ./cpp/src
-%cb% src/Core.bic -o ./cpp/src
+%cb% src/Cic.cic -o ./cpp/src
+%cb% src/Token.cic -o ./cpp/src
+%cb% src/Lexer.cic -o ./cpp/src
+%cb% src/Parser.cic -o ./cpp/src
+%cb% src/AST.cic -o ./cpp/src
+%cb% src/IR.cic -o ./cpp/src
+%cb% src/Common.cic -o ./cpp/src
+%cb% src/CodeGenerator.cic -o ./cpp/src
+%cb% src/IRGenerator.cic -o ./cpp/src
+%cb% src/Core.cic -o ./cpp/src
 
 rem compile cpp files
 

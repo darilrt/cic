@@ -1,7 +1,7 @@
 import "iostream";
 import "vector";
-import "Common.bic";
-import "Token.bic";
+import "Common.cic";
+import "Token.cic";
 
 // Base class for all AST nodes
 class ASTNode {

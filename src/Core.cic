@@ -3,12 +3,12 @@ import "vector";
 import "fstream";
 import "tuple";
 
-import "Token.bic";
-import "Lexer.bic";
-import "Parser.bic";
-import "AST.bic";
-import "CodeGenerator.bic";
-import "IRGenerator.bic";
+import "Token.cic";
+import "Lexer.cic";
+import "Parser.cic";
+import "AST.cic";
+import "CodeGenerator.cic";
+import "IRGenerator.cic";
 
 IRFromFile(filename : std::string) -> IRNode* {
     mut file : std::ifstream = std::ifstream(filename);
