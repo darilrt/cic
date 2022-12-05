@@ -1,0 +1,71 @@
+import "iostream";
+import "vector";
+import "fstream";
+import "tuple";
+
+import "Core.bic";
+
+class ProgramOptions {
+    pub mut input : std::string = "";
+    pub mut output : std::string = "";
+    pub mut help : bool = false;
+}
+
+ParseArgs(args : std::vector<std::string>) -> ProgramOptions {
+    mut options : ProgramOptions;
+    
+    mut i : int = 1;
+    while ((i) < (args.size())) {
+        if (args[i] == "-o") {
+            i++;
+            options.output = args[i];
+        }
+        elif (args[i] == "-h" || args[i] == "--help") {
+            options.help = true;
+        }
+        else {
+            options.input = args[i];
+        }
+        i++;
+    }
+
+    ret options;
+}
+
+ShowHelp() {
+    std::cout << "Usage: cic [options] [input file]\n";
+    std::cout << "Options:\n";
+    std::cout << "  -o <dir>    Output directory\n";
+    std::cout << "  -h --help  Show this help\n";
+}
+
+ArgsToVector(argc : int, argv : char**) -> std::vector<std::string> {
+    mut args : std::vector<std::string>;
+    mut i : int = 0;
+    while ((i) < (argc)) {
+        args.push_back(argv[i]);
+        i++;
+    }
+    ret args;
+}
+
+main(argc : int, argv[] : char*) -> int {
+    let args : std::vector<std::string> = ArgsToVector(argc, argv);
+    let options : ProgramOptions = ParseArgs(args);
+
+    if (options.help) {
+        ShowHelp();
+        ret 0;
+    }
+
+    if (options.input == "") {
+        std::cout << "No input file specified" << std::endl;
+        ret 1;
+    }
+
+    let ir : IRNode* = IRFromFile(options.input);
+    SaveIRToFile(ir, options.output, options.input);
+
+    del ir;
+    ret 0;
+}

@@ -54,7 +54,6 @@ IRNode* IRGenerator::TranslateNode(ASTNode* node, IRNode* parent) {
     if (node != 0) {
         std::cout << "Unknown node type: " << node->GetType() << std::endl;
     } else {
-        std::cout << "Null node" << std::endl;
     }
     return 0;
 }
@@ -79,7 +78,9 @@ IRBody* IRGenerator::TranslateBody(ASTBody* body, IRNode* parent) {
     while ((i) < body->decls.size()) {
         ASTNode* const decl = body->decls[i];
         IRNode* const irDecl = TranslateNode(decl, parent);
-        irBody->decls.push_back(irDecl);
+        if (irDecl != 0) {
+            irBody->decls.push_back(irDecl);
+        }
         i++;
     }
     return irBody;

@@ -28,8 +28,9 @@ class Parser {
     mut prevToken : Token*;
     mut stateStack : std::vector<ParserState>;
     mut state : std::string;
+    mut lines : std::vector<int>;
 
-    pub Parser(lexer : Lexer*) {
+    pub Parser(lexer : Lexer*, lines : std::vector<int>) {
         .lexer = lexer;
         .tokens = lexer->Parse();
         .current = 0;
@@ -87,6 +88,19 @@ class Parser {
         ret false;
     }
 
+    PrintLine(line : int) -> void {
+        mut lineStart : int = .lines[line];
+
+        while ((lineStart) < .lexer->source.size()) {
+            let c : char = .lexer->source[lineStart];
+            if (c == '\n') {
+                break;
+            }
+            std::cout << c;
+            lineStart++;
+        }
+    }
+
     Eat(tokenType : TokenType) -> void {
         if ((.currentToken->tokenType) == tokenType) {
             .current += 1;
@@ -109,6 +123,7 @@ class Parser {
             error += ", column: ";
             error += std::to_string(.currentToken->column);
             .Error(error);
+            .PrintLine(.currentToken->line);
         }
     }
 

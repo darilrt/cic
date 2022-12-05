@@ -7,7 +7,7 @@ ParserState::ParserState(std::string state, int current) {
     this->state = state;
     this->current = current;
 }
-Parser::Parser(Lexer* lexer) {
+Parser::Parser(Lexer* lexer, std::vector<int> lines) {
     this->lexer = lexer;
     this->tokens = lexer->Parse();
     this->current = 0;
@@ -54,6 +54,17 @@ bool Parser::IsInsideState(std::string state) {
     }
     return false;
 }
+void Parser::PrintLine(int line) {
+    int lineStart = this->lines[line];
+    while ((lineStart) < this->lexer->source.size()) {
+        char const c = this->lexer->source[lineStart];
+        if (c == '\n') {
+            break;
+        }
+        std::cout << c;
+        lineStart++;
+    }
+}
 void Parser::Eat(TokenType tokenType) {
     if ((this->currentToken->tokenType) == tokenType) {
         this->current += 1;
@@ -74,6 +85,7 @@ void Parser::Eat(TokenType tokenType) {
         error += ", column: ";
         error += std::to_string(this->currentToken->column);
         this->Error(error);
+        this->PrintLine(this->currentToken->line);
     }
 }
 void Parser::EatNewLine() {

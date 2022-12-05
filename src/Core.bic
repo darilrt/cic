@@ -1,0 +1,95 @@
+import "iostream";
+import "vector";
+import "fstream";
+import "tuple";
+
+import "Token.bic";
+import "Lexer.bic";
+import "Parser.bic";
+import "AST.bic";
+import "CodeGenerator.bic";
+import "IRGenerator.bic";
+
+IRFromFile(filename : std::string) -> IRNode* {
+    mut file : std::ifstream = std::ifstream(filename);
+    mut fileContents : std::string = "";
+    mut line : std::string = "";
+    mut lines : std::vector<int>;
+
+    while (std::getline(file, line)) {
+        fileContents += line + "\n";
+        lines.push_back(line.size());
+    }
+
+    file.close();
+    
+    mut lexer : Lexer* = new Lexer(fileContents); 
+    mut parser : Parser* = new Parser(lexer, lines);
+    let root : ASTNode* = parser->Parse();
+
+    mut irGenerator : IRGenerator* = new IRGenerator();
+    let ir : IRNode* = irGenerator->Generate(root);
+
+    del lexer;
+    del parser;
+    del root;
+    del irGenerator;
+
+    ret ir;
+}
+
+SaveIRToFile(ir : IRNode*, outputDir : const std::string&, filename : const std::string&) -> void {
+    mut newFilename : std::string = filename;
+    mut i : int = 0;
+    while ((i) < (newFilename.size())) {
+        if (newFilename[i] == 92) {
+            newFilename[i] = '/';
+        }
+        i++;
+    }
+
+    mut stem : std::string = newFilename.substr((newFilename.find_last_of("/")) + 1, newFilename.size());
+    stem = stem.substr(0, stem.find_last_of("."));
+    
+    mut codeGenerator : CodeGenerator* = new CodeGenerator();
+    codeGenerator->Generate(ir);
+
+    mut output : std::string = outputDir;
+    if (outputDir == "stdout") {
+        std::cout << "// Header: " << filename << std::endl;
+        std::cout << "#pragma once" << std::endl;
+        std::cout << codeGenerator->headerBuffer;
+
+        std::cout << std::endl << "// Source: " << filename << std::endl;
+        std::cout << "#include \"" << stem << ".hpp\"" << std::endl;
+        std::cout << codeGenerator->sourceBuffer;
+    } else {
+        if (output == "") {
+            output = stem;
+        } else {
+            output = outputDir + "/" + stem;
+            
+            i = 0;
+            while ((i) < (output.size())) {
+                if (output[i] == 92) {
+                    output[i] = '/';
+                }
+                i++;
+            }
+        }
+        
+        mut outputSource : std::ofstream = std::ofstream(output + ".cpp");
+        outputSource << "#include \"" << output << ".h\"" << std::endl;
+        outputSource << codeGenerator->sourceBuffer;
+        outputSource.close();
+        
+        mut outputHeader : std::ofstream = std::ofstream(output + ".h");
+        outputHeader << "#pragma once" << std::endl;
+        outputHeader << codeGenerator->headerBuffer;
+        outputHeader.close();
+
+        std::cout << "Wrote " << output << ".h and " << output << ".cpp" << std::endl;
+    }
+
+    del codeGenerator;
+}

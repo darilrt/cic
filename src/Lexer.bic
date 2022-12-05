@@ -4,7 +4,7 @@ import "string";
 import "Token.bic";
 
 class Lexer {
-    mut source : std::string;
+    pub mut source : std::string;
     mut index : int;
     mut column : int;
     mut line : int;

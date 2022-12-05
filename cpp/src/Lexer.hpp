@@ -4,7 +4,7 @@
 #include "string"
 #include "Token.hpp"
 class Lexer {
-protected: std::string source;
+public: std::string source;
 protected: int index;
 protected: int column;
 protected: int line;
