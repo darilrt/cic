@@ -43,7 +43,9 @@
 - &#9745; Import statement
 
 ## Ideas
-- &#9744; Getter and setter for class properties
-- &#9744; Meta programming
-- &#9744; Remove the need for semicolons
-- &#9744; Extensions
+- Getter and setter for class properties
+- Meta programming
+- Remove the need for semicolons
+- Type Extensions
+- Package Manager
+- Standar Library
