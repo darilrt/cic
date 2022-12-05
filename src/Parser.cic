@@ -467,7 +467,8 @@ class Parser {
             if (.IsInsideState("CheckingForPointer")) {
                 ret null;
             }
-            .Error("Expected an expression");
+            .Error("Expected an expression after this:" + .currentToken->literal);
+            .PrintLine(.currentToken->line);
         }
 
         ret node;
@@ -532,7 +533,8 @@ class Parser {
             .Eat(TokenType::Type);
         }
         else {
-            .Error("Expected an identifier");
+            .Error("Expected an identifier after this:" + .currentToken->literal);
+            .PrintLine(.currentToken->line);
         }
 
         if (.IsType(TokenType::Less)) {
@@ -941,7 +943,8 @@ class Parser {
             ret "()";
         }
         else {
-            .Error("Expected operator");
+            .Error("Expected operator but got " + .currentToken->literal + "");
+            .PrintLine(.currentToken->line);
         }
 
         ret operation;
@@ -1031,6 +1034,7 @@ class Parser {
         }
         else {
             .Error("Expected declaration statement");
+            .PrintLine(.currentToken->line);
         }
 
         ret null;
@@ -1118,6 +1122,7 @@ class Parser {
         }
         else {
             .Error("Expected class statement");
+            .PrintLine(.currentToken->line);
         }
         
         ret node;
