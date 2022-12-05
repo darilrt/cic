@@ -79,11 +79,11 @@ SaveIRToFile(ir : IRNode*, outputDir : const std::string&, filename : const std:
         }
         
         mut outputSource : std::ofstream = std::ofstream(output + ".cpp");
-        outputSource << "#include \"" << output << ".h\"" << std::endl;
+        outputSource << "#include \"" << stem << ".hpp\"" << std::endl;
         outputSource << codeGenerator->sourceBuffer;
         outputSource.close();
         
-        mut outputHeader : std::ofstream = std::ofstream(output + ".h");
+        mut outputHeader : std::ofstream = std::ofstream(output + ".hpp");
         outputHeader << "#pragma once" << std::endl;
         outputHeader << codeGenerator->headerBuffer;
         outputHeader.close();

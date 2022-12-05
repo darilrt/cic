@@ -432,7 +432,7 @@ class Parser {
             .Eat(TokenType::True);
         }
         elif (.IsType(TokenType::Null)) {
-            node = new ASTConstant(.currentToken->literal);
+            node = new ASTConstant("NULL");
             .Eat(TokenType::Null);
         }
         elif (.IsType(TokenType::False)) {
@@ -449,9 +449,6 @@ class Parser {
         }
         elif (.IsType(TokenType::New)) {
             node = .New();
-        }
-        elif (.IsType(TokenType::Del)) {
-            node = .Del();
         }
         elif (.IsType(TokenType::String)) {
             node = new ASTConstant('"' + .currentToken->literal + '"');
@@ -1069,6 +1066,10 @@ class Parser {
             node = new ASTContinue();
             .EatNewLine();
         }
+        elif (.IsType(TokenType::Del)) {
+            node = .Del();
+            .EatNewLine();
+        }
         else {
             node = .Expr();
             .EatNewLine();
@@ -1110,8 +1111,8 @@ class Parser {
         elif (.IsType(TokenType::Ident)) {
             node = .FunctionDecl();
         }
-        elif (.IsType(TokenType::Xor)) {
-            .Eat(TokenType::Xor);
+        elif (.IsType(TokenType::BitNot)) {
+            .Eat(TokenType::BitNot);
             node = .FunctionDecl();
             node->attr |= Attribute::Destructor;
         }

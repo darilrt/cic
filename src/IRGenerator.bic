@@ -33,6 +33,7 @@ class IRGenerator {
         if (IsA<ASTImport>(node)) { ret TranslateImport(As<ASTImport>(node)); }
         if (IsA<ASTClassDecl>(node)) { ret TranslateClass(As<ASTClassDecl>(node), parent); }
         if (IsA<ASTEnumDecl>(node)) { ret TranslateEnum(As<ASTEnumDecl>(node), parent); }
+        if (IsA<ASTDel>(node)) { ret TranslateDel(As<ASTDel>(node)); }
 
         if (node != null) {
             std::cout << "Unknown node type: " << node->GetType() << std::endl;
@@ -47,6 +48,13 @@ class IRGenerator {
     TranslateExpr(node : ASTExpr*) -> IRExpr* {
         if (node == null) { ret null; }
         ret new IRExpr(node->Get());
+    }
+
+    TranslateDel(node : ASTDel*) -> IRDel* {
+        mut ir : IRDel* = new IRDel();
+        ir->expr = TranslateNode(node->node, null);
+        ir->isArray = node->isArray;
+        ret ir;
     }
 
     TranslateProgram(node : ASTProgram*) -> IRNode* {

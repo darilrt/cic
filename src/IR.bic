@@ -101,8 +101,13 @@ class IRFunction(pub IRNode) {
     pub mut parent : IRNode*;
 
     pub GetFullName() const -> std::string {
-        if ((.parent) != nullptr) {
-            ret (.parent->GetFullName()) + "::" + .name;
+        mut fname : std::string = .name;
+        if ((.parent) != null) {
+            if (((.parent->GetName()) == .name) && (.attr) & (Attribute::Destructor)) {
+                fname = "~" + .name;
+            }
+
+            ret (.parent->GetFullName()) + "::" + fname;
         }
         ret .name;
     }
@@ -152,7 +157,7 @@ class IRFunction(pub IRNode) {
     }
 
     pub GetHeader() const -> std::string {
-        mut name : std::string = .name;
+        mut fname : std::string = .name;
 
         mut protection : std::string = "protected: ";
         
@@ -164,11 +169,11 @@ class IRFunction(pub IRNode) {
             retType = "";
 
             if ((.attr) & (Attribute::Destructor)) {
-                name = "~" + .name;
+                fname = "~" + .name;
             }
         }
 
-        mut declaration : std::string = retType + name + (.GetParamenters());
+        mut declaration : std::string = retType + fname + (.GetParamenters());
         
         let tmp : std::string = .GetTemplate();
         mut sbody : std::string = ";";
@@ -441,7 +446,11 @@ class IRVariable(pub IRNode) {
         if ((.attr) & (Attribute::Public)) { protection = "public: "; }
         if ((.attr) & (Attribute::Private)) { protection = "private: "; }
         
-        mut declaration : std::string = .vType + " " + name;
+        mut declaration : std::string = .vType + " ";
+
+        if ((.attr) & (Attribute::Const)) { declaration += "const "; }
+        
+        declaration += name;
         
         mut preAttrs : std::string = "";
         if ((.attr) & (Attribute::Static)) { preAttrs += "static "; }
@@ -523,5 +532,20 @@ class IREnum(pub IRNode) {
 
     pub GetSource() const -> std::string {
         ret "";
+    }
+}
+
+class IRDel(pub IRNode) {
+    pub mut expr : IRNode*;
+    pub mut isArray : bool = false;
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "delete ";
+
+        if (.isArray) {
+            str += "[] ";
+        }
+
+        ret str + (.expr->ToString());
     }
 }

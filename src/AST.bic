@@ -545,6 +545,9 @@ class ASTTypeDecl(pub ASTNode) {
 class ASTBody(pub ASTNode) {
     pub mut decls : std::vector<ASTNode*>;
  
+    pub ASTBody() {
+    }
+
     pub ASTBody(decls : std::vector<ASTNode*>) {
         .decls = decls;
     }

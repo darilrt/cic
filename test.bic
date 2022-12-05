@@ -1,0 +1,10 @@
+
+class Hola {
+    Hola(a : int) {
+        print("Hola");
+    }
+
+    ~Hola() {
+        
+    }
+}

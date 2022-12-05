@@ -152,7 +152,7 @@ class Lexer {
             if (.Switch1('&')) { ret Token(TokenType::And, "&"); }
             if (.Switch1('|')) { ret Token(TokenType::Or, "|"); }
             if (.Switch1('^')) { ret Token(TokenType::Xor, "^"); }
-            if (.Switch1('~')) { ret Token(TokenType::Xor, "~"); }
+            if (.Switch1('~')) { ret Token(TokenType::BitNot, "~"); }
             if (.Switch1('?')) { ret Token(TokenType::Question, "?"); }
             if (.Switch1(':')) { ret Token(TokenType::Colon, ":"); }
             if (.Switch1(';')) { ret Token(TokenType::Semicolon, ";"); }
@@ -199,6 +199,7 @@ class Lexer {
         if (identifier == "del") { ret Token(TokenType::Del, "del"); }
         if (identifier == "op") { ret Token(TokenType::Operator, "op"); }
         if (identifier == "enum") { ret Token(TokenType::Enum, "enum"); }
+        if (identifier == "null") { ret Token(TokenType::Null, "null"); }
 
         ret Token(TokenType::Ident, identifier, .column, .line);
     }

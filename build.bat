@@ -1,17 +1,7 @@
 @echo off
-set cb=python "../bic-lang/main.py"
+set cb="../cic"
+rem set cb=python "../bic-lang/main.py"
 set cc=gcc
-
-%cb% src/Cic.bic -o ./cpp/
-%cb% src/Token.bic -o ./cpp/
-%cb% src/Lexer.bic -o ./cpp/
-%cb% src/Parser.bic -o ./cpp/
-%cb% src/AST.bic -o ./cpp/
-%cb% src/IR.bic -o ./cpp/
-%cb% src/Common.bic -o ./cpp/
-%cb% src/CodeGenerator.bic -o ./cpp/
-%cb% src/IRGenerator.bic -o ./cpp/
-%cb% src/Core.bic -o ./cpp/
 
 rem create cpp folder
 
@@ -20,6 +10,19 @@ if not exist cpp mkdir cpp
 if not exist cpp\src mkdir cpp\src
 if not exist cpp\obj mkdir cpp\obj
 if not exist cpp\obj\src mkdir cpp\obj\src
+
+rem compile cic
+
+%cb% src/Cic.bic -o ./cpp/src
+%cb% src/Token.bic -o ./cpp/src
+%cb% src/Lexer.bic -o ./cpp/src
+%cb% src/Parser.bic -o ./cpp/src
+%cb% src/AST.bic -o ./cpp/src
+%cb% src/IR.bic -o ./cpp/src
+%cb% src/Common.bic -o ./cpp/src
+%cb% src/CodeGenerator.bic -o ./cpp/src
+%cb% src/IRGenerator.bic -o ./cpp/src
+%cb% src/Core.bic -o ./cpp/src
 
 rem compile cpp files
 
