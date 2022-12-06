@@ -1,9 +1,9 @@
-import "iostream";
-import "vector";
-import "fstream";
-import "tuple";
+include "iostream";
+include "vector";
+include "fstream";
+include "tuple";
 
-import "Core.cic";
+include "Core.cic";
 
 class ProgramOptions {
     pub mut input : std::string = "";

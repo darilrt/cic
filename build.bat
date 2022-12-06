@@ -1,6 +1,5 @@
 @echo off
-set cb="./bin/cic"
-rem set cb=python "../bic-lang/main.py"
+set cb=".\bin\cic"
 set cc=gcc
 
 rem create cpp folder

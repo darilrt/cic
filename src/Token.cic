@@ -1,4 +1,4 @@
-import "iostream";
+include "iostream";
 
 enum TokenType {
     EndOfFile, // End of file
@@ -31,6 +31,7 @@ enum TokenType {
     Let, // let
     Mut, // mut
     Import, // import
+    Include, // include
     Class, // class
     Pub, // pub
     Priv, // priv

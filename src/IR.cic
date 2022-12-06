@@ -1,8 +1,8 @@
-import "iostream";
-import "vector";
-import "string";
-import "tuple";
-import "AST.cic";
+include "iostream";
+include "vector";
+include "string";
+include "tuple";
+include "AST.cic";
 
 class IRNode {
     pub IRNode() {
@@ -475,6 +475,14 @@ class IRImport(pub IRNode) {
 
     pub ToString() const -> std::string {
         ret "import \"" + .path + '\"';
+    }
+}
+
+class IRInclude(pub IRNode) {
+    pub mut path : std::string;
+
+    pub ToString() const -> std::string {
+        ret "include \"" + .path + '\"';
     }
 }
 

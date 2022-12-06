@@ -1,11 +1,11 @@
 # CIC [WIP]
 
-CIC is a language that compiles to c++ code.
+CIC is a language that compiles to c++ code. Focused in c++17.
 
 ## Hello, World!
 
 ```cic
-import "iostream";
+include "iostream";
 
 main() -> int {
     std::cout << "Hello, World!" << std::endl;

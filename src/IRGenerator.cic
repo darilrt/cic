@@ -1,8 +1,8 @@
-import "iostream";
-import "vector";
-import "tuple";
-import "AST.cic";
-import "IR.cic";
+include "iostream";
+include "vector";
+include "tuple";
+include "AST.cic";
+include "IR.cic";
 
 IsA<T : type>(node : ASTNode*) -> bool {
     ret (dynamic_cast<T*>(node)) != null;
@@ -30,7 +30,7 @@ class IRGenerator {
         if (IsA<ASTWhile>(node)) { ret TranslateWhile(As<ASTWhile>(node)); }
         if (IsA<ASTBreak>(node)) { ret TranslateBreak(As<ASTBreak>(node)); }
         if (IsA<ASTContinue>(node)) { ret TranslateContinue(As<ASTContinue>(node)); }
-        if (IsA<ASTImport>(node)) { ret TranslateImport(As<ASTImport>(node)); }
+        if (IsA<ASTInclude>(node)) { ret TranslateInclude(As<ASTInclude>(node)); }
         if (IsA<ASTClassDecl>(node)) { ret TranslateClass(As<ASTClassDecl>(node), parent); }
         if (IsA<ASTEnumDecl>(node)) { ret TranslateEnum(As<ASTEnumDecl>(node), parent); }
         if (IsA<ASTDel>(node)) { ret TranslateDel(As<ASTDel>(node)); }
@@ -231,6 +231,13 @@ class IRGenerator {
         irImport->path = importNode->path->literal;
 
         ret irImport;
+    }
+
+    TranslateInclude(includeNode : ASTInclude*) -> IRInclude* {
+        let irInclude : IRInclude* = new IRInclude();
+        irInclude->path = includeNode->path->literal;
+
+        ret irInclude;
     }
 
     TranslateClass(classNode : ASTClassDecl*, parent : IRNode*) -> IRClass* {

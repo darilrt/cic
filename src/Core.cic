@@ -1,14 +1,14 @@
-import "iostream";
-import "vector";
-import "fstream";
-import "tuple";
+include "iostream";
+include "vector";
+include "fstream";
+include "tuple";
 
-import "Token.cic";
-import "Lexer.cic";
-import "Parser.cic";
-import "AST.cic";
-import "CodeGenerator.cic";
-import "IRGenerator.cic";
+include "Token.cic";
+include "Lexer.cic";
+include "Parser.cic";
+include "AST.cic";
+include "CodeGenerator.cic";
+include "IRGenerator.cic";
 
 IRFromFile(filename : std::string) -> IRNode* {
     mut file : std::ifstream = std::ifstream(filename);

@@ -1,7 +1,7 @@
-import "iostream";
-import "vector";
-import "string";
-import "Token.cic";
+include "iostream";
+include "vector";
+include "string";
+include "Token.cic";
 
 class Lexer {
     pub mut source : std::string;
@@ -191,6 +191,7 @@ class Lexer {
         if (identifier == "let") { ret Token(TokenType::Let, "let"); }
         if (identifier == "mut") { ret Token(TokenType::Mut, "mut"); }
         if (identifier == "import") { ret Token(TokenType::Import, "import"); }
+        if (identifier == "include") { ret Token(TokenType::Include, "include"); }
         if (identifier == "pub") { ret Token(TokenType::Pub, "pub"); }
         if (identifier == "priv") { ret Token(TokenType::Priv, "priv"); }
         if (identifier == "static") { ret Token(TokenType::Static, "static"); }

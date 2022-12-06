@@ -1,7 +1,7 @@
-import "iostream";
-import "filesystem";
-import "IR.cic";
-import "Common.cic";
+include "iostream";
+include "filesystem";
+include "IR.cic";
+include "Common.cic";
 
 IsA<T : type>(node : IRNode*) -> bool {
     ret (dynamic_cast<T*>(node)) != null;
@@ -62,7 +62,7 @@ class CodeGenerator {
     GenerateDeclaration(node : IRNode*) -> void {
         if (IsA<IRFunction>(node)) { GenerateFunction(As<IRFunction>(node)); }
         if (IsA<IROperator>(node)) { GenerateOperator(As<IROperator>(node)); }
-        if (IsA<IRImport>(node)) { GenerateImport(As<IRImport>(node)); }
+        if (IsA<IRInclude>(node)) { GenerateInclude(As<IRInclude>(node)); }
         if (IsA<IRClass>(node)) { GenerateClass(As<IRClass>(node)); }
         if (IsA<IRVariable>(node)) { GenerateVariable(As<IRVariable>(node)); }
         if (IsA<IREnum>(node)) { GenerateEnum(As<IREnum>(node)); }
@@ -83,7 +83,7 @@ class CodeGenerator {
         sourceBuffer += node->GetSource();
     }
 
-    GenerateImport(node : IRImport*) -> void {
+    GenerateInclude(node : IRInclude*) -> void {
         // headerBuffer += "#include \"" + node->path + '\"' + '\n';
 
         // get path ext

@@ -1,7 +1,7 @@
-import "vector";
-import "Token.cic";
-import "Lexer.cic";
-import "AST.cic";
+include "vector";
+include "Token.cic";
+include "Lexer.cic";
+include "AST.cic";
 
 class ParserState {
     pub mut state : std::string;
@@ -833,6 +833,15 @@ class Parser {
         ret new ASTImport(path);
     }
 
+    // IncludeStmt: 'include' String
+    IncludeStmt() -> ASTInclude* {
+        .Eat(TokenType::Include);
+        let path : Token* = .currentToken;
+        .Eat(TokenType::String);
+
+        ret new ASTInclude(path);
+    }
+
     // InherArg: ('priv' | 'pub')? ScopeResolution
     InherArg() -> ASTInherArg* {
         mut protection : Token* = null;
@@ -1023,8 +1032,8 @@ class Parser {
         elif (.IsType(TokenType::Ident)) {
             ret .FunctionDecl();
         }
-        elif (.IsType(TokenType::Import)) {
-            ret .ImportStmt();
+        elif (.IsType(TokenType::Include)) {
+            ret .IncludeStmt();
         }
         elif (.IsType(TokenType::Class)) {
             ret .ClassDecl();

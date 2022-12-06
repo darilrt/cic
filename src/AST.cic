@@ -1,7 +1,7 @@
-import "iostream";
-import "vector";
-import "Common.cic";
-import "Token.cic";
+include "iostream";
+include "vector";
+include "Common.cic";
+include "Token.cic";
 
 // Base class for all AST nodes
 class ASTNode {
@@ -1005,6 +1005,27 @@ class ASTImport(pub ASTNode) {
 
     pub GetType() const -> std::string {
         ret "ASTImport";
+    }
+}
+
+// Include Statement
+class ASTInclude(pub ASTNode) {
+    pub mut path : Token*;
+
+    pub ASTInclude(path : Token*) {
+        .path = path;
+    }
+
+    pub ToString() const -> std::string {
+        ret "include " + (.path->literal) + ";";
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTInclude";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTInclude";
     }
 }
 
