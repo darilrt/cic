@@ -42,6 +42,9 @@
     - &#9745; Continue statement
 - &#9745; Import statement
 
+## Long term features
+- Compiles to readable c++ code
+
 ## Ideas
 - Getter and setter for class properties
 - Meta programming
