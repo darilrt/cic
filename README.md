@@ -113,4 +113,5 @@ enum Color {
 }
 ```
 
-### 
+# Roadmap
+Future features [roadmap](https://github.com/darilrt/cic/blob/master/roadmap.md).
