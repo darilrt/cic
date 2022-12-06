@@ -42,6 +42,14 @@ add<T : type>(a : T, b : T) -> T {
 }
 ```
 
+If you want to define the return type of a function as `auto` you can use the `-> auto` or not define the return type.
+
+```cic
+add(a : int, b : int) -> auto { ... }
+// or
+add(a : int, b : int) { ... }
+```
+
 ### Classes
 Classes are declared with the `class` keyword.
 The properties or methods of a class are declared like variables or functions.
@@ -94,7 +102,7 @@ class Point<T : type> {
 let p1 : Point<int> = Point<int>(1, 2);
 ```
 
-For inheritance you can use the `(...)` symbol.
+For inheritance you can use the `( ... )` symbol.
 
 ```cic
 class Base { ... }

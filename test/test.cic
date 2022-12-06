@@ -1,0 +1,10 @@
+include "iostream";
+
+print(msg : std::string) {
+    std::cout << msg << std::endl;
+}
+
+main() -> int {
+    print("Hello, World!");
+    ret 0;
+}
