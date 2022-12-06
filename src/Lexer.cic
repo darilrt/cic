@@ -20,14 +20,14 @@ class Lexer {
     }
 
     Peek() -> char {
-        if ((.index + 1) < .source.size()) {
+        if .index + 1 < .source.size() {
             ret .source[.index + 1];
         }
         ret '\0';
     }
 
     Peek2() -> char {
-        if ((.index + 2) < .source.size()) {
+        if .index + 2 < .source.size() {
             ret .source[.index + 2];
         }
         ret '\0';
@@ -35,7 +35,7 @@ class Lexer {
 
     PeekEquals(expected : char) -> bool {
         let peek : char = .Peek();
-        if (peek == expected) {
+        if peek == expected {
             ret true;
         }
         ret false;
@@ -43,7 +43,7 @@ class Lexer {
 
     Peek2Equals(expected : char) -> bool {
         let peek : char = .Peek2();
-        if (peek == expected) {
+        if peek == expected {
             ret true;
         }
         ret false;
@@ -52,20 +52,20 @@ class Lexer {
     Advance() {
         .index += 1;
         .column += 1;
-        if (.index >= .source.size()) {
+        if .index >= .source.size() {
             .currentChar = '\0';
         } else {
             .currentChar = .source[.index];
         }
 
-        if (.IsNewline()) {
+        if .IsNewline() {
             .column = 1;
             .line += 1;
         }
     }
 
     SkipWhitespace() {
-        while (.IsWhitespace()) {
+        while .IsWhitespace() {
             .Advance();
         }
     }
@@ -73,7 +73,7 @@ class Lexer {
     pub Parse() -> std::vector<Token> {
         mut tokens : std::vector<Token>;
         mut token : Token;
-        while (token.tokenType != TokenType::EndOfFile) {
+        while token.tokenType != TokenType::EndOfFile {
             token = .ParseToken();
             tokens.push_back(token);
         }
@@ -81,89 +81,81 @@ class Lexer {
     }
 
     ParseToken() -> Token {
-        while (.IsNotNull()) {
-            if (.IsWhitespace()) {
+        while .IsNotNull() {
+            if .IsWhitespace() {
                 .SkipWhitespace();
                 continue;
             }
 
-            if (.IsNewline()) {
+            if .IsNewline() {
                 .Advance();
                 ret Token(TokenType::NewLine, "\n", .line, .column);
             }
             
-            if ((.IsAlpha()) || .IsChar('_')) {
-                ret .ParseIdentifier();
-            }
+            if .IsAlpha() || .IsChar('_') { ret .ParseIdentifier(); }
 
-            if (.IsDigit()) {
-                ret .ParseNumber();
-            }
+            if .IsDigit() { ret .ParseNumber(); }
 
-            if (.IsChar('"')) {
-                ret .ParseString();
-            }
+            if .IsChar('"') { ret .ParseString(); }
             
-            if (.IsChar(39)) {
-                ret .ParseChar();
-            }
+            if .IsChar('\'') { ret .ParseChar(); }
             
-            if (.IsChar('/')) {
-                if (.PeekEquals('/')) {
+            if .IsChar('/') {
+                if .PeekEquals('/') {
                     .SkipComment();
                     continue;
                 }
             }
 
-            if (.Switch3('.', '.', '.')) { ret Token(TokenType::Ellipsis, "..."); }
-            if (.Switch3('<', '<', '=')) { ret Token(TokenType::LShiftAssign, "<<="); }
-            if (.Switch3('>', '>', '=')) { ret Token(TokenType::RShiftAssign, ">>="); }
+            if .Switch3('.', '.', '.') { ret Token(TokenType::Ellipsis, "..."); }
+            if .Switch3('<', '<', '=') { ret Token(TokenType::LShiftAssign, "<<="); }
+            if .Switch3('>', '>', '=') { ret Token(TokenType::RShiftAssign, ">>="); }
 
-            if (.Switch2('=', '=')) { ret Token(TokenType::Equal, "=="); }
-            if (.Switch2('!', '=')) { ret Token(TokenType::NotEqual, "!="); }
-            if (.Switch2('<', '=')) { ret Token(TokenType::LessEqual, "<="); }
-            if (.Switch2('>', '=')) { ret Token(TokenType::GreaterEqual, ">="); }
-            if (.Switch2('+', '+')) { ret Token(TokenType::Inc, "++"); }
-            if (.Switch2('-', '-')) { ret Token(TokenType::Dec, "--"); }
-            if (.Switch2('&', '&')) { ret Token(TokenType::And, "&&"); }
-            if (.Switch2('|', '|')) { ret Token(TokenType::Or, "||"); }
-            if (.Switch2('+', '=')) { ret Token(TokenType::AddAssign, "+="); }
-            if (.Switch2('-', '=')) { ret Token(TokenType::SubAssign, "-="); }
-            if (.Switch2('*', '=')) { ret Token(TokenType::MulAssign, "*="); }
-            if (.Switch2('/', '=')) { ret Token(TokenType::DivAssign, "/="); }
-            if (.Switch2('%', '=')) { ret Token(TokenType::ModAssign, "%="); }
-            if (.Switch2('&', '=')) { ret Token(TokenType::AndAssign, "&="); }
-            if (.Switch2('|', '=')) { ret Token(TokenType::OrAssign, "|="); }
-            if (.Switch2('^', '=')) { ret Token(TokenType::XorAssign, "^="); }
-            if (.Switch2('>', '>')) { ret Token(TokenType::RShift, ">>"); }
-            if (.Switch2('<', '<')) { ret Token(TokenType::LShift, "<<"); }
-            if (.Switch2('-', '>')) { ret Token(TokenType::Arrow, "->"); }
-            if (.Switch2(':', ':')) { ret Token(TokenType::ScopeResolution, "::"); }
+            if .Switch2('=', '=') { ret Token(TokenType::Equal, "=="); }
+            if .Switch2('!', '=') { ret Token(TokenType::NotEqual, "!="); }
+            if .Switch2('<', '=') { ret Token(TokenType::LessEqual, "<="); }
+            if .Switch2('>', '=') { ret Token(TokenType::GreaterEqual, ">="); }
+            if .Switch2('+', '+') { ret Token(TokenType::Inc, "++"); }
+            if .Switch2('-', '-') { ret Token(TokenType::Dec, "--"); }
+            if .Switch2('&', '&') { ret Token(TokenType::And, "&&"); }
+            if .Switch2('|', '|') { ret Token(TokenType::Or, "||"); }
+            if .Switch2('+', '=') { ret Token(TokenType::AddAssign, "+="); }
+            if .Switch2('-', '=') { ret Token(TokenType::SubAssign, "-="); }
+            if .Switch2('*', '=') { ret Token(TokenType::MulAssign, "*="); }
+            if .Switch2('/', '=') { ret Token(TokenType::DivAssign, "/="); }
+            if .Switch2('%', '=') { ret Token(TokenType::ModAssign, "%="); }
+            if .Switch2('&', '=') { ret Token(TokenType::AndAssign, "&="); }
+            if .Switch2('|', '=') { ret Token(TokenType::OrAssign, "|="); }
+            if .Switch2('^', '=') { ret Token(TokenType::XorAssign, "^="); }
+            if .Switch2('>', '>') { ret Token(TokenType::RShift, ">>"); }
+            if .Switch2('<', '<') { ret Token(TokenType::LShift, "<<"); }
+            if .Switch2('-', '>') { ret Token(TokenType::Arrow, "->"); }
+            if .Switch2(':', ':') { ret Token(TokenType::ScopeResolution, "::"); }
 
-            if (.Switch1('+')) { ret Token(TokenType::Add, "+"); }
-            if (.Switch1('-')) { ret Token(TokenType::Sub, "-"); }
-            if (.Switch1('*')) { ret Token(TokenType::Mul, "*"); }
-            if (.Switch1('/')) { ret Token(TokenType::Div, "/"); }
-            if (.Switch1('%')) { ret Token(TokenType::Mod, "%"); }
-            if (.Switch1('=')) { ret Token(TokenType::Assign, "="); }
-            if (.Switch1('<')) { ret Token(TokenType::Less, "<"); }
-            if (.Switch1('>')) { ret Token(TokenType::Greater, ">"); }
-            if (.Switch1('!')) { ret Token(TokenType::Not, "!"); }
-            if (.Switch1('&')) { ret Token(TokenType::And, "&"); }
-            if (.Switch1('|')) { ret Token(TokenType::Or, "|"); }
-            if (.Switch1('^')) { ret Token(TokenType::Xor, "^"); }
-            if (.Switch1('~')) { ret Token(TokenType::BitNot, "~"); }
-            if (.Switch1('?')) { ret Token(TokenType::Question, "?"); }
-            if (.Switch1(':')) { ret Token(TokenType::Colon, ":"); }
-            if (.Switch1(';')) { ret Token(TokenType::Semicolon, ";"); }
-            if (.Switch1(',')) { ret Token(TokenType::Comma, ","); }
-            if (.Switch1('.')) { ret Token(TokenType::Dot, "."); }
-            if (.Switch1('(')) { ret Token(TokenType::LParen, "("); }
-            if (.Switch1(')')) { ret Token(TokenType::RParen, ")"); }
-            if (.Switch1('[')) { ret Token(TokenType::LBracket, "["); }
-            if (.Switch1(']')) { ret Token(TokenType::RBracket, "]"); }
-            if (.Switch1('{')) { ret Token(TokenType::LBrace, "{"); }
-            if (.Switch1('}')) { ret Token(TokenType::RBrace, "}"); }
+            if .Switch1('+') { ret Token(TokenType::Add, "+"); }
+            if .Switch1('-') { ret Token(TokenType::Sub, "-"); }
+            if .Switch1('*') { ret Token(TokenType::Mul, "*"); }
+            if .Switch1('/') { ret Token(TokenType::Div, "/"); }
+            if .Switch1('%') { ret Token(TokenType::Mod, "%"); }
+            if .Switch1('=') { ret Token(TokenType::Assign, "="); }
+            if .Switch1('<') { ret Token(TokenType::Less, "<"); }
+            if .Switch1('>') { ret Token(TokenType::Greater, ">"); }
+            if .Switch1('!') { ret Token(TokenType::Not, "!"); }
+            if .Switch1('&') { ret Token(TokenType::And, "&"); }
+            if .Switch1('|') { ret Token(TokenType::Or, "|"); }
+            if .Switch1('^') { ret Token(TokenType::Xor, "^"); }
+            if .Switch1('~') { ret Token(TokenType::BitNot, "~"); }
+            if .Switch1('?') { ret Token(TokenType::Question, "?"); }
+            if .Switch1(':') { ret Token(TokenType::Colon, ":"); }
+            if .Switch1(';') { ret Token(TokenType::Semicolon, ";"); }
+            if .Switch1(',') { ret Token(TokenType::Comma, ","); }
+            if .Switch1('.') { ret Token(TokenType::Dot, "."); }
+            if .Switch1('(') { ret Token(TokenType::LParen, "("); }
+            if .Switch1(')') { ret Token(TokenType::RParen, ")"); }
+            if .Switch1('[') { ret Token(TokenType::LBracket, "["); }
+            if .Switch1(']') { ret Token(TokenType::RBracket, "]"); }
+            if .Switch1('{') { ret Token(TokenType::LBrace, "{"); }
+            if .Switch1('}') { ret Token(TokenType::RBrace, "}"); }
 
             .Advance();
         }
@@ -172,49 +164,49 @@ class Lexer {
 
     ParseIdentifier() -> Token {
         mut identifier : std::string;
-        while ((IsAlphaNumeric()) || .IsChar('_')) {
+        while .IsAlphaNumeric() || .IsChar('_') {
             identifier += .currentChar;
             .Advance();
         }
 
-        if (identifier == "if") { ret Token(TokenType::If, "if"); }
-        if (identifier == "elif") { ret Token(TokenType::Elif, "elif"); }
-        if (identifier == "else") { ret Token(TokenType::Else, "else"); }
-        if (identifier == "while") { ret Token(TokenType::While, "while"); }
-        if (identifier == "for") { ret Token(TokenType::For, "for"); }
-        if (identifier == "break") { ret Token(TokenType::Break, "break"); }
-        if (identifier == "continue") { ret Token(TokenType::Continue, "continue"); }
-        if (identifier == "ret") { ret Token(TokenType::Ret, "ret"); }
-        if (identifier == "class") { ret Token(TokenType::Class, "class"); }
-        if (identifier == "type") { ret Token(TokenType::Type, "type"); }
-        if (identifier == "const") { ret Token(TokenType::Const, "const"); }
-        if (identifier == "let") { ret Token(TokenType::Let, "let"); }
-        if (identifier == "mut") { ret Token(TokenType::Mut, "mut"); }
-        if (identifier == "import") { ret Token(TokenType::Import, "import"); }
-        if (identifier == "include") { ret Token(TokenType::Include, "include"); }
-        if (identifier == "pub") { ret Token(TokenType::Pub, "pub"); }
-        if (identifier == "priv") { ret Token(TokenType::Priv, "priv"); }
-        if (identifier == "static") { ret Token(TokenType::Static, "static"); }
-        if (identifier == "virtual") { ret Token(TokenType::Virtual, "virtual"); }
-        if (identifier == "new") { ret Token(TokenType::New, "new"); }
-        if (identifier == "del") { ret Token(TokenType::Del, "del"); }
-        if (identifier == "op") { ret Token(TokenType::Operator, "op"); }
-        if (identifier == "enum") { ret Token(TokenType::Enum, "enum"); }
-        if (identifier == "null") { ret Token(TokenType::Null, "null"); }
+        if identifier == "if" { ret Token(TokenType::If, "if"); }
+        if identifier == "elif" { ret Token(TokenType::Elif, "elif"); }
+        if identifier == "else" { ret Token(TokenType::Else, "else"); }
+        if identifier == "while" { ret Token(TokenType::While, "while"); }
+        if identifier == "for" { ret Token(TokenType::For, "for"); }
+        if identifier == "break" { ret Token(TokenType::Break, "break"); }
+        if identifier == "continue" { ret Token(TokenType::Continue, "continue"); }
+        if identifier == "ret" { ret Token(TokenType::Ret, "ret"); }
+        if identifier == "class" { ret Token(TokenType::Class, "class"); }
+        if identifier == "type" { ret Token(TokenType::Type, "type"); }
+        if identifier == "const" { ret Token(TokenType::Const, "const"); }
+        if identifier == "let" { ret Token(TokenType::Let, "let"); }
+        if identifier == "mut" { ret Token(TokenType::Mut, "mut"); }
+        if identifier == "import" { ret Token(TokenType::Import, "import"); }
+        if identifier == "include" { ret Token(TokenType::Include, "include"); }
+        if identifier == "pub" { ret Token(TokenType::Pub, "pub"); }
+        if identifier == "priv" { ret Token(TokenType::Priv, "priv"); }
+        if identifier == "static" { ret Token(TokenType::Static, "static"); }
+        if identifier == "virtual" { ret Token(TokenType::Virtual, "virtual"); }
+        if identifier == "new" { ret Token(TokenType::New, "new"); }
+        if identifier == "del" { ret Token(TokenType::Del, "del"); }
+        if identifier == "op" { ret Token(TokenType::Operator, "op"); }
+        if identifier == "enum" { ret Token(TokenType::Enum, "enum"); }
+        if identifier == "null" { ret Token(TokenType::Null, "null"); }
 
         ret Token(TokenType::Ident, identifier, .column, .line);
     }
 
     ParseNumber() -> Token {
         mut number : std::string;
-        while (.IsDigit()) {
+        while .IsDigit() {
             number += .currentChar;
             .Advance();
         }
-        if (.currentChar == '.') {
+        if .currentChar == '.' {
             number += .currentChar;
             .Advance();
-            while (.IsDigit()) {
+            while .IsDigit() {
                 number += .currentChar;
                 .Advance();
             }
@@ -226,10 +218,10 @@ class Lexer {
     ParseString() -> Token {
         .Advance();
         mut string : std::string;
-        while ((!.IsChar('"'))) {
+        while !.IsChar('"') {
             string += .currentChar;
 
-            if (.IsChar(92)) { // '\'
+            if .IsChar(92) { // '\'
                 .Advance();
                 string += .currentChar;
             }
@@ -244,10 +236,10 @@ class Lexer {
     ParseChar() -> Token {
         .Advance();
         mut character : std::string;
-        while ((!.IsChar(39)) && (.IsNotNull())) {
+        while !.IsChar(39) && .IsNotNull() {
             character += .currentChar;
             
-            if (.IsChar(92)) { // '\'
+            if .IsChar(92) { // '\'
                 .Advance();
                 character += .currentChar;
             }
@@ -261,7 +253,7 @@ class Lexer {
     SkipComment() -> void {
         mut isNotNewline : bool = true;
         mut isNotNull : bool = true;
-        while (isNotNull && isNotNewline) {
+        while isNotNull && isNotNewline {
             .Advance();
             isNotNull = .IsNotNull();
             isNotNewline = !.IsNewline();
@@ -269,7 +261,7 @@ class Lexer {
     }
 
     Switch1(c : char) -> bool {
-        if (.IsChar(c)) {
+        if .IsChar(c) {
             .Advance();
             ret true;
         }
@@ -277,7 +269,7 @@ class Lexer {
     }
 
     Switch2(expected1 : char, expected2 : char) -> bool {
-        if (.currentChar == expected1 && .PeekEquals(expected2)) {
+        if .currentChar == expected1 && .PeekEquals(expected2) {
             .Advance();
             .Advance();
             ret true;
@@ -286,10 +278,7 @@ class Lexer {
     }
 
     Switch3(expected1 : char, expected2 : char, expected3 : char) -> bool {
-        let isExpected1 : bool = .currentChar == expected1;
-        let isExpected2 : bool = .PeekEquals(expected2);
-        let isExpected3 : bool = .PeekEquals(expected3);
-        if (isExpected1 && isExpected2 && isExpected3) {
+        if .currentChar == expected1 && .PeekEquals(expected2) && .PeekEquals(expected3) {
             .Advance();
             .Advance();
             .Advance();
@@ -324,9 +313,7 @@ class Lexer {
     }
 
     IsAlphaNumeric() -> bool {
-        let alpha : bool = .IsAlpha();
-        let numeric : bool = .IsDigit();
-        ret alpha || numeric;
+        ret .IsAlpha() || .IsDigit();
     }
 
     IsNewline() -> bool {

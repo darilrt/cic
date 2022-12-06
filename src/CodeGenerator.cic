@@ -4,7 +4,7 @@ include "IR.cic";
 include "Common.cic";
 
 IsA<T : type>(node : IRNode*) -> bool {
-    ret (dynamic_cast<T*>(node)) != null;
+    ret dynamic_cast<T*>(node) != null;
 }
 
 As<T : type>(node : IRNode*) -> T* {

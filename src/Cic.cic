@@ -15,12 +15,12 @@ ParseArgs(args : std::vector<std::string>) -> ProgramOptions {
     mut options : ProgramOptions;
     
     mut i : int = 1;
-    while ((i) < (args.size())) {
-        if (args[i] == "-o") {
+    while i < args.size() {
+        if args[i] == "-o" {
             i++;
             options.output = args[i];
         }
-        elif (args[i] == "-h" || args[i] == "--help") {
+        elif args[i] == "-h" || args[i] == "--help" {
             options.help = true;
         }
         else {
@@ -42,7 +42,7 @@ ShowHelp() {
 ArgsToVector(argc : int, argv : char**) -> std::vector<std::string> {
     mut args : std::vector<std::string>;
     mut i : int = 0;
-    while ((i) < (argc)) {
+    while i < argc {
         args.push_back(argv[i]);
         i++;
     }
@@ -53,12 +53,12 @@ main(argc : int, argv[] : char*) -> int {
     let args : std::vector<std::string> = ArgsToVector(argc, argv);
     let options : ProgramOptions = ParseArgs(args);
 
-    if (options.help) {
+    if options.help {
         ShowHelp();
         ret 0;
     }
 
-    if (options.input == "") {
+    if options.input == "" {
         std::cout << "No input file specified" << std::endl;
         ret 1;
     }

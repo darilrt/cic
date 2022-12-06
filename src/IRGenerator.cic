@@ -5,7 +5,7 @@ include "AST.cic";
 include "IR.cic";
 
 IsA<T : type>(node : ASTNode*) -> bool {
-    ret (dynamic_cast<T*>(node)) != null;
+    ret dynamic_cast<T*>(node) != null;
 }
 
 As<T : type>(node : ASTNode*) -> T* {
@@ -14,31 +14,28 @@ As<T : type>(node : ASTNode*) -> T* {
 
 class IRGenerator {
     pub Generate(ast : ASTNode*) -> IRNode* {
-        let ir : IRNode* = TranslateNode(ast, null);
-        ret ir;
+        ret TranslateNode(ast, null);
     }
 
     TranslateNode(node : ASTNode*, parent : IRNode*) -> IRNode* {
-        if (IsA<ASTProgram>(node)) { ret TranslateProgram(As<ASTProgram>(node)); }
-        if (IsA<ASTBody>(node)) { ret TranslateBody(As<ASTBody>(node), parent); }
-        if (IsA<ASTFunctionDecl>(node)) { ret TranslateFunction(As<ASTFunctionDecl>(node), parent); }
-        if (IsA<ASTOperatorDecl>(node)) { ret TranslateOperator(As<ASTOperatorDecl>(node), parent); }
-        if (IsA<ASTVariableDecl>(node)) { ret TranslateVariable(As<ASTVariableDecl>(node), parent); }
-        if (IsA<ASTExpr>(node)) { ret TranslateExpr(As<ASTExpr>(node)); }
-        if (IsA<ASTReturn>(node)) { ret TranslateReturn(As<ASTReturn>(node)); }
-        if (IsA<ASTIf>(node)) { ret TranslateIf(As<ASTIf>(node)); }
-        if (IsA<ASTWhile>(node)) { ret TranslateWhile(As<ASTWhile>(node)); }
-        if (IsA<ASTBreak>(node)) { ret TranslateBreak(As<ASTBreak>(node)); }
-        if (IsA<ASTContinue>(node)) { ret TranslateContinue(As<ASTContinue>(node)); }
-        if (IsA<ASTInclude>(node)) { ret TranslateInclude(As<ASTInclude>(node)); }
-        if (IsA<ASTClassDecl>(node)) { ret TranslateClass(As<ASTClassDecl>(node), parent); }
-        if (IsA<ASTEnumDecl>(node)) { ret TranslateEnum(As<ASTEnumDecl>(node), parent); }
-        if (IsA<ASTDel>(node)) { ret TranslateDel(As<ASTDel>(node)); }
+        if IsA<ASTProgram>(node) { ret TranslateProgram(As<ASTProgram>(node)); }
+        if IsA<ASTBody>(node) { ret TranslateBody(As<ASTBody>(node), parent); }
+        if IsA<ASTFunctionDecl>(node) { ret TranslateFunction(As<ASTFunctionDecl>(node), parent); }
+        if IsA<ASTOperatorDecl>(node) { ret TranslateOperator(As<ASTOperatorDecl>(node), parent); }
+        if IsA<ASTVariableDecl>(node) { ret TranslateVariable(As<ASTVariableDecl>(node), parent); }
+        if IsA<ASTExpr>(node) { ret TranslateExpr(As<ASTExpr>(node)); }
+        if IsA<ASTReturn>(node) { ret TranslateReturn(As<ASTReturn>(node)); }
+        if IsA<ASTIf>(node) { ret TranslateIf(As<ASTIf>(node)); }
+        if IsA<ASTWhile>(node) { ret TranslateWhile(As<ASTWhile>(node)); }
+        if IsA<ASTBreak>(node) { ret TranslateBreak(As<ASTBreak>(node)); }
+        if IsA<ASTContinue>(node) { ret TranslateContinue(As<ASTContinue>(node)); }
+        if IsA<ASTInclude>(node) { ret TranslateInclude(As<ASTInclude>(node)); }
+        if IsA<ASTClassDecl>(node) { ret TranslateClass(As<ASTClassDecl>(node), parent); }
+        if IsA<ASTEnumDecl>(node) { ret TranslateEnum(As<ASTEnumDecl>(node), parent); }
+        if IsA<ASTDel>(node) { ret TranslateDel(As<ASTDel>(node)); }
 
-        if (node != null) {
+        if node != null {
             std::cout << "Unknown node type: " << node->GetType() << std::endl;
-        } else {
-            // std::cout << "Null node" << std::endl;
         }
         
         ret null;
@@ -46,7 +43,7 @@ class IRGenerator {
 
     // Simple translation of a expression
     TranslateExpr(node : ASTExpr*) -> IRExpr* {
-        if (node == null) { ret null; }
+        if node == null { ret null; }
         ret new IRExpr(node->Get());
     }
 
@@ -61,7 +58,7 @@ class IRGenerator {
         mut decls : std::vector<IRNode*>;
 
         mut i : int = 0;
-        while ((i) < node->decls.size()) {
+        while i < node->decls.size() {
             decls.push_back(TranslateNode(node->decls[i], null));
             i++;
         }
@@ -73,11 +70,11 @@ class IRGenerator {
         mut irBody : IRBody* = new IRBody();
 
         mut i : int = 0;
-        while ((i) < body->decls.size()) {
+        while i < body->decls.size() {
             let decl : ASTNode* = body->decls[i];
             let irDecl : IRNode* = TranslateNode(decl, parent);
 
-            if (irDecl != null) {
+            if irDecl != null {
                 irBody->decls.push_back(irDecl);
             }
 
@@ -93,7 +90,7 @@ class IRGenerator {
         func->attr = funcDecl->attr;
         func->parent = parent;
         
-        if (funcDecl->fType != null) {
+        if funcDecl->fType != null {
             func->returnType = funcDecl->fType->Get();
         }
         else {
@@ -101,7 +98,7 @@ class IRGenerator {
         }
         
         mut i : int = 0;
-        while ((i) < funcDecl->args.size()) {
+        while i < funcDecl->args.size() {
             let param : ASTArgDecl* = funcDecl->args[i];
             let irParam : std::tuple<std::string, std::string> = std::make_tuple(param->right->Get(), param->left->Get());
             func->params.push_back(irParam);
@@ -110,9 +107,9 @@ class IRGenerator {
 
         let tmp : ASTTemplateDecl* = funcDecl->templateDecl;
         
-        if (tmp) {
+        if tmp {
             i = 0;
-            while ((i) < tmp->args.size()) {
+            while i < tmp->args.size() {
                 let arg : ASTArgDecl* = tmp->args[i];
                 let irArg : std::tuple<std::string, std::string> = std::make_tuple(arg->right->Get(), arg->left->Get());
                 func->templateParams.push_back(irArg);
@@ -120,7 +117,7 @@ class IRGenerator {
             }
         }
 
-        if (funcDecl->body) {
+        if funcDecl->body {
             func->body = TranslateBody(funcDecl->body, null);
         }
         else {
@@ -136,7 +133,7 @@ class IRGenerator {
         operation->attr = opDecl->attr;
         operation->parent = parent;
         
-        if (opDecl->returnType != null) {
+        if opDecl->returnType != null {
             operation->returnType = opDecl->returnType->Get();
         }
         else {
@@ -144,14 +141,14 @@ class IRGenerator {
         }
         
         mut i : int = 0;
-        while ((i) < opDecl->args.size()) {
+        while i < opDecl->args.size() {
             let param : ASTArgDecl* = opDecl->args[i];
             let irParam : std::tuple<std::string, std::string> = std::make_tuple(param->right->Get(), param->left->Get());
             operation->params.push_back(irParam);
             i++;
         }
 
-        if (opDecl->body) {
+        if opDecl->body {
             operation->body = TranslateBody(opDecl->body, null);
         }
         else {
@@ -175,11 +172,11 @@ class IRGenerator {
         var->parent = parent;
         var->attr = varDecl->attr;
         
-        if (!varDecl->isMutable) {
+        if !varDecl->isMutable {
             var->attr |= Attribute::Const;
         }
 
-        if (varDecl->value != null) {
+        if varDecl->value != null {
             var->value = TranslateExpr(varDecl->value);
         }
 
@@ -192,7 +189,7 @@ class IRGenerator {
         irIf->body = TranslateBody(ifNode->body, null);
 
         mut i : int = 0;
-        while ((i) < ifNode->elifs.size()) {
+        while i < ifNode->elifs.size() {
             let _elif : ASTIf* = ifNode->elifs[i];
             let irElif : IRIf* = new IRIf();
             irElif->cond = TranslateExpr(_elif->expr);
@@ -203,7 +200,7 @@ class IRGenerator {
             i++;
         }
 
-        if (ifNode->elseBody != null) {
+        if ifNode->elseBody != null {
             irIf->elseBody = TranslateBody(ifNode->elseBody, null);
         }
 
@@ -247,7 +244,7 @@ class IRGenerator {
         irClass->parent = parent;
 
         mut i : int = 0;
-        while ((i) < classNode->inherits.size()) {
+        while i < classNode->inherits.size() {
             let inherit : ASTInherArg* = classNode->inherits[i];
             irClass->inherits.push_back(inherit->ToString());
 
@@ -256,9 +253,9 @@ class IRGenerator {
 
         let tmp : ASTTemplateDecl* = classNode->templateDecl;
         
-        if (tmp) {
+        if tmp {
             i = 0;
-            while ((i) < tmp->args.size()) {
+            while i < tmp->args.size() {
                 let arg : ASTArgDecl* = tmp->args[i];
                 let irArg : std::tuple<std::string, std::string> = std::make_tuple(arg->right->Get(), arg->left->Get());
                 irClass->templateParams.push_back(irArg);
@@ -277,7 +274,7 @@ class IRGenerator {
         irEnum->parent = parent;
 
         mut i : int = 0;
-        while ((i) < enumNode->values.size()) {
+        while i < enumNode->values.size() {
             mut value : ASTEnumField* = enumNode->values[i];
             
             irEnum->values.push_back(std::make_tuple(value->name->Get(), TranslateExpr(value->value)));

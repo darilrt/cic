@@ -25,10 +25,10 @@ class ASTProgram(pub ASTNode) {
         mut str : std::string = "";
 
         mut i : int = 0;
-        while ((i) < .decls.size()) {
-            str += ((.decls[i])->ToString());
+        while i < .decls.size() {
+            str += .decls[i]->ToString();
 
-            if ((i) < ((.decls.size()) - 1)) {
+            if i < .decls.size() - 1 {
                 str += "\n";
             }
 
@@ -107,11 +107,11 @@ class ASTBinaryOp(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "[" + (.left->ToString()) + " " + (.operation.ToString()) + " " + (.right->ToString()) + "]";
+        ret "[" + .left->ToString() + " " + .operation.ToString() + " " + .right->ToString() + "]";
     }
 
     pub Get() const -> std::string {
-        ret (.left->Get()) + " " + (.operation.literal) + " " + (.right->Get());
+        ret .left->Get() + " " + .operation.literal + " " + .right->Get();
     }
 
     pub GetType() const -> std::string {
@@ -135,14 +135,14 @@ class ASTUnaryOp(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "[" + (.operation.literal) + " " + (.right->ToString()) + "]";
+        ret "[" + .operation.literal + " " + .right->ToString() + "]";
     }
 
     pub Get() const -> std::string {
         if (.isPostfix) {
-            ret (.right->Get()) + (.operation.literal);
+            ret .right->Get() + .operation.literal;
         } else {
-            ret (.operation.literal) + (.right->Get());
+            ret .operation.literal + .right->Get();
         }
     }
 
@@ -167,15 +167,15 @@ class ASTIndexOp(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "[" + (.left->ToString()) + "[" + (.right->ToString()) + "]]";
+        ret "[" + .left->ToString() + "[" + .right->ToString() + "]]";
     }
 
     pub Get() const -> std::string {
-        let left : std::string = (.left->Get());
+        let left : std::string = .left->Get();
         mut right : std::string;
 
-        if (.right != null) {
-            right = (.right->Get());
+        if .right != null {
+            right = .right->Get();
         }
 
         ret left + "[" + right + "]";
@@ -203,7 +203,7 @@ class ASTFunctionCall(pub ASTNode) {
     pub ~ASTFunctionCall() {
         del .func;
         mut i : int = 0;
-        while ((i) < .args.size()) {
+        while i < .args.size() {
             del .args[i];
         }
     }
@@ -211,13 +211,13 @@ class ASTFunctionCall(pub ASTNode) {
     pub ToString() const -> std::string {
         mut str : std::string;
 
-        str += (.func->ToString()) + "(";
+        str += .func->ToString() + "(";
 
         mut i : int = 0;
-        while ((i) < .args.size()) {
-            str += (.args[i])->ToString();
+        while i < .args.size() {
+            str += .args[i]->ToString();
 
-            if ((i) < (.args.size()) - 1) {
+            if i < .args.size() - 1 {
                 str += ", "; 
             }
 
@@ -229,13 +229,13 @@ class ASTFunctionCall(pub ASTNode) {
     }
 
     pub Get() const -> std::string {
-        mut str : std::string = (.func->Get()) + "(";
+        mut str : std::string = .func->Get() + "(";
 
         mut i : int = 0;
-        while ((i) < .args.size()) {
-            str += (.args[i])->Get();
+        while i < .args.size() {
+            str += .args[i]->Get();
 
-            if ((i) < (.args.size()) - 1) {
+            if i < .args.size() - 1 {
                 str += ", "; 
             }
 
@@ -269,11 +269,11 @@ class ASTDotAccess(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "[" + (.left->ToString()) + (.operation.ToString()) + (.right->ToString()) + "]";
+        ret "[" + .left->ToString() + .operation.ToString() + .right->ToString() + "]";
     }
 
     pub Get() const -> std::string {
-        ret (.left->Get()) + (.operation.literal) + (.right->Get());
+        ret .left->Get() + .operation.literal + .right->Get();
     }
 
     pub GetType() const -> std::string {
@@ -294,11 +294,11 @@ class ASTThisAccess(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "[this->" + (.right->ToString()) + "]";
+        ret "[this->" + .right->ToString() + "]";
     }
 
     pub Get() const -> std::string {
-        ret "this->" + (.right->Get());
+        ret "this->" + .right->Get();
     }
 
     pub GetType() const -> std::string {
@@ -322,11 +322,11 @@ class ASTScopeResolution(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "[" + (.left->ToString()) + "::" + (.right->ToString()) + "]";
+        ret "[" + .left->ToString() + "::" + .right->ToString() + "]";
     }
 
     pub Get() const -> std::string {
-        ret (.left->Get()) + "::" + (.right->Get());
+        ret .left->Get() + "::" + .right->Get();
     }
 
     pub GetType() const -> std::string {
@@ -351,19 +351,19 @@ class ASTTemplateArgs(pub ASTNode) {
     pub ~ASTTemplateArgs() {
         del .left;
         mut i : int = 0;
-        while ((i) < .args.size()) {
+        while i < .args.size() {
             del .args[i];
         }
     }
 
     pub ToString() const -> std::string {
-        mut str : std::string = (.left->ToString()) + "<";
+        mut str : std::string = .left->ToString() + "<";
 
         mut i : int = 0;
-        while ((i) < .args.size()) {
-            str += (.args[i])->ToString();
+        while i < .args.size() {
+            str += .args[i]->ToString();
 
-            if ((i) < (.args.size()) - 1) {
+            if i < .args.size() - 1 {
                 str += ", "; 
             }
 
@@ -375,13 +375,13 @@ class ASTTemplateArgs(pub ASTNode) {
     }
 
     pub Get() const -> std::string {
-        mut str : std::string = (.left->Get()) + "<";
+        mut str : std::string = .left->Get() + "<";
 
         mut i : int = 0;
-        while ((i) < .args.size()) {
-            str += (.args[i])->Get();
+        while i < .args.size() {
+            str += .args[i]->Get();
 
-            if ((i) < (.args.size()) - 1) {
+            if i < .args.size() - 1 {
                 str += ", "; 
             }
 
@@ -410,11 +410,11 @@ class ASTPointerDecl(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret (.left->ToString()) + "*";
+        ret .left->ToString() + "*";
     }
 
     pub Get() const -> std::string {
-        ret (.left->Get()) + "*";
+        ret .left->Get() + "*";
     }
 
     pub GetType() const -> std::string {
@@ -435,11 +435,11 @@ class ASTReferenceDecl(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret (.left->ToString()) + "&";
+        ret .left->ToString() + "&";
     }
 
     pub Get() const -> std::string {
-        ret (.left->Get()) + "&";
+        ret .left->Get() + "&";
     }
 
     pub GetType() const -> std::string {
@@ -460,11 +460,11 @@ class ASTNew(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "new " + (.node->ToString());
+        ret "new " + .node->ToString();
     }
 
     pub Get() const -> std::string {
-        ret "new " + (.node->Get());
+        ret "new " + .node->Get();
     }
 
     pub GetType() const -> std::string {
@@ -489,22 +489,22 @@ class ASTDel(pub ASTNode) {
     pub ToString() const -> std::string {
         mut str : std::string = "delete ";
 
-        if (.isArray) {
+        if .isArray {
             str += "[] ";
         }
 
-        str += (.node->ToString());
+        str += .node->ToString();
         ret str;
     }
 
     pub Get() const -> std::string {
         mut str : std::string = "delete ";
 
-        if (.isArray) {
+        if .isArray {
             str += "[] ";
         }
 
-        str += (.node->Get());
+        str += .node->Get();
         ret str;
     }
 
@@ -529,11 +529,11 @@ class ASTTypeDecl(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret (.left->ToString()) + " " + (.right->ToString());
+        ret .left->ToString() + " " + .right->ToString();
     }
 
     pub Get() const -> std::string {
-        ret (.left->Get()) + " " + (.right->Get());
+        ret .left->Get() + " " + .right->Get();
     }
 
     pub GetType() const -> std::string {
@@ -554,7 +554,7 @@ class ASTBody(pub ASTNode) {
 
     pub ~ASTBody() {
         mut i : int = 0;
-        while ((i) < .decls.size()) {
+        while i < .decls.size() {
             del .decls[i];
         }
     }
@@ -567,10 +567,10 @@ class ASTBody(pub ASTNode) {
         mut str : std::string = "{";
 
         mut i : int = 0;
-        while ((i) < .decls.size()) {
-            str += (.decls[i])->ToString();
+        while i < .decls.size() {
+            str += .decls[i]->ToString();
 
-            if ((i) < (.decls.size()) - 1) {
+            if i < .decls.size() - 1 {
                 str += "\n";
             }
 
@@ -604,15 +604,15 @@ class ASTType(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret (.left->ToString());
+        ret .left->ToString();
     }
 
     pub Get() const -> std::string {
         mut str : std::string = "";
-        if (.isConst) {
+        if .isConst {
             str = "const ";
         }
-        str += (.left->Get());
+        str += .left->Get();
         ret str;
     }
 
@@ -637,11 +637,11 @@ class ASTArgDecl(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret (.right->ToString()) + " " + (.left->ToString());
+        ret .right->ToString() + " " + .left->ToString();
     }
 
     pub Get() const -> std::string {
-        ret (.right->Get()) + " " + (.left->Get());
+        ret .right->Get() + " " + .left->Get();
     }
 
     pub GetType() const -> std::string {
@@ -659,7 +659,7 @@ class ASTTemplateDecl(pub ASTNode) {
 
     pub ~ASTTemplateDecl() {
         mut i : int = 0;
-        while ((i) < .args.size()) {
+        while i < .args.size() {
             del .args[i];
         }
     }
@@ -672,10 +672,10 @@ class ASTTemplateDecl(pub ASTNode) {
         mut str : std::string = "template<";
 
         mut i : int = 0;
-        while ((i) < .args.size()) {
-            str += (.args[i])->ToString();
+        while i < .args.size() {
+            str += .args[i]->ToString();
 
-            if ((i) < (.args.size()) - 1) {
+            if i < .args.size() - 1 {
                 str += ", ";
             }
 
@@ -690,10 +690,10 @@ class ASTTemplateDecl(pub ASTNode) {
         mut str : std::string = "template<";
 
         mut i : int = 0;
-        while ((i) < .args.size()) {
-            str += (.args[i])->Get();
+        while i < .args.size() {
+            str += .args[i]->Get();
 
-            if ((i) < (.args.size()) - 1) {
+            if i < .args.size() - 1 {
                 str += ", ";
             }
 
@@ -722,11 +722,11 @@ class ASTExpr(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret (.expr->ToString());
+        ret .expr->ToString();
     }
 
     pub Get() const -> std::string {
-        ret (.expr->Get());
+        ret .expr->Get();
     }
 
     pub GetType() const -> std::string {
@@ -750,7 +750,7 @@ class ASTOperatorDecl(pub ASTNode) {
 
     pub ~ASTOperatorDecl() {
         mut i : int = 0;
-        while ((i) < .args.size()) {
+        while i < .args.size() {
             del .args[i];
         }
 
@@ -790,7 +790,7 @@ class ASTFunctionDecl(pub ASTNode) {
         del .name;
         del .templateDecl;
         mut i : int = 0;
-        while ((i) < .args.size()) {
+        while i < .args.size() {
             del .args[i];
         }
         del .fType;
@@ -824,7 +824,7 @@ class ASTReturn(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "return " + (.expr->ToString()) + ";";
+        ret "return " + .expr->ToString() + ";";
     }
 
     pub Get() const -> std::string {
@@ -867,7 +867,7 @@ class ASTIf(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "if (" + (.expr->ToString()) + ") " + (.body->ToString());
+        ret "if (" + .expr->ToString() + ") " + .body->ToString();
     }
 
     pub Get() const -> std::string {
@@ -895,7 +895,7 @@ class ASTWhile(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "while (" + (.expr->ToString()) + ") " + (.body->ToString());
+        ret "while (" + .expr->ToString() + ") " + .body->ToString();
     }
 
     pub Get() const -> std::string {
@@ -964,14 +964,14 @@ class ASTVariableDecl(pub ASTNode) {
     pub ToString() const -> std::string {
         mut str : std::string = "";
 
-        if (.isMutable) {
+        if .isMutable {
             str += "mut ";
         }
 
-        str += (.vType->ToString()) + " " + (.name->ToString());
+        str += .vType->ToString() + " " + .name->ToString();
 
-        if (.value != null) {
-            str += " = " + (.value->ToString());
+        if .value != null {
+            str += " = " + .value->ToString();
         }
 
         str += ";";
@@ -996,7 +996,7 @@ class ASTImport(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "import " + (.path->literal) + ";";
+        ret "import " + .path->literal + ";";
     }
 
     pub Get() const -> std::string {
@@ -1017,7 +1017,7 @@ class ASTInclude(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        ret "include " + (.path->literal) + ";";
+        ret "include " + .path->literal + ";";
     }
 
     pub Get() const -> std::string {
@@ -1042,17 +1042,17 @@ class ASTInherArg(pub ASTNode) {
     pub ToString() const -> std::string {
         mut str : std::string = "";
 
-        if (.protection == null) {
+        if .protection == null {
             str += "protected ";
         }
-        elif (.protection->tokenType == TokenType::Pub) {
+        elif .protection->tokenType == TokenType::Pub {
             str += "public ";
         }
-        elif (.protection->tokenType == TokenType::Priv) {
+        elif .protection->tokenType == TokenType::Priv {
             str += "private ";
         }
 
-        ret str + (.name->Get());
+        ret str + .name->Get();
     }
 
     pub Get() const -> std::string {
@@ -1088,26 +1088,26 @@ class ASTClassDecl(pub ASTNode) {
         del .body;
 
         mut i : int = 0;
-        while ((i) < .inherits.size()) {
+        while i < .inherits.size() {
             del .inherits[i];
         }
     }
 
     pub ToString() const -> std::string {
-        mut str : std::string = "class " + (.name->ToString());
+        mut str : std::string = "class " + .name->ToString();
 
-        if (.templateDecl != null) {
-            str += (.templateDecl->ToString());
+        if .templateDecl != null {
+            str += .templateDecl->ToString();
         }
 
-        if ((.inherits.size()) > 0) {
+        if .inherits.size() > 0 {
             str += " : ";
 
             mut i : int = 0;
-            while ((i) < (.inherits.size())) {
-                str += ((.inherits[i])->ToString());
+            while i < .inherits.size() {
+                str += .inherits[i]->ToString();
 
-                if ((i + 1) < .inherits.size()) {
+                if (i + 1 < .inherits.size()) {
                     str += ", ";
                 }
 
@@ -1115,7 +1115,7 @@ class ASTClassDecl(pub ASTNode) {
             }
         }
 
-        str += (.body->ToString());
+        str += .body->ToString();
         ret str;
     }
 
@@ -1144,10 +1144,10 @@ class ASTEnumField(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        mut str : std::string = (.name->ToString());
+        mut str : std::string = .name->ToString();
 
-        if (.value != null) {
-            str += " = " + (.value->ToString());
+        if .value != null {
+            str += " = " + .value->ToString();
         }
 
         ret str;
@@ -1176,17 +1176,17 @@ class ASTEnumDecl(pub ASTNode) {
         del .name;
 
         mut i : int = 0;
-        while ((i) < .values.size()) {
+        while i < .values.size() {
             del .values[i];
         }
     }
 
     pub ToString() const -> std::string {
-        mut str : std::string = "enum " + (.name->ToString()) + " {\n";
+        mut str : std::string = "enum " + .name->ToString() + " {\n";
 
         mut i : int = 0;
-        while ((i) < .values.size()) {
-            str += "    " + ((.values[i])->ToString()) + ",\n";
+        while i < .values.size() {
+            str += "    " + .values[i]->ToString() + ",\n";
             i += 1;
         }
 

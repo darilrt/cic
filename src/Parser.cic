@@ -36,7 +36,7 @@ class Parser {
         .current = 0;
         .currentToken = &.tokens[.current];
         
-        while ((.currentToken->tokenType) == TokenType::NewLine) {
+        while .currentToken->tokenType == TokenType::NewLine {
             .current += 1;
             .currentToken = &.tokens[.current];
         }
@@ -54,11 +54,11 @@ class Parser {
     }
 
     PopState(drop : bool) -> void {
-        if ((.stateStack.size()) > 0) {
-            .state = (.stateStack.back()).state;
+        if .stateStack.size() > 0 {
+            .state = .stateStack.back().state;
 
-            if (!drop) {
-                .current = (.stateStack.back()).current;
+            if !drop {
+                .current = .stateStack.back().current;
                 .currentToken = &.tokens[.current];
             }
         }
@@ -70,8 +70,8 @@ class Parser {
         std::cout << "State: ";
 
         mut i : int = 0;
-        while ((i) < .stateStack.size()) {
-            std::cout << (.stateStack[i]).state << " <- ";
+        while i < .stateStack.size() {
+            std::cout << .stateStack[i].state << " <- ";
             i++;
         }
         std::cout << "\n";
@@ -79,8 +79,8 @@ class Parser {
 
     IsInsideState(state : std::string) -> bool {
         mut i : int = 0;
-        while ((i) < .stateStack.size()) {
-            if ((.stateStack[i]).state == state) {
+        while i < .stateStack.size() {
+            if .stateStack[i].state == state {
                 ret true;
             }
             i++;
@@ -91,9 +91,9 @@ class Parser {
     PrintLine(line : int) -> void {
         mut lineStart : int = .lines[line];
 
-        while ((lineStart) < .lexer->source.size()) {
+        while lineStart < .lexer->source.size() {
             let c : char = .lexer->source[lineStart];
-            if (c == '\n') {
+            if c == '\n' {
                 break;
             }
             std::cout << c;
@@ -102,12 +102,12 @@ class Parser {
     }
 
     Eat(tokenType : TokenType) -> void {
-        if ((.currentToken->tokenType) == tokenType) {
+        if .currentToken->tokenType == tokenType {
             .current += 1;
             .prevToken = .currentToken;
             .currentToken = &.tokens[.current];
 
-            while ((.currentToken->tokenType) == TokenType::NewLine) {
+            while .currentToken->tokenType == TokenType::NewLine {
                 .current += 1;
                 .prevToken = .currentToken;
                 .currentToken = &.tokens[.current];
@@ -129,16 +129,10 @@ class Parser {
 
     EatNewLine() -> void {
         .Eat(TokenType::Semicolon);
-        // if ((.prevToken->tokenType) == TokenType::NewLine) {
-        //     .prevToken = .currentToken;
-        // }
-        // else {
-        //     .Error("Expected newline");
-        // }
     }
 
     Backtrack() -> void {
-        if (.current > 0) {
+        if .current > 0 {
             .current -= 1;
             .currentToken = &.tokens[.current];
         }
@@ -150,15 +144,15 @@ class Parser {
     }
 
     IsAtEnd() -> bool {
-        ret (.currentToken->tokenType) == (TokenType::EndOfFile);
+        ret .currentToken->tokenType == TokenType::EndOfFile;
     }
 
     IsType(tokenType : TokenType) -> bool {
-        ret (.currentToken->tokenType) == tokenType;
+        ret .currentToken->tokenType == tokenType;
     }
 
     IsKeyword() -> bool {
-        ret (.currentToken->tokenType) > (TokenType::StartKeyword) && (.currentToken->tokenType) < (TokenType::EndKeyword);
+        ret .currentToken->tokenType > TokenType::StartKeyword && .currentToken->tokenType < TokenType::EndKeyword;
     }
 
     IsState(state : std::string) -> bool {
@@ -169,7 +163,7 @@ class Parser {
     Program() -> ASTNode* {
         mut decls : std::vector<ASTNode*>;
 
-        while (!.IsAtEnd()) {
+        while !.IsAtEnd() {
             decls.push_back(.DeclStatement());
         }
 
@@ -185,17 +179,17 @@ class Parser {
     AssignExpr() -> ASTNode* {
         mut node : ASTNode* = .CompExpr();
 
-        while ((.IsType(TokenType::Assign)) || 
-               (.IsType(TokenType::AddAssign)) || 
-               (.IsType(TokenType::SubAssign)) || 
-               (.IsType(TokenType::MulAssign)) ||
-               (.IsType(TokenType::DivAssign)) ||  
-               (.IsType(TokenType::ModAssign)) || 
-               (.IsType(TokenType::AndAssign)) || 
-               (.IsType(TokenType::OrAssign)) || 
-               (.IsType(TokenType::XorAssign)) || 
-               (.IsType(TokenType::LShiftAssign)) || 
-               (.IsType(TokenType::RShiftAssign))) {
+        while .IsType(TokenType::Assign) || 
+              .IsType(TokenType::AddAssign) || 
+              .IsType(TokenType::SubAssign) || 
+              .IsType(TokenType::MulAssign) ||
+              .IsType(TokenType::DivAssign) ||  
+              .IsType(TokenType::ModAssign) || 
+              .IsType(TokenType::AndAssign) || 
+              .IsType(TokenType::OrAssign) || 
+              .IsType(TokenType::XorAssign) || 
+              .IsType(TokenType::LShiftAssign) || 
+              .IsType(TokenType::RShiftAssign) {
             let operation : Token* = .currentToken;
             .Eat(.currentToken->tokenType);
             let right : ASTNode* = .CompExpr();
@@ -209,14 +203,14 @@ class Parser {
     CompExpr() -> ASTNode* {
         mut node : ASTNode* = .ShiftExpr();
 
-        if ((.IsType(TokenType::Equal)) ||
-            (.IsType(TokenType::NotEqual)) || 
-            (.IsType(TokenType::Less)) || 
-            (.IsType(TokenType::LessEqual)) ||
-            (.IsType(TokenType::Greater)) || 
-            (.IsType(TokenType::GreaterEqual))) {
+        if .IsType(TokenType::Equal) ||
+           .IsType(TokenType::NotEqual) || 
+           .IsType(TokenType::Less) || 
+           .IsType(TokenType::LessEqual) ||
+           .IsType(TokenType::Greater) || 
+           .IsType(TokenType::GreaterEqual) {
             
-            if ((.IsInsideState("TemplateArgs")) && (.IsType(TokenType::Greater))) {
+            if .IsInsideState("TemplateArgs") && .IsType(TokenType::Greater) {
                 ret node;
             }
 
@@ -234,8 +228,8 @@ class Parser {
     ShiftExpr() -> ASTNode* {
         mut node : ASTNode* = .Term();
 
-        if ((.IsType(TokenType::LShift)) || 
-            (.IsType(TokenType::RShift))) {
+        if .IsType(TokenType::LShift) || 
+           .IsType(TokenType::RShift) {
             let operation : Token* = .currentToken;
             .Eat(operation->tokenType);
 
@@ -250,7 +244,7 @@ class Parser {
     Term() -> ASTNode* {
         mut node : ASTNode* = .BitwiseExpr();
 
-        if ((.IsType(TokenType::Add)) || (.IsType(TokenType::Sub))) {
+        if .IsType(TokenType::Add) || .IsType(TokenType::Sub) {
             let token : Token* = .currentToken;
             .Eat(token->tokenType);
             
@@ -265,14 +259,14 @@ class Parser {
     BitwiseExpr() -> ASTNode* {
         mut node : ASTNode* = .Factor();
 
-        if ((.IsType(TokenType::And))) {
+        if .IsType(TokenType::And) {
             let token : Token* = .currentToken;
             .Eat(token->tokenType);
             
             .PushState("CheckingForPointer");
             let right : ASTNode* = .Expr();
             
-            if (right != null) {
+            if right != null {
                 .PopState(true);
                 node = new ASTBinaryOp(node, *token, right);
             }
@@ -281,8 +275,8 @@ class Parser {
                 node = new ASTReferenceDecl(node);
             }
         }
-        elif ((.IsType(TokenType::Or)) ||  
-              (.IsType(TokenType::Xor))) {
+        elif .IsType(TokenType::Or) ||  
+            .IsType(TokenType::Xor) {
             let token : Token* = .currentToken;
             .Eat(token->tokenType);
             
@@ -297,14 +291,14 @@ class Parser {
     Factor() -> ASTNode* {
         mut node : ASTNode* = .IncDecExpr();
         
-        if (.IsType(TokenType::Mul)) {
+        if .IsType(TokenType::Mul) {
             let token : Token* = .currentToken;
             .Eat(token->tokenType);
             
             .PushState("CheckingForPointer");
             let right : ASTNode* = .Factor();
             
-            if (right != null) {
+            if right != null {
                 .PopState(true);
                 node = new ASTBinaryOp(node, *token, right);
             }
@@ -313,7 +307,7 @@ class Parser {
                 node = new ASTPointerDecl(node);
             }
         }
-        elif ((.IsType(TokenType::Div)) || (.IsType(TokenType::Mod))) {
+        elif .IsType(TokenType::Div) || .IsType(TokenType::Mod) {
             let token : Token* = .currentToken;
             .Eat(token->tokenType);
             let right : ASTNode* = .Factor();
@@ -327,7 +321,7 @@ class Parser {
     IncDecExpr() -> ASTNode* {
         mut node : ASTNode* = .Unary();
 
-        if ((.IsType(TokenType::Inc)) || (.IsType(TokenType::Dec))) {
+        if .IsType(TokenType::Inc) || .IsType(TokenType::Dec) {
             let token : Token* = .currentToken;
             .Eat(token->tokenType);
             let un : ASTUnaryOp* = new ASTUnaryOp(*token, node);
@@ -340,10 +334,10 @@ class Parser {
 
     // Unary: ('+' | '-' | '!' | '~' ) Unary | FunctionCall
     Unary() -> ASTNode* {
-        if ((.IsType(TokenType::Add)) ||
-            (.IsType(TokenType::Sub)) || 
-            (.IsType(TokenType::Not)) || 
-            (.IsType(TokenType::BitNot))) {
+        if .IsType(TokenType::Add) ||
+           .IsType(TokenType::Sub) || 
+           .IsType(TokenType::Not) || 
+           .IsType(TokenType::BitNot) {
             let token : Token* = .currentToken;
             .Eat(token->tokenType);
             
@@ -351,7 +345,7 @@ class Parser {
 
             ret new ASTUnaryOp(*token, right);
         }
-        elif ((.IsType(TokenType::And)) || (.IsType(TokenType::Mul))) {
+        elif .IsType(TokenType::And) || .IsType(TokenType::Mul) {
             let token : Token* = .currentToken;
             .Eat(token->tokenType);
             
@@ -368,9 +362,9 @@ class Parser {
 
         if (node == null) { ret null; }
 
-        if (.IsType(TokenType::LParen)) {
+        if .IsType(TokenType::LParen) {
             .Eat(TokenType::LParen);
-            if (.IsType(TokenType::RParen)) {
+            if .IsType(TokenType::RParen) {
                 .Eat(TokenType::RParen);
                 ret new ASTFunctionCall(node);
             }
@@ -388,7 +382,7 @@ class Parser {
         mut node : ASTNode* = .IndexAccess(.FunctionCall());
         if (node == null) { ret null; }
 
-        if ((.IsType(TokenType::Dot)) || (.IsType(TokenType::Arrow))) {
+        if .IsType(TokenType::Dot) || .IsType(TokenType::Arrow) {
             let token : Token* = .currentToken;
             .Eat(token->tokenType);
             
@@ -402,7 +396,7 @@ class Parser {
     IndexAccess(node : ASTNode*) -> ASTNode* {
         if (node == null) { ret null; }
 
-        while (.IsType(TokenType::LBracket)) {
+        while .IsType(TokenType::LBracket) {
             let token : Token* = .currentToken;
             .Eat(token->tokenType);
 
@@ -419,56 +413,56 @@ class Parser {
     Primary() -> ASTNode* {
         mut node : ASTNode*;
 
-        if (.IsType(TokenType::Int)) {
+        if .IsType(TokenType::Int) {
             node = new ASTConstant(.currentToken->literal);
             .Eat(TokenType::Int);
         }
-        elif (.IsType(TokenType::Float)) {
+        elif .IsType(TokenType::Float) {
             node = new ASTConstant(.currentToken->literal);
             .Eat(TokenType::Float);
         }
-        elif (.IsType(TokenType::True)) {
+        elif .IsType(TokenType::True) {
             node = new ASTConstant(.currentToken->literal);
             .Eat(TokenType::True);
         }
-        elif (.IsType(TokenType::Null)) {
+        elif .IsType(TokenType::Null) {
             node = new ASTConstant("NULL");
             .Eat(TokenType::Null);
         }
-        elif (.IsType(TokenType::False)) {
+        elif .IsType(TokenType::False) {
             node = new ASTConstant(.currentToken->literal);
             .Eat(TokenType::False);
         }
-        elif (.IsType(TokenType::LParen)) {
+        elif .IsType(TokenType::LParen) {
             .Eat(TokenType::LParen);
             node = .Expr();
             .Eat(TokenType::RParen);
         } 
-        elif (.IsType(TokenType::Ident) | .IsType(TokenType::Type)) {
+        elif .IsType(TokenType::Ident) | .IsType(TokenType::Type) {
             node = .ScopeResolution();
         }
-        elif (.IsType(TokenType::New)) {
+        elif .IsType(TokenType::New) {
             node = .New();
         }
-        elif (.IsType(TokenType::String)) {
+        elif .IsType(TokenType::String) {
             node = new ASTConstant('"' + .currentToken->literal + '"');
             .Eat(TokenType::String);
         }
-        elif (.IsType(TokenType::Char)) {
+        elif .IsType(TokenType::Char) {
             node = new ASTConstant("'" + .currentToken->literal + "'");
             .Eat(TokenType::Char);
         }
-        elif (.IsType(TokenType::Dot)) {
+        elif .IsType(TokenType::Dot) {
             .Eat(TokenType::Dot);
             node = .ScopeResolution();
             ret new ASTThisAccess(node);
         }
         else {
-            if (.IsInsideState("CheckingForPointer")) {
+            if .IsInsideState("CheckingForPointer") {
                 ret null;
             }
-            .Error("Expected an expression after this:" + .currentToken->literal);
             .PrintLine(.currentToken->line);
+            .Error("Expected an expression after this:" + .currentToken->literal);
         }
 
         ret node;
@@ -485,7 +479,7 @@ class Parser {
     Del() -> ASTNode* {
         .Eat(TokenType::Del);
         mut isArray : bool = false;
-        if (.IsType(TokenType::LBracket)) {
+        if .IsType(TokenType::LBracket) {
             .Eat(TokenType::LBracket);
             .Eat(TokenType::RBracket);
             isArray = true;
@@ -500,11 +494,11 @@ class Parser {
         mut node : ASTNode* = new ASTVariable(.currentToken->literal);
         .Eat(TokenType::Ident);
 
-        while (.IsType(TokenType::LBracket)) {
+        while .IsType(TokenType::LBracket) {
             .Eat(TokenType::LBracket);
             
             mut size : ASTNode* = null;
-            if (!.IsType(TokenType::RBracket)) {
+            if !.IsType(TokenType::RBracket) {
                 size = .Expr();
             }
 
@@ -520,27 +514,27 @@ class Parser {
     Variable() -> ASTNode* {
         mut node : ASTNode*;
 
-        if (.IsType(TokenType::Ident)) {
+        if .IsType(TokenType::Ident) {
             node = new ASTVariable(.currentToken->literal);
             .Eat(TokenType::Ident);
         }
-        elif (.IsType(TokenType::Class)) {
+        elif .IsType(TokenType::Class) {
             node = new ASTVariable(.currentToken->literal);
             .Eat(TokenType::Class);
         }
-        elif (.IsType(TokenType::Type)) {
+        elif .IsType(TokenType::Type) {
             node = new ASTVariable(.currentToken->literal);
             .Eat(TokenType::Type);
         }
         else {
-            .Error("Expected an identifier after this:" + .currentToken->literal);
             .PrintLine(.currentToken->line);
+            .Error("Expected an identifier after this:" + .currentToken->literal);
         }
 
-        if (.IsType(TokenType::Less)) {
+        if .IsType(TokenType::Less) {
             let tmp : ASTTemplateArgs* = .TemplateArgs(node);
 
-            if (tmp != null) {
+            if tmp != null {
                 node = tmp;
             }
         }
@@ -552,22 +546,22 @@ class Parser {
     ScopeResolution() -> ASTNode* {
         mut node : ASTNode* = .Variable();
 
-        if (.IsType(TokenType::Less)) {
+        if .IsType(TokenType::Less) {
             let tmp : ASTTemplateArgs* = .TemplateArgs(node);
 
-            if (tmp != null) {
+            if tmp != null {
                 node = tmp;
             }
         }
 
-        while (.IsType(TokenType::ScopeResolution)) {
+        while .IsType(TokenType::ScopeResolution) {
             .Eat(TokenType::ScopeResolution);
             mut right : ASTNode* = .Variable();
 
-            if (.IsType(TokenType::Less)) {
+            if .IsType(TokenType::Less) {
                 let tmp : ASTTemplateArgs* = .TemplateArgs(right);
 
-                if (tmp != null) {
+                if tmp != null {
                     right = tmp;
                 }
             }
@@ -585,7 +579,7 @@ class Parser {
         .Eat(TokenType::Less);
         let args : std::vector<ASTNode*> = .ArgsValue();
         
-        if (.IsType(TokenType::Greater)) {
+        if .IsType(TokenType::Greater) {
             .Eat(TokenType::Greater);
             .PopState(true);
             ret new ASTTemplateArgs(node, args);
@@ -593,7 +587,7 @@ class Parser {
         .PopState(false);
         
         mut i : int = 0;
-        while ((i) < args.size()) {
+        while i < args.size() {
             del args[i];
             i += 1;
         }
@@ -607,7 +601,7 @@ class Parser {
 
         args.push_back(.Expr());
 
-        while (.IsType(TokenType::Comma)) {
+        while .IsType(TokenType::Comma) {
             .Eat(TokenType::Comma);
             args.push_back(.Expr());
         }
@@ -624,19 +618,19 @@ class Parser {
         mut body : ASTBody* = new ASTBody();
         mut stmt : ASTNode*;
 
-        while (!(.IsType(TokenType::RBrace))) {
-            if (bodyType == BodyType::Decl) {
+        while !.IsType(TokenType::RBrace) {
+            if bodyType == BodyType::Decl {
                 stmt = .DeclStatement();
             }
-            elif (bodyType == BodyType::Impl) {
+            elif bodyType == BodyType::Impl {
                 stmt = .ImplStatement();
             }
-            elif (bodyType == BodyType::Class) {
+            elif bodyType == BodyType::Class {
                 stmt = .ClassStatement();
             }
             body->AddStatement(stmt);
             
-            if (.IsType(TokenType::EndOfFile)) {
+            if .IsType(TokenType::EndOfFile) {
                 break;
             }
         }
@@ -648,19 +642,19 @@ class Parser {
     // Type: ScopeResolution ('*')* ('&')?
     Type() -> ASTType* {
         mut isConst : bool = false;
-        if (.IsType(TokenType::Const)) {
+        if .IsType(TokenType::Const) {
             .Eat(TokenType::Const);
             isConst = true;
         }
 
         mut left : ASTNode* = .ScopeResolution();
 
-        while (.IsType(TokenType::Mul)) {
+        while .IsType(TokenType::Mul) {
             .Eat(TokenType::Mul);
             left = new ASTPointerDecl(left);
         }
 
-        if (.IsType(TokenType::And)) {
+        if .IsType(TokenType::And) {
             .Eat(TokenType::And);
             left = new ASTReferenceDecl(left);
         }
@@ -686,7 +680,7 @@ class Parser {
 
         args.push_back(.ArgDecl());
 
-        while (.IsType(TokenType::Comma)) {
+        while .IsType(TokenType::Comma) {
             .Eat(TokenType::Comma);
             args.push_back(.ArgDecl());
         }
@@ -700,7 +694,7 @@ class Parser {
         .Eat(TokenType::Less);
         let args : std::vector<ASTArgDecl*> = .TypedArgs();
         
-        if (.IsType(TokenType::Greater)) {
+        if .IsType(TokenType::Greater) {
             .Eat(TokenType::Greater);
             .PopState(true);
             ret new ASTTemplateDecl(args);
@@ -708,7 +702,7 @@ class Parser {
         .PopState(false);
         
         mut i : int = 0;
-        while ((i) < args.size()) {
+        while i < args.size() {
             del args[i];
             i += 1;
         }
@@ -720,7 +714,7 @@ class Parser {
     VariableDecl() -> ASTVariableDecl* {
         mut isMutable : bool = false;
 
-        if (.IsType(TokenType::Mut)) {
+        if .IsType(TokenType::Mut) {
             isMutable = true;
             .Eat(TokenType::Mut);
         }
@@ -734,7 +728,7 @@ class Parser {
         let _type : ASTType* = .Type();
 
         mut expr : ASTExpr* = null;
-        if (.IsType(TokenType::Assign)) {
+        if .IsType(TokenType::Assign) {
             .Eat(TokenType::Assign);
             expr = .Expr();
         }
@@ -748,13 +742,13 @@ class Parser {
         .Eat(TokenType::Ident);
 
         mut tmp : ASTTemplateDecl* = null;
-        if (.IsType(TokenType::Less)) {
+        if .IsType(TokenType::Less) {
             tmp = .TemplateDecl();
         }
 
         .Eat(TokenType::LParen);
         mut args : std::vector<ASTArgDecl*>;
-        if (.IsType(TokenType::RParen)) {
+        if .IsType(TokenType::RParen) {
             .Eat(TokenType::RParen);
         }
         else {
@@ -763,19 +757,19 @@ class Parser {
         }
 
         mut attrs : int = false;
-        if (.IsType(TokenType::Const)) {
+        if .IsType(TokenType::Const) {
             .Eat(TokenType::Const);
             attrs |= Attribute::Const;
         }
 
         mut _type : ASTType* = null;
-        if (.IsType(TokenType::Arrow)) {
+        if .IsType(TokenType::Arrow) {
             .Eat(TokenType::Arrow);
             _type = .Type();
         }
 
         mut body : ASTBody* = null;
-        if (.IsType(TokenType::LBrace)) {
+        if .IsType(TokenType::LBrace) {
             body = .Body(BodyType::Impl);
         }
 
@@ -799,7 +793,7 @@ class Parser {
 
         mut elifs : std::vector<ASTIf*>;
 
-        while (.IsType(TokenType::Elif)) {
+        while .IsType(TokenType::Elif) {
             .Eat(TokenType::Elif);
             let elifCond : ASTExpr* = .Expr();
             let elifBody : ASTBody* = .Body(BodyType::Impl);
@@ -807,7 +801,7 @@ class Parser {
         }
 
         mut elseBody : ASTBody* = null;
-        if (.IsType(TokenType::Else)) {
+        if .IsType(TokenType::Else) {
             .Eat(TokenType::Else);
             elseBody = .Body(BodyType::Impl);
         }
@@ -846,11 +840,11 @@ class Parser {
     InherArg() -> ASTInherArg* {
         mut protection : Token* = null;
 
-        if (.IsType(TokenType::Priv)) {
+        if .IsType(TokenType::Priv) {
             protection = .currentToken;
             .Eat(TokenType::Priv);
         }
-        elif (.IsType(TokenType::Pub)) {
+        elif .IsType(TokenType::Pub) {
             protection = .currentToken;
             .Eat(TokenType::Pub);
         }
@@ -866,7 +860,7 @@ class Parser {
 
         args.push_back(.InherArg());
 
-        while (.IsType(TokenType::Comma)) {
+        while .IsType(TokenType::Comma) {
             .Eat(TokenType::Comma);
             args.push_back(.InherArg());
         }
@@ -881,12 +875,12 @@ class Parser {
         .Eat(TokenType::Ident);
 
         mut tmp : ASTTemplateDecl* = null;
-        if (.IsType(TokenType::Less)) {
+        if .IsType(TokenType::Less) {
             tmp = .TemplateDecl();
         }
 
         mut args : std::vector<ASTInherArg*>;
-        if (.IsType(TokenType::LParen)) {
+        if .IsType(TokenType::LParen) {
             .Eat(TokenType::LParen);
             args = .InherArgs();
             .Eat(TokenType::RParen);
@@ -905,48 +899,48 @@ class Parser {
     Operator() -> std::string {
         let operation : std::string = "";
 
-        if (.IsType(TokenType::Add)) { .Eat(TokenType::Add); ret "+"; }
-        elif (.IsType(TokenType::Sub)) { .Eat(TokenType::Sub); ret "-"; }
-        elif (.IsType(TokenType::Mul)) { .Eat(TokenType::Mul); ret "*"; }
-        elif (.IsType(TokenType::Div)) { .Eat(TokenType::Div); ret "/"; }
-        elif (.IsType(TokenType::Mod)) { .Eat(TokenType::Mod); ret "%"; }
-        elif (.IsType(TokenType::Xor)) { .Eat(TokenType::Xor); ret "^"; }
-        elif (.IsType(TokenType::Amp)) { .Eat(TokenType::Amp); ret "&"; }
-        elif (.IsType(TokenType::Pipe)) { .Eat(TokenType::Pipe); ret "|"; }
-        elif (.IsType(TokenType::BitNot)) { .Eat(TokenType::BitNot); ret "~"; }
-        elif (.IsType(TokenType::Not)) { .Eat(TokenType::Not); ret "!"; }
-        elif (.IsType(TokenType::Assign)) { .Eat(TokenType::Assign); ret "="; }
-        elif (.IsType(TokenType::Less)) { .Eat(TokenType::Less); ret "<"; }
-        elif (.IsType(TokenType::Greater)) { .Eat(TokenType::Greater); ret ">"; }
-        elif (.IsType(TokenType::AddAssign)) { .Eat(TokenType::AddAssign); ret "+="; }
-        elif (.IsType(TokenType::SubAssign)) { .Eat(TokenType::SubAssign); ret "-="; }
-        elif (.IsType(TokenType::MulAssign)) { .Eat(TokenType::MulAssign); ret "*="; }
-        elif (.IsType(TokenType::DivAssign)) { .Eat(TokenType::DivAssign); ret "/="; }
-        elif (.IsType(TokenType::ModAssign)) { .Eat(TokenType::ModAssign); ret "%="; }
-        elif (.IsType(TokenType::XorAssign)) { .Eat(TokenType::XorAssign); ret "^="; }
-        elif (.IsType(TokenType::AndAssign)) { .Eat(TokenType::AndAssign); ret "&="; }
-        elif (.IsType(TokenType::OrAssign)) { .Eat(TokenType::OrAssign); ret "|="; }
-        elif (.IsType(TokenType::LShift)) { .Eat(TokenType::LShift); ret "<<"; }
-        elif (.IsType(TokenType::RShift)) { .Eat(TokenType::RShift); ret ">>"; }
-        elif (.IsType(TokenType::RShiftAssign)) { .Eat(TokenType::RShiftAssign); ret ">>="; }
-        elif (.IsType(TokenType::LShiftAssign)) { .Eat(TokenType::LShiftAssign); ret "<<="; }
-        elif (.IsType(TokenType::Equal)) { .Eat(TokenType::Equal); ret "=="; }
-        elif (.IsType(TokenType::NotEqual)) { .Eat(TokenType::NotEqual); ret "!="; }
-        elif (.IsType(TokenType::LessEqual)) { .Eat(TokenType::LessEqual); ret "<="; }
-        elif (.IsType(TokenType::GreaterEqual)) { .Eat(TokenType::GreaterEqual); ret ">="; }
+        if .IsType(TokenType::Add) { .Eat(TokenType::Add); ret "+"; }
+        elif .IsType(TokenType::Sub) { .Eat(TokenType::Sub); ret "-"; }
+        elif .IsType(TokenType::Mul) { .Eat(TokenType::Mul); ret "*"; }
+        elif .IsType(TokenType::Div) { .Eat(TokenType::Div); ret "/"; }
+        elif .IsType(TokenType::Mod) { .Eat(TokenType::Mod); ret "%"; }
+        elif .IsType(TokenType::Xor) { .Eat(TokenType::Xor); ret "^"; }
+        elif .IsType(TokenType::Amp) { .Eat(TokenType::Amp); ret "&"; }
+        elif .IsType(TokenType::Pipe) { .Eat(TokenType::Pipe); ret "|"; }
+        elif .IsType(TokenType::BitNot) { .Eat(TokenType::BitNot); ret "~"; }
+        elif .IsType(TokenType::Not) { .Eat(TokenType::Not); ret "!"; }
+        elif .IsType(TokenType::Assign) { .Eat(TokenType::Assign); ret "="; }
+        elif .IsType(TokenType::Less) { .Eat(TokenType::Less); ret "<"; }
+        elif .IsType(TokenType::Greater) { .Eat(TokenType::Greater); ret ">"; }
+        elif .IsType(TokenType::AddAssign) { .Eat(TokenType::AddAssign); ret "+="; }
+        elif .IsType(TokenType::SubAssign) { .Eat(TokenType::SubAssign); ret "-="; }
+        elif .IsType(TokenType::MulAssign) { .Eat(TokenType::MulAssign); ret "*="; }
+        elif .IsType(TokenType::DivAssign) { .Eat(TokenType::DivAssign); ret "/="; }
+        elif .IsType(TokenType::ModAssign) { .Eat(TokenType::ModAssign); ret "%="; }
+        elif .IsType(TokenType::XorAssign) { .Eat(TokenType::XorAssign); ret "^="; }
+        elif .IsType(TokenType::AndAssign) { .Eat(TokenType::AndAssign); ret "&="; }
+        elif .IsType(TokenType::OrAssign) { .Eat(TokenType::OrAssign); ret "|="; }
+        elif .IsType(TokenType::LShift) { .Eat(TokenType::LShift); ret "<<"; }
+        elif .IsType(TokenType::RShift) { .Eat(TokenType::RShift); ret ">>"; }
+        elif .IsType(TokenType::RShiftAssign) { .Eat(TokenType::RShiftAssign); ret ">>="; }
+        elif .IsType(TokenType::LShiftAssign) { .Eat(TokenType::LShiftAssign); ret "<<="; }
+        elif .IsType(TokenType::Equal) { .Eat(TokenType::Equal); ret "=="; }
+        elif .IsType(TokenType::NotEqual) { .Eat(TokenType::NotEqual); ret "!="; }
+        elif .IsType(TokenType::LessEqual) { .Eat(TokenType::LessEqual); ret "<="; }
+        elif .IsType(TokenType::GreaterEqual) { .Eat(TokenType::GreaterEqual); ret ">="; }
         // elif (.IsType(TokenType::Compare)) { .Eat(TokenType::Compare); ret "<=>"; }
-        elif (.IsType(TokenType::And)) { .Eat(TokenType::And); ret "&&"; }
-        elif (.IsType(TokenType::Or)) { .Eat(TokenType::Or); ret "||"; }
-        elif (.IsType(TokenType::Inc)) { .Eat(TokenType::Inc); ret "++"; }
-        elif (.IsType(TokenType::Dec)) { .Eat(TokenType::Dec); ret "--"; }
+        elif .IsType(TokenType::And) { .Eat(TokenType::And); ret "&&"; }
+        elif .IsType(TokenType::Or) { .Eat(TokenType::Or); ret "||"; }
+        elif .IsType(TokenType::Inc) { .Eat(TokenType::Inc); ret "++"; }
+        elif .IsType(TokenType::Dec) { .Eat(TokenType::Dec); ret "--"; }
         // elif (.IsType(TokenType::ArrowStar)) { .Eat(TokenType::ArrowStar); ret "->*"; }
-        elif (.IsType(TokenType::Arrow)) { .Eat(TokenType::Arrow); ret "->"; }
-        elif (.IsType(TokenType::LBrace)) {
+        elif .IsType(TokenType::Arrow) { .Eat(TokenType::Arrow); ret "->"; }
+        elif .IsType(TokenType::LBrace) {
             .Eat(TokenType::LBrace);
             .Eat(TokenType::RBrace);
             ret "[]";
         }
-        elif (.IsType(TokenType::LParen)) {
+        elif .IsType(TokenType::LParen) {
             .Eat(TokenType::LParen);
             .Eat(TokenType::RParen);
             ret "()";
@@ -983,7 +977,7 @@ class Parser {
 
         mut value : ASTExpr* = null;
 
-        if (.IsType(TokenType::Assign)) {
+        if .IsType(TokenType::Assign) {
             .Eat(TokenType::Assign);
             value = .Expr();
         }
@@ -995,10 +989,10 @@ class Parser {
     EnumFields() -> std::vector<ASTEnumField*> {
         mut fields : std::vector<ASTEnumField*>;
 
-        while (!.IsType(TokenType::RBrace)) {
+        while !.IsType(TokenType::RBrace) {
             fields.push_back(.EnumField());
 
-            if (.IsType(TokenType::Comma)) {
+            if .IsType(TokenType::Comma) {
                 .Eat(TokenType::Comma);
             }
         }
@@ -1020,30 +1014,30 @@ class Parser {
     }
 
     DeclStatement() -> ASTNode* {
-        if (.IsType(TokenType::Semicolon)) {
+        if .IsType(TokenType::Semicolon) {
             .Eat(TokenType::Semicolon);
             ret null;
         }
-        elif ((.IsType(TokenType::Let)) || (.IsType(TokenType::Mut))) {
+        elif .IsType(TokenType::Let) || .IsType(TokenType::Mut) {
             let node : ASTNode* = .VariableDecl();
             .EatNewLine();
             ret node;
         }
-        elif (.IsType(TokenType::Ident)) {
+        elif .IsType(TokenType::Ident) {
             ret .FunctionDecl();
         }
-        elif (.IsType(TokenType::Include)) {
+        elif .IsType(TokenType::Include) {
             ret .IncludeStmt();
         }
-        elif (.IsType(TokenType::Class)) {
+        elif .IsType(TokenType::Class) {
             ret .ClassDecl();
         }
-        elif (.IsType(TokenType::Enum)) {
+        elif .IsType(TokenType::Enum) {
             ret .EnumDecl();
         }
         else {
-            .Error("Expected declaration statement");
             .PrintLine(.currentToken->line);
+            .Error("Expected declaration statement");
         }
 
         ret null;
@@ -1052,34 +1046,34 @@ class Parser {
     ImplStatement() -> ASTNode* {
         mut node : ASTNode* = null;
 
-        if (.IsType(TokenType::Semicolon)) {
+        if .IsType(TokenType::Semicolon) {
             ret null;
         }
-        elif ((.IsType(TokenType::Let)) || (.IsType(TokenType::Mut))) {
+        elif .IsType(TokenType::Let) || .IsType(TokenType::Mut) {
             node = .VariableDecl();
             .EatNewLine();
         }
-        elif (.IsType(TokenType::Ret)) {
+        elif .IsType(TokenType::Ret) {
             node = .ReturnStmt();
             .EatNewLine();
         }
-        elif (.IsType(TokenType::If)) {
+        elif .IsType(TokenType::If) {
             node = .IfStmt();
         }
-        elif (.IsType(TokenType::While)) {
+        elif .IsType(TokenType::While) {
             node = .WhileStmt();
         }
-        elif (.IsType(TokenType::Break)) {
+        elif .IsType(TokenType::Break) {
             .Eat(TokenType::Break);
             node = new ASTBreak();
             .EatNewLine();
         }
-        elif (.IsType(TokenType::Continue)) {
+        elif .IsType(TokenType::Continue) {
             .Eat(TokenType::Continue);
             node = new ASTContinue();
             .EatNewLine();
         }
-        elif (.IsType(TokenType::Del)) {
+        elif .IsType(TokenType::Del) {
             node = .Del();
             .EatNewLine();
         }
@@ -1094,44 +1088,44 @@ class Parser {
     ClassStatement() -> ASTNode* {
         mut node : ASTNode* = null;
 
-        if (.IsType(TokenType::Pub)) {
+        if .IsType(TokenType::Pub) {
             .Eat(TokenType::Pub);
             node = .ClassStatement();
             node->attr |= Attribute::Public;
         }
-        elif (.IsType(TokenType::Priv)) {
+        elif .IsType(TokenType::Priv) {
             .Eat(TokenType::Priv);
             node = .ClassStatement();
             node->attr |= Attribute::Private;
         }
-        elif (.IsType(TokenType::Virtual)) {
+        elif .IsType(TokenType::Virtual) {
             .Eat(TokenType::Virtual);
             node = .ClassStatement();
             node->attr |= Attribute::Virtual;
         }
-        elif (.IsType(TokenType::Static)) {
+        elif .IsType(TokenType::Static) {
             .Eat(TokenType::Static);
             node = .ClassStatement();
             node->attr |= Attribute::Static;
         }
-        elif (.IsType(TokenType::Operator)) {
+        elif .IsType(TokenType::Operator) {
             node = .OperatorDecl();
         }
-        elif ((.IsType(TokenType::Let)) || (.IsType(TokenType::Mut))) {
+        elif .IsType(TokenType::Let) || .IsType(TokenType::Mut) {
             node = .VariableDecl();
             .EatNewLine();
         }
-        elif (.IsType(TokenType::Ident)) {
+        elif .IsType(TokenType::Ident) {
             node = .FunctionDecl();
         }
-        elif (.IsType(TokenType::BitNot)) {
+        elif .IsType(TokenType::BitNot) {
             .Eat(TokenType::BitNot);
             node = .FunctionDecl();
             node->attr |= Attribute::Destructor;
         }
         else {
-            .Error("Expected class statement");
             .PrintLine(.currentToken->line);
+            .Error("Expected class statement");
         }
         
         ret node;

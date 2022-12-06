@@ -16,7 +16,7 @@ IRFromFile(filename : std::string) -> IRNode* {
     mut line : std::string = "";
     mut lines : std::vector<int>;
 
-    while (std::getline(file, line)) {
+    while std::getline(file, line) {
         fileContents += line + "\n";
         lines.push_back(line.size());
     }
@@ -41,21 +41,21 @@ IRFromFile(filename : std::string) -> IRNode* {
 SaveIRToFile(ir : IRNode*, outputDir : const std::string&, filename : const std::string&) -> void {
     mut newFilename : std::string = filename;
     mut i : int = 0;
-    while ((i) < (newFilename.size())) {
-        if (newFilename[i] == 92) {
+    while i < newFilename.size() {
+        if newFilename[i] == 92 {
             newFilename[i] = '/';
         }
         i++;
     }
 
-    mut stem : std::string = newFilename.substr((newFilename.find_last_of("/")) + 1, newFilename.size());
+    mut stem : std::string = newFilename.substr(newFilename.find_last_of("/") + 1, newFilename.size());
     stem = stem.substr(0, stem.find_last_of("."));
     
     mut codeGenerator : CodeGenerator* = new CodeGenerator();
     codeGenerator->Generate(ir);
 
     mut output : std::string = outputDir;
-    if (outputDir == "stdout") {
+    if outputDir == "stdout" {
         std::cout << "// Header: " << filename << std::endl;
         std::cout << "#pragma once" << std::endl;
         std::cout << codeGenerator->headerBuffer;
@@ -64,14 +64,14 @@ SaveIRToFile(ir : IRNode*, outputDir : const std::string&, filename : const std:
         std::cout << "#include \"" << stem << ".hpp\"" << std::endl;
         std::cout << codeGenerator->sourceBuffer;
     } else {
-        if (output == "") {
+        if output == "" {
             output = stem;
         } else {
             output = outputDir + "/" + stem;
             
             i = 0;
-            while ((i) < (output.size())) {
-                if (output[i] == 92) {
+            while i < output.size() {
+                if output[i] == 92 {
                     output[i] = '/';
                 }
                 i++;
