@@ -33,6 +33,7 @@ class IRGenerator {
         if IsA<ASTClassDecl>(node) { ret TranslateClass(As<ASTClassDecl>(node), parent); }
         if IsA<ASTEnumDecl>(node) { ret TranslateEnum(As<ASTEnumDecl>(node), parent); }
         if IsA<ASTDel>(node) { ret TranslateDel(As<ASTDel>(node)); }
+        if IsA<ASTForEachStmt>(node) { ret TranslateFor(As<ASTForEachStmt>(node)); }
 
         if node != null {
             std::cout << "Unknown node type: " << node->GetType() << std::endl;
@@ -283,5 +284,15 @@ class IRGenerator {
         }
 
         ret irEnum;
+    }
+
+    TranslateFor(forNode : ASTForEachStmt*) -> IRFor* {
+        let irFor : IRFor* = new IRFor();
+        irFor->isMutable = forNode->isMutable;
+        irFor->varName = forNode->arg->Get();
+        irFor->iterable = TranslateExpr(forNode->iterable);
+        irFor->body = TranslateBody(forNode->body, null);
+
+        ret irFor;
     }
 }

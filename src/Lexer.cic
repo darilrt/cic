@@ -164,7 +164,7 @@ class Lexer {
     }
 
     ParseIdentifier() -> Token {
-        let col : int = .column;
+        let col : int = .column - 1;
         mut identifier : std::string;
         while .IsAlphaNumeric() || .IsChar('_') {
             identifier += .currentChar;
@@ -176,6 +176,7 @@ class Lexer {
         if identifier == "else" { ret Token(TokenType::Else, "else", col, .line); }
         if identifier == "while" { ret Token(TokenType::While, "while", col, .line); }
         if identifier == "for" { ret Token(TokenType::For, "for", col, .line); }
+        if identifier == "in" { ret Token(TokenType::In, "in", col, .line); }
         if identifier == "break" { ret Token(TokenType::Break, "break", col, .line); }
         if identifier == "continue" { ret Token(TokenType::Continue, "continue", col, .line); }
         if identifier == "ret" { ret Token(TokenType::Ret, "ret", col, .line); }

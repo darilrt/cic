@@ -557,3 +557,30 @@ class IRDel(pub IRNode) {
         ret str + .expr->ToString();
     }
 }
+
+class IRFor(pub IRNode) {
+    pub mut isMutable : bool = false;
+    pub mut varName : std::string;
+    pub mut iterable : IRExpr*;
+    pub mut body : IRBody*;
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "for (";
+
+        if !.isMutable {
+            str += "const ";
+        }
+
+        str += .varName + " : " + .iterable->ToString() + ") " + .body->ToString();
+
+        ret str;
+    }
+
+    pub GetHeader() const -> std::string {
+        ret "";
+    }
+
+    pub GetSource() const -> std::string {
+        ret "";
+    }
+}

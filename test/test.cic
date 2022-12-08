@@ -3,7 +3,9 @@ include "iostream";
 main() -> int {
     mut arr : std::vector<int>;
 
-    for mut e : int& in arr { }
+    for mut e : int& in arr {
+        e = 0;
+    }
 
     ret 0;
 }
