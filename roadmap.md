@@ -1,6 +1,7 @@
 # Road Map
 ## Version 0.0.3a
 
+- &#9744; Template specialization
 - &#9744; Lambda expressions
 - &#9744; Default arguments
 - &#9744; Variadic templates
