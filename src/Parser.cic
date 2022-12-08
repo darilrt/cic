@@ -976,21 +976,39 @@ class Parser {
         ret operation;
     }
 
-    // OperatorDecl: 'operation' Operator '(' TypedArgs ')' ('->' Type) Body
+    // OperatorDecl: 'operation' Operator '(' TypedArgs? ')' 'const'? ('->' Type) Body
     OperatorDecl() -> ASTOperatorDecl* {
         .Eat(TokenType::Operator);
         let operation : std::string = .Operator();
 
         .Eat(TokenType::LParen);
-        let args : std::vector<ASTArgDecl*> = .TypedArgs();
+        
+        mut args : std::vector<ASTArgDecl*>;
+
+        if !.IsType(TokenType::RParen) {
+            args = .TypedArgs();
+        }
+
         .Eat(TokenType::RParen);
+
+        mut isConst : bool = false;
+        if .IsType(TokenType::Const) {
+            .Eat(TokenType::Const);
+            isConst = true;
+        }
 
         .Eat(TokenType::Arrow);
         let _type : ASTType* = .Type();
 
         let body : ASTBody* = .Body(BodyType::Impl);
 
-        ret new ASTOperatorDecl(operation, args, _type, body);
+        mut node : ASTOperatorDecl* = new ASTOperatorDecl(operation, args, _type, body);
+        
+        if isConst {
+            node->attr |= Attribute::Const;
+        }
+
+        ret node;
     }
 
     // EnumField: Identifier ('=' Expr)?
@@ -1170,6 +1188,12 @@ class Parser {
             .Eat(TokenType::BitNot);
             node = .FunctionDecl();
             node->attr |= Attribute::Destructor;
+        }
+        elif .IsType(TokenType::Class) {
+            node = .ClassDecl();
+        }
+        elif .IsType(TokenType::Enum) {
+            node = .EnumDecl();
         }
         else {
             .PrintLine();

@@ -4,9 +4,10 @@
 - &#9744; Lambda expressions
 - &#9744; Default arguments
 - &#9744; Variadic templates
+- &#9745; For each
 - &#9745; Classes
-    - &#9744; Nested classes
-    - &#9744; Nested enum
+    - &#9745; Nested classes
+    - &#9745; Nested enum
     - &#9744; Friend functions
     - &#9744; Friend classes
 
