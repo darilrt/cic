@@ -92,8 +92,7 @@ class Parser {
     }
 
     PrintLine() -> void {
-        // show file name and number and line
-        std::cout << .filename << ":" << .currentToken->line << ":" << .currentToken->column << ": ";
+        std::cout << "file " << .filename << " line " << .currentToken->line << " column " << .currentToken->column << "\n";
         
         let line : int = .currentToken->line - 1;
         mut lineStart : int = .lines[line];
@@ -106,6 +105,19 @@ class Parser {
             }
             std::cout << c;
             lineStart++;
+        }
+        std::cout << std::endl;
+
+        mut i : int = 0;
+        while i < .currentToken->column - .currentToken->literal.size() + 1 {
+            std::cout << " ";
+            i++;
+        }
+
+        i = 0;
+        while i < .currentToken->literal.size() {
+            std::cout << "^";
+            i++;
         }
 
         std::cout << std::endl;

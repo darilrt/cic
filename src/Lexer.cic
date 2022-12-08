@@ -107,7 +107,7 @@ class Lexer {
                     continue;
                 }
             }
-
+            
             if .Switch3('.', '.', '.') { ret Token(TokenType::Ellipsis, "...", .column, .line); }
             if .Switch3('<', '<', '=') { ret Token(TokenType::LShiftAssign, "<<=", .column, .line); }
             if .Switch3('>', '>', '=') { ret Token(TokenType::RShiftAssign, ">>=", .column, .line); }
@@ -164,59 +164,63 @@ class Lexer {
     }
 
     ParseIdentifier() -> Token {
+        let col : int = .column;
         mut identifier : std::string;
         while .IsAlphaNumeric() || .IsChar('_') {
             identifier += .currentChar;
             .Advance();
         }
+        
+        if identifier == "if" { ret Token(TokenType::If, "if", col, .line); }
+        if identifier == "elif" { ret Token(TokenType::Elif, "elif", col, .line); }
+        if identifier == "else" { ret Token(TokenType::Else, "else", col, .line); }
+        if identifier == "while" { ret Token(TokenType::While, "while", col, .line); }
+        if identifier == "for" { ret Token(TokenType::For, "for", col, .line); }
+        if identifier == "break" { ret Token(TokenType::Break, "break", col, .line); }
+        if identifier == "continue" { ret Token(TokenType::Continue, "continue", col, .line); }
+        if identifier == "ret" { ret Token(TokenType::Ret, "ret", col, .line); }
+        if identifier == "class" { ret Token(TokenType::Class, "class", col, .line); }
+        if identifier == "type" { ret Token(TokenType::Type, "type", col, .line); }
+        if identifier == "const" { ret Token(TokenType::Const, "const", col, .line); }
+        if identifier == "let" { ret Token(TokenType::Let, "let", col, .line); }
+        if identifier == "mut" { ret Token(TokenType::Mut, "mut", col, .line); }
+        if identifier == "import" { ret Token(TokenType::Import, "import", col, .line); }
+        if identifier == "include" { ret Token(TokenType::Include, "include", col, .line); }
+        if identifier == "pub" { ret Token(TokenType::Pub, "pub", col, .line); }
+        if identifier == "priv" { ret Token(TokenType::Priv, "priv", col, .line); }
+        if identifier == "static" { ret Token(TokenType::Static, "static", col, .line); }
+        if identifier == "virtual" { ret Token(TokenType::Virtual, "virtual", col, .line); }
+        if identifier == "new" { ret Token(TokenType::New, "new", col, .line); }
+        if identifier == "del" { ret Token(TokenType::Del, "del", col, .line); }
+        if identifier == "op" { ret Token(TokenType::Operator, "op", col, .line); }
+        if identifier == "enum" { ret Token(TokenType::Enum, "enum", col, .line); }
+        if identifier == "null" { ret Token(TokenType::Null, "null", col, .line); }
 
-        if identifier == "if" { ret Token(TokenType::If, "if", .column, .line); }
-        if identifier == "elif" { ret Token(TokenType::Elif, "elif", .column, .line); }
-        if identifier == "else" { ret Token(TokenType::Else, "else", .column, .line); }
-        if identifier == "while" { ret Token(TokenType::While, "while", .column, .line); }
-        if identifier == "for" { ret Token(TokenType::For, "for", .column, .line); }
-        if identifier == "break" { ret Token(TokenType::Break, "break", .column, .line); }
-        if identifier == "continue" { ret Token(TokenType::Continue, "continue", .column, .line); }
-        if identifier == "ret" { ret Token(TokenType::Ret, "ret", .column, .line); }
-        if identifier == "class" { ret Token(TokenType::Class, "class", .column, .line); }
-        if identifier == "type" { ret Token(TokenType::Type, "type", .column, .line); }
-        if identifier == "const" { ret Token(TokenType::Const, "const", .column, .line); }
-        if identifier == "let" { ret Token(TokenType::Let, "let", .column, .line); }
-        if identifier == "mut" { ret Token(TokenType::Mut, "mut", .column, .line); }
-        if identifier == "import" { ret Token(TokenType::Import, "import", .column, .line); }
-        if identifier == "include" { ret Token(TokenType::Include, "include", .column, .line); }
-        if identifier == "pub" { ret Token(TokenType::Pub, "pub", .column, .line); }
-        if identifier == "priv" { ret Token(TokenType::Priv, "priv", .column, .line); }
-        if identifier == "static" { ret Token(TokenType::Static, "static", .column, .line); }
-        if identifier == "virtual" { ret Token(TokenType::Virtual, "virtual", .column, .line); }
-        if identifier == "new" { ret Token(TokenType::New, "new", .column, .line); }
-        if identifier == "del" { ret Token(TokenType::Del, "del", .column, .line); }
-        if identifier == "op" { ret Token(TokenType::Operator, "op", .column, .line); }
-        if identifier == "enum" { ret Token(TokenType::Enum, "enum", .column, .line); }
-        if identifier == "null" { ret Token(TokenType::Null, "null", .column, .line); }
-
-        ret Token(TokenType::Ident, identifier, .column, .line);
+        ret Token(TokenType::Ident, identifier, col, .line);
     }
 
     ParseNumber() -> Token {
         mut number : std::string;
+        let col : int = .column;
         while .IsDigit() {
             number += .currentChar;
             .Advance();
         }
         if .currentChar == '.' {
+
             number += .currentChar;
             .Advance();
             while .IsDigit() {
                 number += .currentChar;
                 .Advance();
             }
-            ret Token(TokenType::Float, number, .column, .line);
+            ret Token(TokenType::Float, number, col, .line);
         }
-        ret Token(TokenType::Int, number, .column, .line);
+        ret Token(TokenType::Int, number, col, .line);
     }
 
     ParseString() -> Token {
+        let col : int = .column;
         .Advance();
         mut string : std::string;
         while !.IsChar('"') {
@@ -230,11 +234,12 @@ class Lexer {
             .Advance();
         }
         .Advance();
-        ret Token(TokenType::String, string, .column, .line);
+        ret Token(TokenType::String, string, col, .line);
     }
 
     // TODO: accept scape sequences
     ParseChar() -> Token {
+        let col : int = .column;
         .Advance();
         mut character : std::string;
         while !.IsChar(39) && .IsNotNull() {
@@ -248,7 +253,7 @@ class Lexer {
             .Advance();
         }
         .Advance();
-        ret Token(TokenType::Char, character, .column, .line);
+        ret Token(TokenType::Char, character, col, .line);
     }
 
     SkipComment() -> void {
