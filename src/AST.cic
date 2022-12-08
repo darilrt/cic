@@ -1202,3 +1202,43 @@ class ASTEnumDecl(pub ASTNode) {
         ret "ASTEnumDecl";
     }
 }
+
+// ForEach Loop Statement
+class ASTForEachStmt(pub ASTNode) {
+    pub mut isMutable : bool;
+    pub mut arg : ASTArgDecl*;
+    pub mut iterable : ASTExpr*;
+    pub mut body : ASTBody*;
+
+    pub ASTForEachStmt(isMutable : bool, arg : ASTArgDecl*, iterable : ASTExpr*, body : ASTBody*) {
+        .isMutable = isMutable;
+        .arg = arg;
+        .iterable = iterable;
+        .body = body;
+    }
+
+    pub ~ASTForEachStmt() {
+        del .arg;
+        del .iterable;
+        del .body;
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "foreach ";
+
+        if .isMutable {
+            str += "mut ";
+        }
+
+        str += .arg->ToString() + " in " + .iterable->ToString() + .body->ToString();
+        ret str;
+    }
+
+    pub Get() const -> std::string {
+        ret "ASTForEachStmt";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTForEachStmt";
+    }
+}

@@ -10,21 +10,22 @@ include "AST.cic";
 include "CodeGenerator.cic";
 include "IRGenerator.cic";
 
-IRFromFile(filename : std::string) -> IRNode* {
+IRFromFile(filename : const std::string&) -> IRNode* {
     mut file : std::ifstream = std::ifstream(filename);
     mut fileContents : std::string = "";
     mut line : std::string = "";
     mut lines : std::vector<int>;
 
+    lines.push_back(0);
     while std::getline(file, line) {
         fileContents += line + "\n";
-        lines.push_back(line.size());
+        lines.push_back(fileContents.size());
     }
 
     file.close();
     
     mut lexer : Lexer* = new Lexer(fileContents); 
-    mut parser : Parser* = new Parser(lexer, lines);
+    mut parser : Parser* = new Parser(lexer, filename, lines);
     let root : ASTNode* = parser->Parse();
 
     mut irGenerator : IRGenerator* = new IRGenerator();

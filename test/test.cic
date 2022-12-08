@@ -1,10 +1,9 @@
 include "iostream";
 
-print(msg : std::string) {
-    std::cout << msg << std::endl;
-}
-
 main() -> int {
-    print("Hello, World!");
+    mut arr : std::vector<int>;
+
+    for mut e : int& in arr { }
+
     ret 0;
 }

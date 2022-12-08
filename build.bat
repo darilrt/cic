@@ -1,5 +1,5 @@
 @echo off
-set cb=".\bin\cic"
+set cb="cic"
 set cc=gcc
 
 rem create cpp folder

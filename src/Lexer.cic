@@ -52,6 +52,7 @@ class Lexer {
     Advance() {
         .index += 1;
         .column += 1;
+
         if .index >= .source.size() {
             .currentChar = '\0';
         } else {
@@ -89,7 +90,7 @@ class Lexer {
 
             if .IsNewline() {
                 .Advance();
-                ret Token(TokenType::NewLine, "\n", .line, .column);
+                ret Token(TokenType::NewLine, "\n", .column, .line);
             }
             
             if .IsAlpha() || .IsChar('_') { ret .ParseIdentifier(); }
@@ -107,55 +108,55 @@ class Lexer {
                 }
             }
 
-            if .Switch3('.', '.', '.') { ret Token(TokenType::Ellipsis, "..."); }
-            if .Switch3('<', '<', '=') { ret Token(TokenType::LShiftAssign, "<<="); }
-            if .Switch3('>', '>', '=') { ret Token(TokenType::RShiftAssign, ">>="); }
+            if .Switch3('.', '.', '.') { ret Token(TokenType::Ellipsis, "...", .column, .line); }
+            if .Switch3('<', '<', '=') { ret Token(TokenType::LShiftAssign, "<<=", .column, .line); }
+            if .Switch3('>', '>', '=') { ret Token(TokenType::RShiftAssign, ">>=", .column, .line); }
 
-            if .Switch2('=', '=') { ret Token(TokenType::Equal, "=="); }
-            if .Switch2('!', '=') { ret Token(TokenType::NotEqual, "!="); }
-            if .Switch2('<', '=') { ret Token(TokenType::LessEqual, "<="); }
-            if .Switch2('>', '=') { ret Token(TokenType::GreaterEqual, ">="); }
-            if .Switch2('+', '+') { ret Token(TokenType::Inc, "++"); }
-            if .Switch2('-', '-') { ret Token(TokenType::Dec, "--"); }
-            if .Switch2('&', '&') { ret Token(TokenType::And, "&&"); }
-            if .Switch2('|', '|') { ret Token(TokenType::Or, "||"); }
-            if .Switch2('+', '=') { ret Token(TokenType::AddAssign, "+="); }
-            if .Switch2('-', '=') { ret Token(TokenType::SubAssign, "-="); }
-            if .Switch2('*', '=') { ret Token(TokenType::MulAssign, "*="); }
-            if .Switch2('/', '=') { ret Token(TokenType::DivAssign, "/="); }
-            if .Switch2('%', '=') { ret Token(TokenType::ModAssign, "%="); }
-            if .Switch2('&', '=') { ret Token(TokenType::AndAssign, "&="); }
-            if .Switch2('|', '=') { ret Token(TokenType::OrAssign, "|="); }
-            if .Switch2('^', '=') { ret Token(TokenType::XorAssign, "^="); }
-            if .Switch2('>', '>') { ret Token(TokenType::RShift, ">>"); }
-            if .Switch2('<', '<') { ret Token(TokenType::LShift, "<<"); }
-            if .Switch2('-', '>') { ret Token(TokenType::Arrow, "->"); }
-            if .Switch2(':', ':') { ret Token(TokenType::ScopeResolution, "::"); }
+            if .Switch2('=', '=') { ret Token(TokenType::Equal, "==", .column, .line); }
+            if .Switch2('!', '=') { ret Token(TokenType::NotEqual, "!=", .column, .line); }
+            if .Switch2('<', '=') { ret Token(TokenType::LessEqual, "<=", .column, .line); }
+            if .Switch2('>', '=') { ret Token(TokenType::GreaterEqual, ">=", .column, .line); }
+            if .Switch2('+', '+') { ret Token(TokenType::Inc, "++", .column, .line); }
+            if .Switch2('-', '-') { ret Token(TokenType::Dec, "--", .column, .line); }
+            if .Switch2('&', '&') { ret Token(TokenType::And, "&&", .column, .line); }
+            if .Switch2('|', '|') { ret Token(TokenType::Or, "||", .column, .line); }
+            if .Switch2('+', '=') { ret Token(TokenType::AddAssign, "+=", .column, .line); }
+            if .Switch2('-', '=') { ret Token(TokenType::SubAssign, "-=", .column, .line); }
+            if .Switch2('*', '=') { ret Token(TokenType::MulAssign, "*=", .column, .line); }
+            if .Switch2('/', '=') { ret Token(TokenType::DivAssign, "/=", .column, .line); }
+            if .Switch2('%', '=') { ret Token(TokenType::ModAssign, "%=", .column, .line); }
+            if .Switch2('&', '=') { ret Token(TokenType::AndAssign, "&=", .column, .line); }
+            if .Switch2('|', '=') { ret Token(TokenType::OrAssign, "|=", .column, .line); }
+            if .Switch2('^', '=') { ret Token(TokenType::XorAssign, "^=", .column, .line); }
+            if .Switch2('>', '>') { ret Token(TokenType::RShift, ">>", .column, .line); }
+            if .Switch2('<', '<') { ret Token(TokenType::LShift, "<<", .column, .line); }
+            if .Switch2('-', '>') { ret Token(TokenType::Arrow, "->", .column, .line); }
+            if .Switch2(':', ':') { ret Token(TokenType::ScopeResolution, "::", .column, .line); }
 
-            if .Switch1('+') { ret Token(TokenType::Add, "+"); }
-            if .Switch1('-') { ret Token(TokenType::Sub, "-"); }
-            if .Switch1('*') { ret Token(TokenType::Mul, "*"); }
-            if .Switch1('/') { ret Token(TokenType::Div, "/"); }
-            if .Switch1('%') { ret Token(TokenType::Mod, "%"); }
-            if .Switch1('=') { ret Token(TokenType::Assign, "="); }
-            if .Switch1('<') { ret Token(TokenType::Less, "<"); }
-            if .Switch1('>') { ret Token(TokenType::Greater, ">"); }
-            if .Switch1('!') { ret Token(TokenType::Not, "!"); }
-            if .Switch1('&') { ret Token(TokenType::And, "&"); }
-            if .Switch1('|') { ret Token(TokenType::Or, "|"); }
-            if .Switch1('^') { ret Token(TokenType::Xor, "^"); }
-            if .Switch1('~') { ret Token(TokenType::BitNot, "~"); }
-            if .Switch1('?') { ret Token(TokenType::Question, "?"); }
-            if .Switch1(':') { ret Token(TokenType::Colon, ":"); }
-            if .Switch1(';') { ret Token(TokenType::Semicolon, ";"); }
-            if .Switch1(',') { ret Token(TokenType::Comma, ","); }
-            if .Switch1('.') { ret Token(TokenType::Dot, "."); }
-            if .Switch1('(') { ret Token(TokenType::LParen, "("); }
-            if .Switch1(')') { ret Token(TokenType::RParen, ")"); }
-            if .Switch1('[') { ret Token(TokenType::LBracket, "["); }
-            if .Switch1(']') { ret Token(TokenType::RBracket, "]"); }
-            if .Switch1('{') { ret Token(TokenType::LBrace, "{"); }
-            if .Switch1('}') { ret Token(TokenType::RBrace, "}"); }
+            if .Switch1('+') { ret Token(TokenType::Add, "+", .column, .line); }
+            if .Switch1('-') { ret Token(TokenType::Sub, "-", .column, .line); }
+            if .Switch1('*') { ret Token(TokenType::Mul, "*", .column, .line); }
+            if .Switch1('/') { ret Token(TokenType::Div, "/", .column, .line); }
+            if .Switch1('%') { ret Token(TokenType::Mod, "%", .column, .line); }
+            if .Switch1('=') { ret Token(TokenType::Assign, "=", .column, .line); }
+            if .Switch1('<') { ret Token(TokenType::Less, "<", .column, .line); }
+            if .Switch1('>') { ret Token(TokenType::Greater, ">", .column, .line); }
+            if .Switch1('!') { ret Token(TokenType::Not, "!", .column, .line); }
+            if .Switch1('&') { ret Token(TokenType::And, "&", .column, .line); }
+            if .Switch1('|') { ret Token(TokenType::Or, "|", .column, .line); }
+            if .Switch1('^') { ret Token(TokenType::Xor, "^", .column, .line); }
+            if .Switch1('~') { ret Token(TokenType::BitNot, "~", .column, .line); }
+            if .Switch1('?') { ret Token(TokenType::Question, "?", .column, .line); }
+            if .Switch1(':') { ret Token(TokenType::Colon, ":", .column, .line); }
+            if .Switch1(';') { ret Token(TokenType::Semicolon, ";", .column, .line); }
+            if .Switch1(',') { ret Token(TokenType::Comma, ",", .column, .line); }
+            if .Switch1('.') { ret Token(TokenType::Dot, ".", .column, .line); }
+            if .Switch1('(') { ret Token(TokenType::LParen, "(", .column, .line); }
+            if .Switch1(')') { ret Token(TokenType::RParen, ")", .column, .line); }
+            if .Switch1('[') { ret Token(TokenType::LBracket, "[", .column, .line); }
+            if .Switch1(']') { ret Token(TokenType::RBracket, "]", .column, .line); }
+            if .Switch1('{') { ret Token(TokenType::LBrace, "{", .column, .line); }
+            if .Switch1('}') { ret Token(TokenType::RBrace, "}", .column, .line); }
 
             .Advance();
         }
@@ -169,30 +170,30 @@ class Lexer {
             .Advance();
         }
 
-        if identifier == "if" { ret Token(TokenType::If, "if"); }
-        if identifier == "elif" { ret Token(TokenType::Elif, "elif"); }
-        if identifier == "else" { ret Token(TokenType::Else, "else"); }
-        if identifier == "while" { ret Token(TokenType::While, "while"); }
-        if identifier == "for" { ret Token(TokenType::For, "for"); }
-        if identifier == "break" { ret Token(TokenType::Break, "break"); }
-        if identifier == "continue" { ret Token(TokenType::Continue, "continue"); }
-        if identifier == "ret" { ret Token(TokenType::Ret, "ret"); }
-        if identifier == "class" { ret Token(TokenType::Class, "class"); }
-        if identifier == "type" { ret Token(TokenType::Type, "type"); }
-        if identifier == "const" { ret Token(TokenType::Const, "const"); }
-        if identifier == "let" { ret Token(TokenType::Let, "let"); }
-        if identifier == "mut" { ret Token(TokenType::Mut, "mut"); }
-        if identifier == "import" { ret Token(TokenType::Import, "import"); }
-        if identifier == "include" { ret Token(TokenType::Include, "include"); }
-        if identifier == "pub" { ret Token(TokenType::Pub, "pub"); }
-        if identifier == "priv" { ret Token(TokenType::Priv, "priv"); }
-        if identifier == "static" { ret Token(TokenType::Static, "static"); }
-        if identifier == "virtual" { ret Token(TokenType::Virtual, "virtual"); }
-        if identifier == "new" { ret Token(TokenType::New, "new"); }
-        if identifier == "del" { ret Token(TokenType::Del, "del"); }
-        if identifier == "op" { ret Token(TokenType::Operator, "op"); }
-        if identifier == "enum" { ret Token(TokenType::Enum, "enum"); }
-        if identifier == "null" { ret Token(TokenType::Null, "null"); }
+        if identifier == "if" { ret Token(TokenType::If, "if", .column, .line); }
+        if identifier == "elif" { ret Token(TokenType::Elif, "elif", .column, .line); }
+        if identifier == "else" { ret Token(TokenType::Else, "else", .column, .line); }
+        if identifier == "while" { ret Token(TokenType::While, "while", .column, .line); }
+        if identifier == "for" { ret Token(TokenType::For, "for", .column, .line); }
+        if identifier == "break" { ret Token(TokenType::Break, "break", .column, .line); }
+        if identifier == "continue" { ret Token(TokenType::Continue, "continue", .column, .line); }
+        if identifier == "ret" { ret Token(TokenType::Ret, "ret", .column, .line); }
+        if identifier == "class" { ret Token(TokenType::Class, "class", .column, .line); }
+        if identifier == "type" { ret Token(TokenType::Type, "type", .column, .line); }
+        if identifier == "const" { ret Token(TokenType::Const, "const", .column, .line); }
+        if identifier == "let" { ret Token(TokenType::Let, "let", .column, .line); }
+        if identifier == "mut" { ret Token(TokenType::Mut, "mut", .column, .line); }
+        if identifier == "import" { ret Token(TokenType::Import, "import", .column, .line); }
+        if identifier == "include" { ret Token(TokenType::Include, "include", .column, .line); }
+        if identifier == "pub" { ret Token(TokenType::Pub, "pub", .column, .line); }
+        if identifier == "priv" { ret Token(TokenType::Priv, "priv", .column, .line); }
+        if identifier == "static" { ret Token(TokenType::Static, "static", .column, .line); }
+        if identifier == "virtual" { ret Token(TokenType::Virtual, "virtual", .column, .line); }
+        if identifier == "new" { ret Token(TokenType::New, "new", .column, .line); }
+        if identifier == "del" { ret Token(TokenType::Del, "del", .column, .line); }
+        if identifier == "op" { ret Token(TokenType::Operator, "op", .column, .line); }
+        if identifier == "enum" { ret Token(TokenType::Enum, "enum", .column, .line); }
+        if identifier == "null" { ret Token(TokenType::Null, "null", .column, .line); }
 
         ret Token(TokenType::Ident, identifier, .column, .line);
     }

@@ -29,12 +29,15 @@ class Parser {
     mut stateStack : std::vector<ParserState>;
     mut state : std::string;
     mut lines : std::vector<int>;
+    mut filename : std::string;
 
-    pub Parser(lexer : Lexer*, lines : std::vector<int>) {
+    pub Parser(lexer : Lexer*, filename : const std::string&, lines : std::vector<int>&) {
         .lexer = lexer;
         .tokens = lexer->Parse();
         .current = 0;
         .currentToken = &.tokens[.current];
+        .lines = lines;
+        .filename = filename;
         
         while .currentToken->tokenType == TokenType::NewLine {
             .current += 1;
@@ -88,17 +91,24 @@ class Parser {
         ret false;
     }
 
-    PrintLine(line : int) -> void {
+    PrintLine() -> void {
+        // show file name and number and line
+        std::cout << .filename << ":" << .currentToken->line << ":" << .currentToken->column << ": ";
+        
+        let line : int = .currentToken->line - 1;
         mut lineStart : int = .lines[line];
-
+        
         while lineStart < .lexer->source.size() {
             let c : char = .lexer->source[lineStart];
+
             if c == '\n' {
                 break;
             }
             std::cout << c;
             lineStart++;
         }
+
+        std::cout << std::endl;
     }
 
     Eat(tokenType : TokenType) -> void {
@@ -122,8 +132,8 @@ class Parser {
             error += std::to_string(.currentToken->line);
             error += ", column: ";
             error += std::to_string(.currentToken->column);
+            .PrintLine();
             .Error(error);
-            .PrintLine(.currentToken->line);
         }
     }
 
@@ -139,7 +149,7 @@ class Parser {
     }
 
     Error(msg : std::string) -> void {
-        std::cout << "Error: " << msg << std::endl;
+        std::cout << " " << msg << std::endl;
         exit(0);
     }
 
@@ -461,8 +471,8 @@ class Parser {
             if .IsInsideState("CheckingForPointer") {
                 ret null;
             }
-            .PrintLine(.currentToken->line);
-            .Error("Expected an expression after this:" + .currentToken->literal);
+            .PrintLine();
+            .Error("Unexpected \"" + .currentToken->literal + "\"");
         }
 
         ret node;
@@ -527,7 +537,7 @@ class Parser {
             .Eat(TokenType::Type);
         }
         else {
-            .PrintLine(.currentToken->line);
+            .PrintLine();
             .Error("Expected an identifier after this:" + .currentToken->literal);
         }
 
@@ -946,8 +956,8 @@ class Parser {
             ret "()";
         }
         else {
+            .PrintLine();
             .Error("Expected operator but got " + .currentToken->literal + "");
-            .PrintLine(.currentToken->line);
         }
 
         ret operation;
@@ -1013,6 +1023,28 @@ class Parser {
         ret new ASTEnumDecl(name, fields);
     }
 
+    // ForEachStmt: 'for' ('mut' | 'let') ArgDecl 'in' Expr Body
+    ForEachStmt() -> ASTForEachStmt* {
+        .Eat(TokenType::For);
+
+        mut isMutable : bool = true;
+        if .IsType(TokenType::Mut) {
+            .Eat(TokenType::Mut);
+        }
+        elif .IsType(TokenType::Let) {
+            .Eat(TokenType::Let);
+            isMutable = false;
+        }
+
+        let arg : ASTArgDecl* = .ArgDecl();
+        .Eat(TokenType::In);
+
+        let expr : ASTExpr* = .Expr();
+        let body : ASTBody* = .Body(BodyType::Impl);
+
+        ret new ASTForEachStmt(isMutable, arg, expr, body);
+    }
+
     DeclStatement() -> ASTNode* {
         if .IsType(TokenType::Semicolon) {
             .Eat(TokenType::Semicolon);
@@ -1036,7 +1068,7 @@ class Parser {
             ret .EnumDecl();
         }
         else {
-            .PrintLine(.currentToken->line);
+            .PrintLine();
             .Error("Expected declaration statement");
         }
 
@@ -1124,7 +1156,7 @@ class Parser {
             node->attr |= Attribute::Destructor;
         }
         else {
-            .PrintLine(.currentToken->line);
+            .PrintLine();
             .Error("Expected class statement");
         }
         
