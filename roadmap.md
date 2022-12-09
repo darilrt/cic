@@ -5,6 +5,7 @@
 - &#9744; Default arguments
 - &#9744; Variadic templates
 - &#9745; For each
+- &#9745; Static variables
 - &#9745; Classes
     - &#9745; Nested classes
     - &#9745; Nested enum

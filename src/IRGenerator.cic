@@ -172,10 +172,6 @@ class IRGenerator {
         var->vType = varDecl->vType->Get();
         var->parent = parent;
         var->attr = varDecl->attr;
-        
-        if !varDecl->isMutable {
-            var->attr |= Attribute::Const;
-        }
 
         if varDecl->value != null {
             var->value = TranslateExpr(varDecl->value);

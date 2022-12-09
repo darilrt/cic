@@ -137,14 +137,11 @@ class Parser {
             }
         }
         else {
-            mut error : std::string = "Expected token type: ";
-            error += TokenTypeToString(tokenType);
-            error += ", got: ";
-            error += TokenTypeToString(.currentToken->tokenType);
-            error += " at line: ";
-            error += std::to_string(.currentToken->line);
-            error += ", column: ";
-            error += std::to_string(.currentToken->column);
+            let error : std::string = 
+                "Expected token type: " + TokenTypeToString(tokenType) +
+                ", got: " + TokenTypeToString(.currentToken->tokenType) +
+                " at line: " + std::to_string(.currentToken->line) +
+                ", column: " + std::to_string(.currentToken->column);
             .PrintLine();
             .Error(error);
         }
@@ -756,7 +753,18 @@ class Parser {
             expr = .Expr();
         }
 
-        ret new ASTVariableDecl(name, _type, expr, isMutable);
+        mut var : ASTVariableDecl* = new ASTVariableDecl(name, _type, expr);
+
+        if !isMutable {
+            var->attr |= Attribute::Const;
+            
+            if var->value == null {
+                .PrintLine();
+                .Error("Constant variable must be initialized");
+            }
+        }
+
+        ret var;
     }
 
     // FunctionDecl: Identifier TemplateDecl? '(' TypedArgs ')' ('->' Type)? Body?
@@ -1086,6 +1094,12 @@ class Parser {
             .EatNewLine();
             ret node;
         }
+        elif .IsType(TokenType::Static) {
+            .Eat(TokenType::Static);
+            mut node : ASTNode* = .VariableDecl();
+            node->attr |= Attribute::Static;
+            ret node;
+        }
         elif .IsType(TokenType::Ident) {
             ret .FunctionDecl();
         }
@@ -1115,6 +1129,12 @@ class Parser {
         elif .IsType(TokenType::Let) || .IsType(TokenType::Mut) {
             node = .VariableDecl();
             .EatNewLine();
+        }
+        elif .IsType(TokenType::Static) {
+            .Eat(TokenType::Static);
+            node = .VariableDecl();
+            .EatNewLine();
+            node->attr |= Attribute::Static;
         }
         elif .IsType(TokenType::Ret) {
             node = .ReturnStmt();

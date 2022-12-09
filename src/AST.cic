@@ -942,17 +942,14 @@ class ASTVariableDecl(pub ASTNode) {
     pub mut name : ASTNode*;
     pub mut vType : ASTType*;
     pub mut value : ASTExpr*;
-    pub mut isMutable : bool;
 
     pub ASTVariableDecl(
             name : ASTNode*,
             vType : ASTType*,
-            value : ASTExpr*,
-            isMutable : bool) {
+            value : ASTExpr*) {
         .name = name;
         .vType = vType;
         .value = value;
-        .isMutable = isMutable;
     }
 
     pub ~ASTVariableDecl() {
@@ -962,11 +959,7 @@ class ASTVariableDecl(pub ASTNode) {
     }
 
     pub ToString() const -> std::string {
-        mut str : std::string = "";
-
-        if .isMutable {
-            str += "mut ";
-        }
+        mut str : std::string = "let ";
 
         str += .vType->ToString() + " " + .name->ToString();
 

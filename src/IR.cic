@@ -414,21 +414,7 @@ class IRVariable(pub IRNode) {
     pub mut attr : int = 0;
     
     pub ToString() const -> std::string {
-        mut str : std::string = "";
-
-        str += .vType + " ";
-        
-        if .attr & Attribute::Const != 0 {
-            str += "const ";
-        }
-
-        str += .name;
-
-        if .value != null {
-            str += " = " + .value->ToString();
-        }
-
-        ret str;
+        ret .GetHeader();
     }
 
     pub GetFullName() const -> std::string {
@@ -441,10 +427,14 @@ class IRVariable(pub IRNode) {
     pub GetHeader() const -> std::string {
         let name : std::string = .name;
 
-        mut protection : std::string = "protected: ";
+        mut protection : std::string = "";
 
-        if .attr & Attribute::Public { protection = "public: "; }
-        if .attr & Attribute::Private { protection = "private: "; }
+        if .parent != nullptr {
+            protection = "protected: ";
+            
+            if .attr & Attribute::Public { protection = "public: "; }
+            if .attr & Attribute::Private { protection = "private: "; }
+        }
         
         mut declaration : std::string = .vType + " ";
 
