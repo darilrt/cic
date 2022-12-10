@@ -1,8 +1,9 @@
 # Road Map
 ## Version 0.0.4a
-- &#9744; Array initialization
 - &#9744; Lambda expressions
-- &#9744; Template specialization
+- &#9744; Array initialization
+- &#9744; Template in operator overloading
+- &#9745; Template specialization
 
 ## Version 0.0.3a
 - &#9745; Variadic templates

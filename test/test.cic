@@ -1,15 +1,7 @@
 include "iostream";
 
-class Fact<T : int> {
-    pub static let value : int = T * Fact<T - 1>::value;
-}
-
-class Fact!<0> {
-    pub static let value : int = 1;
-}
-
 main() -> int {
-    let x : int = Fact<5>::value;
-    std::cout << x << std::endl;
+    mut a : std::vector<int>;
+
     ret 0;
 }
