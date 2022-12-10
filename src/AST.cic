@@ -472,6 +472,31 @@ class ASTReferenceDecl(pub ASTNode) {
     }
 }
 
+// Ellipsis
+class ASTEllipsis(pub ASTNode) {
+    pub mut left : ASTNode*;
+
+    pub ASTEllipsis(left : ASTNode*) {
+        .left = left;
+    }
+
+    pub ~ASTEllipsis() {
+        del .left;
+    }
+
+    pub ToString() const -> std::string {
+        ret .left->ToString() + "...";
+    }
+
+    pub Get() const -> std::string {
+        ret .left->Get() + "...";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTEllipsis";
+    }
+}
+
 // New Expression
 class ASTNew(pub ASTNode) {
     pub mut node : ASTNode*;
@@ -637,7 +662,14 @@ class ASTType(pub ASTNode) {
         if .isConst {
             str = "const ";
         }
-        str += .left->Get();
+
+        mut name : std::string = .left->Get();
+
+        if name == "type" {
+            name = "typename";
+        }
+
+        str += name;
         ret str;
     }
 

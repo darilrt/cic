@@ -1,9 +1,8 @@
-include "std.cic";
+include "iostream";
 
-class Test {
-    pub Foo<T : type>() {
-        mut a : T* = new T;
-        a->bar();
-        del a;
-    }
+print() {}
+
+print<T : type..., E : type>(e : E, t : T...) {
+    std::cout << e << " ";
+    print(t...);
 }

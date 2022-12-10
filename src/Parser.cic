@@ -341,7 +341,7 @@ class Parser {
     IncDecExpr() -> ASTNode* {
         mut node : ASTNode* = .Unary();
 
-        if .IsType(TokenType::Inc) || .IsType(TokenType::Dec) {
+        if .IsType(TokenType::Inc) || .IsType(TokenType::Dec) || .IsType(TokenType::Ellipsis) {
             let token : Token* = .currentToken;
             .Eat(token->tokenType);
             let un : ASTUnaryOp* = new ASTUnaryOp(*token, node);
@@ -686,11 +686,16 @@ class Parser {
         ret ntype;
     }
 
-    // ArgDecl: IdentDecl : Type
+    // ArgDecl: IdentDecl : Type '...'?
     ArgDecl() -> ASTArgDecl* {
         let name : ASTNode* = .IdentDecl();
         .Eat(TokenType::Colon);
-        let _type : ASTNode* = .Type();
+        mut _type : ASTNode* = .Type();
+
+        if .IsType(TokenType::Ellipsis) {
+            .Eat(TokenType::Ellipsis);
+            _type = new ASTEllipsis(_type);
+        }
 
         ret new ASTArgDecl(name, _type);
     }

@@ -1,17 +1,16 @@
 # Road Map
-## Version 0.0.3a
-
-- &#9744; Template specialization
+## Version 0.0.4a
+- &#9744; Array initialization
 - &#9744; Lambda expressions
-- &#9744; Default arguments
-- &#9744; Variadic templates
+- &#9744; Template specialization
+
+## Version 0.0.3a
+- &#9745; Variadic templates
 - &#9745; For each
 - &#9745; Static variables
 - &#9745; Classes
     - &#9745; Nested classes
     - &#9745; Nested enum
-    - &#9744; Friend functions
-    - &#9744; Friend classes
 
 ## Version 0.0.2a
 - &#9745; Declare classes
