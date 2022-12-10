@@ -773,14 +773,23 @@ class Parser {
         ret var;
     }
 
-    // FunctionDecl: Identifier TemplateDecl? '(' TypedArgs ')' ('->' Type)? Body?
+    // FunctionDecl: Identifier (TemplateDecl? | '!' TemplateArgs) '(' TypedArgs ')' ('->' Type)? Body?
     FunctionDecl() -> ASTFunctionDecl* {
         let name : ASTVariable* = new ASTVariable(.currentToken->literal);
         .Eat(TokenType::Ident);
 
         mut tmp : ASTTemplateDecl* = null;
+        mut tmpSpec : ASTTemplateSpec* = null;
         if .IsType(TokenType::Less) {
             tmp = .TemplateDecl();
+        }
+        elif .IsType(TokenType::Not) {
+            .Eat(TokenType::Not);
+            
+            let tmpArgs : ASTTemplateArgs* = .TemplateArgs(null);
+            let args : std::vector<ASTNode*> = tmpArgs->args;
+            
+            tmpSpec = new ASTTemplateSpec(args);
         }
 
         .Eat(TokenType::LParen);
@@ -810,7 +819,7 @@ class Parser {
             body = .Body(BodyType::Impl);
         }
 
-        mut func : ASTFunctionDecl* = new ASTFunctionDecl(name, tmp, args, _type, body);
+        mut func : ASTFunctionDecl* = new ASTFunctionDecl(name, tmp, tmpSpec, args, _type, body);
         func->attr = attrs;
         
         ret func;
@@ -905,15 +914,24 @@ class Parser {
         ret args;
     }
 
-    // ClassDecl: 'class' Identifier TemplateDecl? ('(' InherArgs ')')? Body 
+    // ClassDecl: 'class' Identifier (TemplateDecl? | '!' TemplateArgs) ('(' InherArgs ')')? Body 
     ClassDecl() -> ASTClassDecl* {
         .Eat(TokenType::Class);
         let name : ASTVariable* = new ASTVariable(.currentToken->literal);
         .Eat(TokenType::Ident);
 
         mut tmp : ASTTemplateDecl* = null;
+        mut tmpSpec : ASTTemplateSpec* = null;
         if .IsType(TokenType::Less) {
             tmp = .TemplateDecl();
+        }
+        elif .IsType(TokenType::Not) {
+            .Eat(TokenType::Not);
+            
+            let tmpArgs : ASTTemplateArgs* = .TemplateArgs(null);
+            let args : std::vector<ASTNode*> = tmpArgs->args;
+            
+            tmpSpec = new ASTTemplateSpec(args);
         }
 
         mut args : std::vector<ASTInherArg*>;
@@ -925,7 +943,7 @@ class Parser {
 
         let body : ASTBody* = .Body(BodyType::Class);
 
-        ret new ASTClassDecl(name, tmp, args, body);
+        ret new ASTClassDecl(name, tmp, tmpSpec, args, body);
     }
 
     // Operator: 

@@ -119,6 +119,13 @@ class IRGenerator {
             }
         }
 
+        if funcDecl->templateSpec {
+            for arg : ASTNode* in funcDecl->templateSpec->args {
+                let irArg : std::string = arg->Get();
+                func->templateSpec.push_back(irArg);
+            }
+        }
+
         if funcDecl->body {
             func->body = TranslateBody(funcDecl->body, null);
         }
@@ -258,6 +265,13 @@ class IRGenerator {
                 let irArg : std::tuple<std::string, std::string> = std::make_tuple(arg->right->Get(), arg->left->Get());
                 irClass->templateParams.push_back(irArg);
                 i++;
+            }
+        }
+
+        if classNode->templateSpec {
+            for arg : ASTNode* in classNode->templateSpec->args {
+                let irArg : std::string = arg->Get();
+                irClass->templateSpec.push_back(irArg);
             }
         }
         

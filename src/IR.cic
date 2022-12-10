@@ -112,6 +112,7 @@ class IRFunction(pub IRNode) {
     pub mut returnType : std::string;
     pub mut params : std::vector<std::tuple<std::string, std::string> >;
     pub mut templateParams : std::vector<std::tuple<std::string, std::string> >;
+    pub mut templateSpec : std::vector<std::string>;
     pub mut body : IRBody*;
     pub mut attr : int = Attribute::None;
     pub mut parent : IRNode*;
@@ -144,6 +145,7 @@ class IRFunction(pub IRNode) {
         if .attr & Attribute::Destructor { hs << "~"; }
 
         hs << .name;
+        .GenTemplateSpec(hs);
 
         .GenParamenters(hs);
 
@@ -177,11 +179,13 @@ class IRFunction(pub IRNode) {
     }
 
     pub IsTemplate() const -> bool {
-        ret .templateParams.size() > 0 || .parent != null && dynamic_cast<IRProgram*>(.parent) == null && .parent->IsTemplate();
+        ret .templateParams.size() > 0 ||
+            .templateSpec.size() > 0 ||
+            .parent != null && dynamic_cast<IRProgram*>(.parent) == null && .parent->IsTemplate();
     }
 
     pub GenTemplate(ss : std::stringstream&) const -> void {
-        if .templateParams.size() > 0 {
+        if .templateParams.size() > 0 || .templateSpec.size() > 0 {
             ss << "template<";
             mut i : int = 0;
             while i < .templateParams.size() {
@@ -198,6 +202,21 @@ class IRFunction(pub IRNode) {
                 i++;
             }
             ss << "> ";
+        }
+    }
+
+    pub GenTemplateSpec(ss : std::stringstream&) const -> void {
+        if .templateSpec.size() > 0 {
+            ss << "<";
+            mut i : int = 0;
+            while i < .templateSpec.size() {
+                ss << .templateSpec[i];
+                if i < .templateSpec.size() - 1 {
+                    ss << ", ";
+                }
+                i++;
+            }
+            ss << ">";
         }
     }
 
@@ -385,6 +404,7 @@ class IRImport(pub IRNode) {
 class IRClass(pub IRNode) {
     pub mut name : std::string;
     pub mut templateParams : std::vector<std::tuple<std::string, std::string> >;
+    pub mut templateSpec : std::vector<std::string>;
     pub mut body : IRBody*;
     pub mut attr : int = Attribute::None;
     pub mut inherits : std::vector<std::string>;
@@ -393,6 +413,7 @@ class IRClass(pub IRNode) {
     pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
         .GenTemplate(hs);
         hs << "class " << .name;
+        .GenTemplateSpec(hs);
         .GenInherits(hs);
         hs << " {\n";
         .body->Generate(ss, hs);
@@ -400,23 +421,32 @@ class IRClass(pub IRNode) {
     }
 
     pub GenTemplate(ss : std::stringstream&) -> void {
-        if (.templateParams.size()) > 0 {
+        if .templateParams.size() > 0 || templateSpec.size() > 0 {
             ss << "template<";
             mut i : int = 0;
-            while ((i) < .templateParams.size()) {
+            while i < .templateParams.size() {
                 mut tType : std::string = std::get<0>(.templateParams[i]);
 
-                if ((tType) == "type") {
-                    tType = "typename";
-                }
+                if tType == "type" { tType = "typename"; }
 
                 ss << tType + " " + std::get<1>(.templateParams[i]);
-                if ((i) < ((.templateParams.size()) - 1)) {
-                    ss << ", ";
-                }
+                if i < .templateParams.size() - 1 { ss << ", "; }
                 i++;
             }
             ss << "> ";
+        }
+    }
+
+    pub GenTemplateSpec(ss : std::stringstream&) -> void {
+        if .templateSpec.size() > 0 {
+            ss << "<";
+            mut i : int = 0;
+            while i < .templateSpec.size() {
+                ss << .templateSpec[i];
+                if i < .templateSpec.size() - 1 { ss << ", "; }
+                i++;
+            }
+            ss << ">";
         }
     }
 
@@ -445,7 +475,9 @@ class IRClass(pub IRNode) {
     }
 
     pub IsTemplate() const -> bool {
-        ret .templateParams.size() > 0 || .parent != null && dynamic_cast<IRProgram*>(.parent) == null && .parent->IsTemplate();
+        ret .templateParams.size() > 0 ||
+            .templateSpec.size() > 0 ||
+            .parent != null && dynamic_cast<IRProgram*>(.parent) == null && .parent->IsTemplate();
     }
 }
 

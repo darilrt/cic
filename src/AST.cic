@@ -766,6 +766,22 @@ class ASTTemplateDecl(pub ASTNode) {
     }
 }
 
+// Template Specialization
+class ASTTemplateSpec(pub ASTNode) {
+    pub mut args : std::vector<ASTNode*>;
+
+    pub ASTTemplateSpec(args : std::vector<ASTNode*>) {
+        .args = args;
+    }
+
+    pub ~ASTTemplateSpec() {
+        mut i : int = 0;
+        while i < .args.size() {
+            del .args[i];
+        }
+    }
+}
+
 // Expression
 class ASTExpr(pub ASTNode) {
     pub mut expr : ASTNode*;
@@ -826,6 +842,7 @@ class ASTOperatorDecl(pub ASTNode) {
 class ASTFunctionDecl(pub ASTNode) {
     pub mut name : ASTVariable*;
     pub mut templateDecl : ASTTemplateDecl*;
+    pub mut templateSpec : ASTTemplateSpec*;
     pub mut args : std::vector<ASTArgDecl*>;
     pub mut fType : ASTType*;
     pub mut body : ASTBody*;
@@ -833,11 +850,13 @@ class ASTFunctionDecl(pub ASTNode) {
     pub ASTFunctionDecl(
             name : ASTVariable*,
             templateDecl : ASTTemplateDecl*,
+            templateSpec : ASTTemplateSpec*,
             args : std::vector<ASTArgDecl*>,
             fType : ASTType*,
             body : ASTBody*) {
         .name = name;
         .templateDecl = templateDecl;
+        .templateSpec = templateSpec;
         .args = args;
         .fType = fType;
         .body = body;
@@ -846,6 +865,7 @@ class ASTFunctionDecl(pub ASTNode) {
     pub ~ASTFunctionDecl() {
         del .name;
         del .templateDecl;
+        del .templateSpec;
         mut i : int = 0;
         while i < .args.size() {
             del .args[i];
@@ -1118,16 +1138,19 @@ class ASTInherArg(pub ASTNode) {
 class ASTClassDecl(pub ASTNode) {
     pub mut name : ASTNode*;
     pub mut templateDecl : ASTTemplateDecl*;
+    pub mut templateSpec : ASTTemplateSpec*;
     pub mut inherits : std::vector<ASTInherArg*>;
     pub mut body : ASTBody*;
 
     pub ASTClassDecl(
             name : ASTNode*,
             templateDecl : ASTTemplateDecl*,
+            templateSpec : ASTTemplateSpec*,
             inherits : std::vector<ASTInherArg*>,
             body : ASTBody*) {
         .name = name;
         .templateDecl = templateDecl;
+        .templateSpec = templateSpec;
         .inherits = inherits;
         .body = body;
     }
@@ -1135,6 +1158,7 @@ class ASTClassDecl(pub ASTNode) {
     pub ~ASTClassDecl() {
         del .name;
         del .templateDecl;
+        del .templateSpec;
         del .body;
 
         mut i : int = 0;
