@@ -1,6 +1,9 @@
+include "std.cic";
 
 class Test {
-    pub op + (a : int) -> int {
-        ret a + 1;
+    pub Foo<T : type>() {
+        mut a : T* = new T;
+        a->bar();
+        del a;
     }
 }
