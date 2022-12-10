@@ -32,7 +32,7 @@ ParseArgs(args : std::vector<std::string>) -> ProgramOptions {
     ret options;
 }
 
-ShowHelp() {
+ShowHelp() -> void {
     std::cout << "Usage: cic [options] [input file]\n";
     std::cout << "Options:\n";
     std::cout << "  -o <dir>    Output directory\n";
@@ -50,8 +50,8 @@ ArgsToVector(argc : int, argv : char**) -> std::vector<std::string> {
 }
 
 main(argc : int, argv[] : char*) -> int {
-    let args : std::vector<std::string> = ArgsToVector(argc, argv);
-    let options : ProgramOptions = ParseArgs(args);
+    mut args : std::vector<std::string> = ArgsToVector(argc, argv);
+    mut options : ProgramOptions = ParseArgs(args);
 
     if options.help {
         ShowHelp();

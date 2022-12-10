@@ -1,5 +1,6 @@
-include "iostream";
 
-main() -> int {
-    ret 0;
+class Test {
+    pub op + (a : int) -> int {
+        ret a + 1;
+    }
 }

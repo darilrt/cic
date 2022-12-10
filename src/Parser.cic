@@ -457,6 +457,7 @@ class Parser {
             .Eat(TokenType::LParen);
             node = .Expr();
             .Eat(TokenType::RParen);
+            node = new ASTParenthesis(node);
         } 
         elif .IsType(TokenType::Ident) | .IsType(TokenType::Type) {
             node = .ScopeResolution();

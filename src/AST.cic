@@ -151,6 +151,31 @@ class ASTUnaryOp(pub ASTNode) {
     }
 }
 
+// Parenthesis
+class ASTParenthesis(pub ASTNode) {
+    pub mut expr : ASTNode*;
+
+    pub ASTParenthesis(expr : ASTNode*) {
+        .expr = expr;
+    }
+
+    pub ~ASTParenthesis() {
+        del .expr;
+    }
+
+    pub ToString() const -> std::string {
+        ret "(" + .expr->ToString() + ")";
+    }
+
+    pub Get() const -> std::string {
+        ret "(" + .expr->Get() + ")";
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTParenthesis";
+    }
+}
+
 // Indexing operation
 class ASTIndexOp(pub ASTNode) {
     pub mut left : ASTNode*;

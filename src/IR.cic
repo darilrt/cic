@@ -1,15 +1,25 @@
 include "iostream";
 include "vector";
 include "string";
+include "sstream";
+include "iomanip";
 include "tuple";
 include "AST.cic";
+include "Common.cic";
 
 class IRNode {
     pub IRNode() {
     }
 
+    pub virtual Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        ss << "IRNode Source";
+        hs << "IRNode Header";
+    }
+
+    // OLD Code
+    
     pub virtual ToString() const -> std::string {
-        ret "IRNode";
+        ret "";
     }
 
     pub virtual GetName() const -> std::string {
@@ -17,7 +27,7 @@ class IRNode {
     }
 
     pub virtual GetFullName() const -> std::string {
-        ret "IRNode";
+        ret "";
     }
 
     pub virtual IsTemplate() const -> bool {
@@ -36,46 +46,52 @@ class IRNode {
 class IRProgram(pub IRNode) {
     pub mut decls : std::vector<IRNode*>;
 
-    pub IRProgram(declList : std::vector<IRNode*>) {
-        .decls = declList;
-    }
-
-    pub ToString() const -> std::string {
-        mut str : std::string = "";
-
-        mut i : int = 0;
-        while i < .decls.size() {
-            str += .decls[i]->ToString();
-
-            if i < .decls.size() - 1 {
-                str += "\n";
-            }
-
-            i++;
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        for decl : IRNode* in .decls {
+            decl->Generate(ss, hs);
         }
-
-        ret str;
     }
 }
+
+class IRInclude(pub IRNode) {
+    pub mut path : std::string;
+
+    GetExtension() -> std::string {
+        let ext : std::string = .path.substr(.path.find_last_of(".") + 1);
+        ret ext;
+    }
+    
+    GetStem() -> std::string {
+        let stem : std::string = .path.substr(0, .path.find_last_of("."));
+        ret stem;
+    }
+
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        let ext : std::string = .GetExtension();
+
+        if ext == "cic" {
+            hs << "#include" << " \"" << .GetStem() << ".hpp\"" << std::endl;
+        }
+        else {
+            hs << "#include" << " \"" << .path << "\"" << std::endl;
+        }
+    }
+}
+
+// OLD
 
 class IRBody(pub IRNode) {
     pub mut decls : std::vector<IRNode*>;
 
-    pub IRProgram() {
-    }
-
-    pub ToString() const -> std::string {
-        mut str : std::string = "{\n";
-
-        mut i : int = 0;
-        while i < .decls.size() {
-            str += .decls[i]->ToString() + ";\n";
-            
-            i++;
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        for decl : IRNode* in .decls {
+            if dynamic_cast<IRExpr*>(decl) != null {
+                ss << decl->ToString() << ";\n";
+            }
+            else {
+                decl->Generate(ss, hs);
+            }
         }
-
-        str += "}";
-        ret str;
     }
 }
 
@@ -100,9 +116,57 @@ class IRFunction(pub IRNode) {
     pub mut attr : int = Attribute::None;
     pub mut parent : IRNode*;
 
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        mut rType : std::string = .returnType + " ";
+
+        if .parent != null && dynamic_cast<IRClass*>(.parent) != null {
+            mut protection : std::string = "protected: ";
+            if .attr & Attribute::Public { protection = "public: "; }
+            if .attr & Attribute::Private { protection = "private: "; }
+            hs << protection;
+            
+            if .name == .parent->GetName() { rType = ""; }
+        }
+
+        .GenTemplate(hs);
+
+        if .attr & Attribute::Destructor { rType = ""; }
+
+        if .returnType != "void" && rType != "" {
+            hs << "[[nodiscard]] ";
+        }
+
+        if .attr & Attribute::Static { hs << "static "; }
+        if .attr & Attribute::Virtual { hs << "virtual "; }
+
+        hs << rType;
+
+        if .attr & Attribute::Destructor { hs << "~"; }
+
+        hs << .name;
+
+        .GenParamenters(hs);
+
+        if .attr & Attribute::Const { hs << " const"; }
+
+        if .IsTemplate() {
+            hs << " {\n"; .body->Generate(hs, hs); hs << "}\n";
+        }
+        else {
+            hs << ";\n";
+
+            if .body != null {
+                ss << rType << .GetFullName();
+                .GenParamenters(ss);
+                if .attr & Attribute::Const { ss << " const"; }
+                ss << " {\n"; .body->Generate(ss, hs); ss << "}\n";
+            }
+        }
+    }
+
     pub GetFullName() const -> std::string {
         mut fname : std::string = .name;
-        if .parent != null {
+        if .parent != null && dynamic_cast<IRProgram*>(.parent) == null {
             if .parent->GetName() == .name && .attr & Attribute::Destructor {
                 fname = "~" + .name;
             }
@@ -113,117 +177,39 @@ class IRFunction(pub IRNode) {
     }
 
     pub IsTemplate() const -> bool {
-        ret (.templateParams.size()) > 0 || (.parent) != nullptr && (.parent->IsTemplate());
+        ret .templateParams.size() > 0 || .parent != null && dynamic_cast<IRProgram*>(.parent) == null && .parent->IsTemplate();
     }
 
-    pub GetTemplate() const -> std::string {
-        mut str : std::string = "";
-
-        if ((.templateParams.size()) > 0) {
-            str += "template<";
+    pub GenTemplate(ss : std::stringstream&) const -> void {
+        if .templateParams.size() > 0 {
+            ss << "template<";
             mut i : int = 0;
-            while ((i) < .templateParams.size()) {
+            while i < .templateParams.size() {
                 mut tType : std::string = std::get<0>(.templateParams[i]);
 
-                if ((tType) == "type") {
+                if tType == "type" {
                     tType = "typename";
                 }
 
-                str += tType + " " + std::get<1>(.templateParams[i]);
-                if ((i) < ((.templateParams.size()) - 1)) {
-                    str += ", ";
+                ss << tType << " " << std::get<1>(.templateParams[i]);
+                if i < .templateParams.size() - 1 {
+                    ss << ", ";
                 }
                 i++;
             }
-            str += "> ";
+            ss << "> ";
         }
-
-        ret str;
     }
 
-    pub GetParamenters() const -> std::string {
-        mut str : std::string = "(";
-
+    pub GenParamenters(ss : std::stringstream&) const -> void {
+        ss << "(";
         mut i : int = 0;
-        while ((i) < .params.size()) {
-            str += std::get<0>(.params[i]) + " " + std::get<1>(.params[i]);
-            if ((i) < ((.params.size()) - 1)) {
-                str += ", ";
-            }
+        while i < .params.size() {
+            ss << std::get<0>(.params[i]) << " " << std::get<1>(.params[i]);
+            if i < .params.size() - 1 { ss << ", "; }
             i++;
         }
-
-        ret str + ")";
-    }
-
-    pub GetHeader() const -> std::string {
-        mut fname : std::string = .name;
-
-        mut protection : std::string = "protected: ";
-        
-        if ((.attr) & (Attribute::Public)) { protection = "public: "; }
-        if ((.attr) & (Attribute::Private)) { protection = "private: "; }
-        
-        mut retType : std::string = .returnType + " ";
-        if (.parent != null && (.parent->GetName()) == .name) {
-            retType = "";
-
-            if ((.attr) & (Attribute::Destructor)) {
-                fname = "~" + .name;
-            }
-        }
-
-        mut declaration : std::string = retType + fname + (.GetParamenters());
-        
-        let tmp : std::string = .GetTemplate();
-        mut sbody : std::string = ";";
-
-        if ((.IsTemplate())) {
-            if ((.body) != null) {
-                sbody = " " + (.body->ToString()) + ";";
-            }
-        }
-
-        if ((.body) == null && (.attr) & (Attribute::Virtual)) {
-            sbody = " = 0;";
-        }
-
-        mut preAttrs : std::string = "";
-
-        if (.returnType != "void" && .returnType != "auto") {
-            preAttrs += "[[nodiscard]] ";
-        }
-
-        if ((.attr) & (Attribute::Static)) { preAttrs += "static "; }
-        if ((.attr) & (Attribute::Virtual)) { preAttrs += "virtual "; }
-
-        mut postAttrs : std::string = "";
-        if ((.attr) & (Attribute::Const)) { postAttrs += " const "; }
-
-        if ((.parent) != nullptr) {
-            ret protection + tmp + preAttrs + declaration + sbody + "\n";
-        }
-        ret tmp + preAttrs + declaration + postAttrs + sbody + "\n";
-    }
-
-    pub GetSource() const -> std::string {
-        if ((.IsTemplate()) || body == null) { ret ""; }
-
-        let name : std::string = .GetFullName();
-
-        mut retType : std::string = .returnType + " ";
-        if (.parent != null && (.parent->GetName()) == .name) {
-            retType = "";
-        }
-
-        mut declaration : std::string = retType + name + (.GetParamenters()) + " ";
-        mut body : std::string = "";
-
-        if ((.body) != nullptr) {
-            body = (.body->ToString()) + "\n";
-        }
-        
-        ret declaration + body;
+        ss << ")";
     }
 }
 
@@ -236,22 +222,73 @@ class IROperator(pub IRNode) {
     pub mut attr : int = Attribute::None;
     pub mut parent : IRNode*;
 
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        mut rType : std::string = .returnType + " ";
+
+        if .parent != null && dynamic_cast<IRClass*>(.parent) != null {
+            mut protection : std::string = "protected: ";
+            if .attr & Attribute::Public { protection = "public: "; }
+            if .attr & Attribute::Private { protection = "private: "; }
+            hs << protection;
+            
+            if .name == .parent->GetName() { rType = ""; }
+        }
+
+        .GenTemplate(hs);
+
+        if .attr & Attribute::Destructor { rType = ""; }
+
+        if .returnType != "void" && rType != "" {
+            hs << "[[nodiscard]] ";
+        }
+
+        if .attr & Attribute::Static { hs << "static "; }
+        if .attr & Attribute::Virtual { hs << "virtual "; }
+
+        hs << rType;
+
+        if .attr & Attribute::Destructor { hs << "~"; }
+
+        hs << .name;
+
+        .GenParamenters(hs);
+
+        if .attr & Attribute::Const { hs << " const"; }
+
+        if .IsTemplate() {
+            hs << " {\n"; .body->Generate(hs, hs); hs << "}\n";
+        }
+        else {
+            hs << ";\n";
+
+            if .body != null {
+                ss << rType << .GetFullName();
+                .GenParamenters(ss);
+                if .attr & Attribute::Const { ss << " const"; }
+                ss << " {\n"; .body->Generate(ss, hs); ss << "}\n";
+            }
+        }
+    }
+    
     pub GetFullName() const -> std::string {
-        if .parent != nullptr {
-            ret .parent->GetFullName() + "::" + .name;
+        mut fname : std::string = .name;
+        if .parent != null && dynamic_cast<IRProgram*>(.parent) == null {
+            if .parent->GetName() == .name && .attr & Attribute::Destructor {
+                fname = "~" + .name;
+            }
+
+            ret .parent->GetFullName() + "::" + fname;
         }
         ret .name;
     }
 
     pub IsTemplate() const -> bool {
-        ret .templateParams.size() > 0 || .parent != nullptr && .parent->IsTemplate();
+        ret .templateParams.size() > 0 || .parent != null && dynamic_cast<IRProgram*>(.parent) == null && .parent->IsTemplate();
     }
 
-    pub GetTemplate() const -> std::string {
-        mut str : std::string = "";
-
+    pub GenTemplate(ss : std::stringstream&) const -> void {
         if .templateParams.size() > 0 {
-            str += "template<";
+            ss << "template<";
             mut i : int = 0;
             while i < .templateParams.size() {
                 mut tType : std::string = std::get<0>(.templateParams[i]);
@@ -260,105 +297,37 @@ class IROperator(pub IRNode) {
                     tType = "typename";
                 }
 
-                str += tType + " " + std::get<1>(.templateParams[i]);
+                ss << tType << " " << std::get<1>(.templateParams[i]);
                 if i < .templateParams.size() - 1 {
-                    str += ", ";
+                    ss << ", ";
                 }
                 i++;
             }
-            str += "> ";
+            ss << "> ";
         }
-
-        ret str;
     }
 
-    pub GetParamenters() const -> std::string {
-        mut str : std::string = "(";
-
+    pub GenParamenters(ss : std::stringstream&) const -> void {
+        ss << "(";
         mut i : int = 0;
         while i < .params.size() {
-            str += std::get<0>(.params[i]) + " " + std::get<1>(.params[i]);
-            if i < .params.size() - 1 {
-                str += ", ";
-            }
+            ss << std::get<0>(.params[i]) << " " << std::get<1>(.params[i]);
+            if i < .params.size() - 1 { ss << ", "; }
             i++;
         }
-
-        ret str + ")";
-    }
-
-    pub GetHeader() const -> std::string {
-        let name : std::string = .name;
-
-        mut protection : std::string = "protected: ";
-        
-        if .attr & Attribute::Public { protection = "public: "; }
-        if .attr & Attribute::Private { protection = "private: "; }
-        
-        mut retType : std::string = .returnType + " ";
-        if .parent != null && .parent->GetName() == .name {
-            retType = "";
-        }
-
-        mut declaration : std::string = retType + name + .GetParamenters();
-        
-        let tmp : std::string = .GetTemplate();
-        mut sbody : std::string = ";";
-
-        if .IsTemplate() {
-            if .body != null {
-                sbody = " " + .body->ToString() + ";";
-            }
-        }
-
-        if .body == null && .attr & Attribute::Virtual {
-            sbody = " = 0;";
-        }
-
-        mut preAttrs : std::string = "";
-
-        if .returnType != "void" && .returnType != "auto" {
-            preAttrs += "[[nodiscard]] ";
-        }
-
-        if .attr & Attribute::Static { preAttrs += "static "; }
-        if .attr & Attribute::Virtual { preAttrs += "virtual "; }
-
-        mut postAttrs : std::string = "";
-        if .attr & Attribute::Const { postAttrs += " const "; }
-
-        if .parent != nullptr {
-            ret protection + tmp + preAttrs + declaration + sbody + "\n";
-        }
-        ret tmp + preAttrs + declaration + postAttrs + sbody + "\n";
-    }
-
-    pub GetSource() const -> std::string {
-        if .IsTemplate() || body == null { ret ""; }
-
-        let name : std::string = .GetFullName();
-
-        mut retType : std::string = .returnType + " ";
-        if .parent != null && .parent->GetName() == .name {
-            retType = "";
-        }
-
-        mut declaration : std::string = retType + name + .GetParamenters() + " ";
-        mut body : std::string = "";
-
-        if .body != nullptr {
-            body = .body->ToString() + "\n";
-        }
-        
-        ret declaration + body;
+        ss << ")";
     }
 }
 
 class IRReturn(pub IRNode) {
     pub mut expr : IRExpr*;
 
-    pub ToString() const -> std::string {
-        ret "return " + .expr->ToString();
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        ss << "return ";
+        if .expr != null {
+            ss << .expr->ToString();
+        }
+        ss << ";\n";
     }
 }
 
@@ -368,20 +337,21 @@ class IRIf(pub IRNode) {
     pub mut elifs : std::vector<IRIf*>;
     pub mut elseBody : IRBody*;
 
-    pub ToString() const -> std::string {
-        mut str : std::string = "if (" + .cond->ToString() + ") " + .body->ToString();
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        ss << "if (" << .cond->ToString() << ") {\n";
+        .body->Generate(ss, hs);
+        ss << "}\n";
 
-        mut i : int = 0;
-        while i < .elifs.size() {
-            str += " else " + .elifs[i]->ToString();
-            i++;
+        for elifIR : IRIf* in .elifs {
+            ss << "else ";
+            elifIR->Generate(ss, hs);
         }
 
         if .elseBody != null {
-            str += " else " + .elseBody->ToString();
+            ss << "else {\n";
+            .elseBody->Generate(ss, hs);
+            ss << "}\n";
         }
-
-        ret str;
     }
 }
 
@@ -389,91 +359,27 @@ class IRWhile(pub IRNode) {
     pub mut cond : IRExpr*;
     pub mut body : IRBody*;
 
-    pub ToString() const -> std::string {
-        ret "while (" + (.cond->ToString()) + ") " + (.body->ToString());
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        ss << "while (" << .cond->ToString() << ") {\n";
+        .body->Generate(ss, hs);
+        ss << "}\n";
     }
 }
 
 class IRBreak(pub IRNode) {
-    pub ToString() const -> std::string {
-        ret "break";
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        ss << "break;\n";
     }
 }
 
 class IRContinue(pub IRNode) {
-    pub ToString() const -> std::string {
-        ret "continue";
-    }
-}
-
-class IRVariable(pub IRNode) {
-    pub mut name : std::string;
-    pub mut vType : std::string;
-    pub mut value : IRExpr*;
-    pub mut parent : IRNode*;
-    pub mut attr : int = 0;
-    
-    pub ToString() const -> std::string {
-        ret .GetHeader();
-    }
-
-    pub GetFullName() const -> std::string {
-        if .parent != nullptr {
-            ret .parent->GetFullName() + "::" + .name;
-        }
-        ret .name;
-    }
-
-    pub GetHeader() const -> std::string {
-        let name : std::string = .name;
-
-        mut protection : std::string = "";
-
-        if .parent != nullptr {
-            protection = "protected: ";
-            
-            if .attr & Attribute::Public { protection = "public: "; }
-            if .attr & Attribute::Private { protection = "private: "; }
-        }
-        
-        mut declaration : std::string = .vType + " ";
-
-        if .attr & Attribute::Const { declaration += "const "; }
-        
-        declaration += name;
-        
-        mut preAttrs : std::string = "";
-        if .attr & Attribute::Static { preAttrs += "static "; }
-        if .attr & Attribute::Virtual { preAttrs += "virtual "; }
-
-        mut value : std::string = "";
-
-        if .value != null {
-            value = " = " + .value->ToString();
-        }
-
-        ret protection + preAttrs + declaration + value + ";\n";
-    }
-
-    pub GetSource() const -> std::string {
-        ret "";
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        ss << "continue;\n";
     }
 }
 
 class IRImport(pub IRNode) {
     pub mut path : std::string;
-
-    pub ToString() const -> std::string {
-        ret "import \"" + .path + '\"';
-    }
-}
-
-class IRInclude(pub IRNode) {
-    pub mut path : std::string;
-
-    pub ToString() const -> std::string {
-        ret "include \"" + .path + '\"';
-    }
 }
 
 class IRClass(pub IRNode) {
@@ -484,19 +390,62 @@ class IRClass(pub IRNode) {
     pub mut inherits : std::vector<std::string>;
     pub mut parent : IRNode*;
 
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        .GenTemplate(hs);
+        hs << "class " << .name;
+        .GenInherits(hs);
+        hs << " {\n";
+        .body->Generate(ss, hs);
+        hs << "};\n";
+    }
+
+    pub GenTemplate(ss : std::stringstream&) -> void {
+        if (.templateParams.size()) > 0 {
+            ss << "template<";
+            mut i : int = 0;
+            while ((i) < .templateParams.size()) {
+                mut tType : std::string = std::get<0>(.templateParams[i]);
+
+                if ((tType) == "type") {
+                    tType = "typename";
+                }
+
+                ss << tType + " " + std::get<1>(.templateParams[i]);
+                if ((i) < ((.templateParams.size()) - 1)) {
+                    ss << ", ";
+                }
+                i++;
+            }
+            ss << "> ";
+        }
+    }
+
+    pub GenInherits(ss : std::stringstream&) -> void {
+        if .inherits.size() > 0 {
+            ss << " : ";
+            mut i : int = 0;
+            while i < .inherits.size() {
+                ss << .inherits[i];
+                if i < .inherits.size() - 1 { ss << ", "; }
+                i++;
+            }
+        }
+    }
+
+    pub GetFullName() const -> std::string {
+        if .parent != null && dynamic_cast<IRProgram*>(.parent) == null {
+            ret .parent->GetFullName() + "::" + .name;
+        } else {
+            ret .name;
+        }
+    }
+
     pub GetName() const -> std::string {
         ret .name;
     }
 
-    pub GetFullName() const -> std::string {
-        if .parent != nullptr {
-            ret .parent->GetFullName() + "::" + .name;
-        }
-        ret .name;
-    }
-
     pub IsTemplate() const -> bool {
-        ret .templateParams.size() > 0 || .parent != nullptr && .parent->IsTemplate();
+        ret .templateParams.size() > 0 || .parent != null && dynamic_cast<IRProgram*>(.parent) == null && .parent->IsTemplate();
     }
 }
 
@@ -505,31 +454,20 @@ class IREnum(pub IRNode) {
     pub mut values : std::vector<std::tuple<std::string, IRExpr*> >;
     pub mut parent : IRNode*;
 
-    pub ToString() const -> std::string {
-        mut str : std::string = "enum class " + .name + " {\n";
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        hs << "enum class " << .name << " {\n";
 
-        mut i : int = 0;
-        while i < .values.size() {
-            let expr : IRExpr* = std::get<1>(.values[i]);
-            
-            mut value : std::string = "";
-            if expr != null {
-                value = " = " + expr->ToString();
+        for expr : std::tuple<std::string, IRExpr*> in .values {
+            hs << std::get<0>(expr);
+
+            if std::get<1>(expr) != null {
+                hs << " = " << std::get<1>(expr)->ToString();
             }
 
-            str += "    " + std::get<0>(.values[i]) + value + ",\n";
-            i++;
+            hs << ",\n";
         }
 
-        ret str + "}";
-    }
-
-    pub GetHeader() const -> std::string {
-        ret .ToString() + ";\n";
-    }
-
-    pub GetSource() const -> std::string {
-        ret "";
+        hs << "};\n";
     }
 }
 
@@ -537,14 +475,12 @@ class IRDel(pub IRNode) {
     pub mut expr : IRNode*;
     pub mut isArray : bool = false;
 
-    pub ToString() const -> std::string {
-        mut str : std::string = "delete ";
-
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        ss << "delete ";
         if .isArray {
-            str += "[] ";
+            ss << "[] ";
         }
-
-        ret str + .expr->ToString();
+        ss << .expr->ToString() << ";\n";
     }
 }
 
@@ -553,24 +489,104 @@ class IRFor(pub IRNode) {
     pub mut varName : std::string;
     pub mut iterable : IRExpr*;
     pub mut body : IRBody*;
+    
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        ss << "for (";
+        if !.isMutable { ss << "const "; }
+        ss << .varName << " : " << .iterable->ToString() << ") {\n";
+        .body->Generate(ss, hs);
+        ss << "}\n";
+    }
+}
 
-    pub ToString() const -> std::string {
-        mut str : std::string = "for (";
+class IRVariable(pub IRNode) {
+    pub mut name : std::string;
+    pub mut vType : std::string;
+    pub mut value : IRExpr*;
+    pub mut parent : IRNode*;
+    pub mut attr : int = 0;
 
-        if !.isMutable {
-            str += "const ";
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        if .parent == null {
+            if .attr & Attribute::Static { ss << "static "; }
+            ss << .vType << " ";
+            if .attr & Attribute::Const { ss << "const "; }
+            ss << .name;
+
+            if .value != nullptr {
+                ss << " = " << .value->ToString();
+            }
+
+            ss << ";\n";
         }
+        elif dynamic_cast<IRClass*>(.parent) != null {
+            mut protection : std::string = "protected: ";
+            if .attr & Attribute::Public { protection = "public: "; }
+            if .attr & Attribute::Private { protection = "private: "; }
+            hs << protection;
 
-        str += .varName + " : " + .iterable->ToString() + ") " + .body->ToString();
+            let isStatic : bool = .attr & Attribute::Static;
+            let isConst : bool = .attr & Attribute::Const;
 
-        ret str;
+            if isStatic { hs << "static "; }
+            hs << .vType << " ";
+            if isConst { hs << "const "; }
+            hs << .name;
+
+            if .value != null && (!isStatic || isConst) {
+                hs << " = " << .value->ToString();
+            }
+
+            hs << ";\n";
+
+            if isStatic && !isConst {
+                ss << .vType << " " << .GetFullName();
+                if .value != nullptr {
+                    ss << " = " << .value->ToString();
+                }
+                ss << ";\n";
+            }
+        }
+        elif dynamic_cast<IRProgram*>(.parent) != null {
+            if .attr & Attribute::Static {
+                hs << "static ";
+                
+                hs << .vType << " ";
+                if .attr & Attribute::Const {
+                    hs << "const " << .name;
+
+                    if .value != nullptr {
+                        hs << " = " << .value->ToString() << ";\n";
+                    }
+                }
+                else {
+                    hs << .name << ";\n";
+
+                    ss << .vType << " " << .GetFullName();
+                    if .value != nullptr {
+                        ss << " = " << .value->ToString();
+                    }
+                    ss << ";\n";
+                }
+            }
+            else {
+                ss << .vType << " ";
+                if .attr & Attribute::Const { ss << "const "; }
+                ss << .name;
+
+                if .value != nullptr {
+                    ss << " = " << .value->ToString();
+                }
+
+                ss << ";\n";
+            }
+        }
     }
-
-    pub GetHeader() const -> std::string {
-        ret "";
-    }
-
-    pub GetSource() const -> std::string {
-        ret "";
+    
+    pub GetFullName() const -> std::string {
+        if .parent != nullptr && dynamic_cast<IRProgram*>(.parent) == null {
+            ret .parent->GetFullName() + "::" + .name;
+        }
+        ret .name;
     }
 }

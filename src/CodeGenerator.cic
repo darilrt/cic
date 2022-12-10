@@ -1,5 +1,6 @@
 include "iostream";
 include "filesystem";
+include "sstream";
 include "IR.cic";
 include "Common.cic";
 
@@ -14,142 +15,19 @@ As<T : type>(node : IRNode*) -> T* {
 class CodeGenerator {
     pub mut sourceBuffer : std::string = "";
     pub mut headerBuffer : std::string = "";
+
+    pub mut sourceStream : std::stringstream;
+    pub mut headerStream : std::stringstream;
+
     pub mut indentCount : int = 0;
     pub mut indent : std::string = "";
-
+    
     pub Generate(ir : IRNode*) -> void {
         if IsA<IRProgram>(ir) {
-            GenerateProgram(As<IRProgram>(ir));
-        }
-    }
-
-    Indent() -> void {
-        mut i : int = 0;
-        while i < indentCount {
-            indent += "    ";
-            i++;
-        }
-    }
-
-    PushIndent() -> void {
-        indentCount++;
-        Indent();
-    }
-
-    PopIndent() -> void {
-        indentCount--;
-        Indent();
-    }
-
-    GenerateProgram(node : IRProgram*) -> void {
-        mut i : int = 0;
-        while i < node->decls.size() {
-            GenerateDeclaration(node->decls[i]);
-            i++;
-        }
-    }
-
-    GenerateBody(node : IRBody*) -> void {
-        headerBuffer += "{\n";
-        mut i : int = 0;
-        while i < node->decls.size() {
-            GenerateDeclaration(node->decls[i]);
-            i++;
-        }
-        headerBuffer += "}";
-    }
-
-    GenerateDeclaration(node : IRNode*) -> void {
-        if IsA<IRFunction>(node) { GenerateFunction(As<IRFunction>(node)); }
-        if IsA<IROperator>(node) { GenerateOperator(As<IROperator>(node)); }
-        if IsA<IRInclude>(node) { GenerateInclude(As<IRInclude>(node)); }
-        if IsA<IRClass>(node) { GenerateClass(As<IRClass>(node)); }
-        if IsA<IRVariable>(node) { GenerateVariable(As<IRVariable>(node)); }
-        if IsA<IREnum>(node) { GenerateEnum(As<IREnum>(node)); }
-    }
-
-    GenerateFunction(node : IRFunction*) -> void {
-        headerBuffer += node->GetHeader();
-        sourceBuffer += node->GetSource();
-    }
-    
-    GenerateOperator(node : IROperator*) -> void {
-        headerBuffer += node->GetHeader();
-        sourceBuffer += node->GetSource();
-    }
-
-    GenerateEnum(node : IREnum*) -> void {
-        headerBuffer += node->GetHeader();
-        sourceBuffer += node->GetSource();
-    }
-
-    GenerateInclude(node : IRInclude*) -> void {
-        // headerBuffer += "#include \"" + node->path + '\"' + '\n';
-
-        // get path ext
-        mut path : std::string = node->path;
-        mut ext : std::string = path.substr((path.find_last_of(".")) + 1, path.size());
-
-        if ext == "cic" {
-            mut stem : std::string = path.substr((path.find_last_of(93)) + 1, path.size());
-            stem = stem.substr(0, stem.find_last_of("."));
-            headerBuffer += "#include \"" + stem + ".hpp" + '\"' + '\n';
-        }
-        else {
-            headerBuffer += "#include \"" + path + '\"' + '\n';
-        }
-    }
-
-    GenerateClass(node : IRClass*) -> void {
-        mut str : std::string;
-
-        mut isTemplate : bool = false;
-        if node->templateParams.size() > 0 {
-            isTemplate = true;
-            str += "template<";
-            mut i : int = 0;
-            while i < node->templateParams.size() {
-                mut tType : std::string = std::get<0>(node->templateParams[i]);
-
-                if tType == "type" {
-                    tType = "typename";
-                }
-
-                str += tType + " " + std::get<1>(node->templateParams[i]);
-                if i < node->templateParams.size() - 1 {
-                    str += ", ";
-                }
-                i++;
-            }
-            str += "> ";
+            ir->Generate(sourceStream, headerStream);
         }
 
-        str += "class " + node->name;
-
-        if node->inherits.size() > 0 {
-            str += " : ";
-            mut i : int = 0;
-            while i < node->inherits.size() {
-                str += node->inherits[i];
-                if i < node->inherits.size() - 1 {
-                    str += ", ";
-                }
-                i++;
-            }
-        }
-        str += " ";
-
-        headerBuffer += str;
-        
-        PushIndent();
-        .GenerateBody(node->body);
-        PopIndent();
-
-        headerBuffer += ";\n";
-    }
-
-    GenerateVariable(node : IRVariable*) -> void {
-        headerBuffer += node->GetHeader();
-        sourceBuffer += node->GetSource();
+        sourceBuffer = sourceStream.str();
+        headerBuffer = headerStream.str();
     }
 }

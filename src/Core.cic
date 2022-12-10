@@ -61,7 +61,7 @@ SaveIRToFile(ir : IRNode*, outputDir : const std::string&, filename : const std:
         std::cout << "#pragma once" << std::endl;
         std::cout << codeGenerator->headerBuffer;
 
-        std::cout << std::endl << "// Source: " << filename << std::endl;
+        std::cout << "// Source: " << filename << std::endl;
         std::cout << "#include \"" << stem << ".hpp\"" << std::endl;
         std::cout << codeGenerator->sourceBuffer;
     } else {

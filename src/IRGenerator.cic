@@ -56,15 +56,16 @@ class IRGenerator {
     }
 
     TranslateProgram(node : ASTProgram*) -> IRNode* {
-        mut decls : std::vector<IRNode*>;
+        mut ir : IRProgram* = new IRProgram;
 
-        mut i : int = 0;
-        while i < node->decls.size() {
-            decls.push_back(TranslateNode(node->decls[i], null));
-            i++;
+        for decl : ASTNode* in node->decls {
+            let irDecl : IRNode* = TranslateNode(decl, ir);
+            if irDecl != null {
+                ir->decls.push_back(irDecl);
+            }
         }
 
-        ret new IRProgram(decls);
+        ret ir;
     }
     
     TranslateBody(body : ASTBody*, parent : IRNode*) -> IRBody* {
