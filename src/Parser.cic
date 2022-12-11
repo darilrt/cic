@@ -516,19 +516,6 @@ class Parser {
         mut node : ASTNode* = new ASTVariable(.currentToken->literal);
         .Eat(TokenType::Ident);
 
-        while .IsType(TokenType::LBracket) {
-            .Eat(TokenType::LBracket);
-            
-            mut size : ASTNode* = null;
-            if !.IsType(TokenType::RBracket) {
-                size = .Expr();
-            }
-
-            .Eat(TokenType::RBracket);
-            
-            node = new ASTIndexOp(node, size);
-        }
-
         ret node;
     }
 
@@ -913,7 +900,7 @@ class Parser {
         ret new ASTInherArg(protection, name);
     }
 
-    // InherArgs:  InherArg (',' InherArg)*
+    // InherArgs: InherArg (',' InherArg)*
     InherArgs() -> std::vector<ASTInherArg*> {
         mut args : std::vector<ASTInherArg*>;
 

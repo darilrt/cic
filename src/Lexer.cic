@@ -10,7 +10,7 @@ class Lexer {
     mut line : int;
     mut tokens : std::vector<Token>;
     mut currentChar : char;
-
+    
     pub Lexer(source : const std::string&) {
         .source = source;
         .index = 0;
@@ -20,32 +20,24 @@ class Lexer {
     }
 
     Peek() -> char {
-        if .index + 1 < .source.size() {
-            ret .source[.index + 1];
-        }
+        if .index + 1 < .source.size() { ret .source[.index + 1]; }
         ret '\0';
     }
 
     Peek2() -> char {
-        if .index + 2 < .source.size() {
-            ret .source[.index + 2];
-        }
+        if .index + 2 < .source.size() { ret .source[.index + 2]; }
         ret '\0';
     }
 
     PeekEquals(expected : char) -> bool {
         let peek : char = .Peek();
-        if peek == expected {
-            ret true;
-        }
+        if peek == expected { ret true; }
         ret false;
     }
 
     Peek2Equals(expected : char) -> bool {
         let peek : char = .Peek2();
-        if peek == expected {
-            ret true;
-        }
+        if peek == expected { ret true; }
         ret false;
     }
 
@@ -53,11 +45,8 @@ class Lexer {
         .index += 1;
         .column += 1;
 
-        if .index >= .source.size() {
-            .currentChar = '\0';
-        } else {
-            .currentChar = .source[.index];
-        }
+        if .index >= .source.size() { .currentChar = '\0'; }
+        else { .currentChar = .source[.index]; }
 
         if .IsNewline() {
             .column = 1;
@@ -66,9 +55,7 @@ class Lexer {
     }
 
     SkipWhitespace() {
-        while .IsWhitespace() {
-            .Advance();
-        }
+        while .IsWhitespace() { .Advance(); }
     }
 
     pub Parse() -> std::vector<Token> {
@@ -111,7 +98,7 @@ class Lexer {
             if .Switch3('.', '.', '.') { ret Token(TokenType::Ellipsis, "...", .column, .line); }
             if .Switch3('<', '<', '=') { ret Token(TokenType::LShiftAssign, "<<=", .column, .line); }
             if .Switch3('>', '>', '=') { ret Token(TokenType::RShiftAssign, ">>=", .column, .line); }
-
+            
             if .Switch2('=', '=') { ret Token(TokenType::Equal, "==", .column, .line); }
             if .Switch2('!', '=') { ret Token(TokenType::NotEqual, "!=", .column, .line); }
             if .Switch2('<', '=') { ret Token(TokenType::LessEqual, "<=", .column, .line); }

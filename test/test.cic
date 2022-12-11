@@ -1,5 +1,7 @@
 include "iostream";
 
+mut a : int[];
+
 main(argc : int, argv : char*[]) -> int {
     ret 0;
 }
