@@ -1,7 +1,8 @@
 include "iostream";
 
-mut a : int[];
+let a : int;
 
 main(argc : int, argv : char*[]) -> int {
+    std::cout << "Hello, world!\n";
     ret 0;
 }

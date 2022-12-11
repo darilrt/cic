@@ -91,10 +91,10 @@ class Parser {
         ret false;
     }
 
-    PrintLine() -> void {
-        std::cout << "file " << .filename << " line " << .currentToken->line << " column " << .currentToken->column << "\n";
+    PrintLine(l : int, c : int) -> void {
+        std::cout << "file " << .filename << " line " << l << " column " << c << "\n";
         
-        let line : int = .currentToken->line - 1;
+        let line : int = l - 1;
         mut lineStart : int = .lines[line];
         
         while lineStart < .lexer->source.size() {
@@ -107,8 +107,8 @@ class Parser {
             lineStart++;
         }
         std::cout << std::endl;
-
-        let tokenStart : int = .currentToken->column - 1;
+        
+        let tokenStart : int = c - 1;
         mut i : int = 0;
         while i < tokenStart {
             std::cout << " ";
@@ -124,6 +124,12 @@ class Parser {
         std::cout << std::endl;
     }
 
+    PrintLine() -> void {  .PrintLine(.currentToken->line, .currentToken->column); }
+
+    GetLine() -> int { ret .currentToken->line; }
+
+    GetColumn() -> int { ret .currentToken->column; }
+
     Eat(tokenType : TokenType) -> void {
         if .currentToken->tokenType == tokenType {
             .current += 1;
@@ -138,10 +144,8 @@ class Parser {
         }
         else {
             let error : std::string = 
-                "Expected token type: " + TokenTypeToString(tokenType) +
-                ", got: " + TokenTypeToString(.currentToken->tokenType) +
-                " at line: " + std::to_string(.currentToken->line) +
-                ", column: " + std::to_string(.currentToken->column);
+                "Expected token type " + TokenTypeToString(tokenType) +
+                ", got " + TokenTypeToString(.currentToken->tokenType);
             .PrintLine();
             .Error(error);
         }
@@ -739,6 +743,7 @@ class Parser {
     // VariableDecl: ('mut' | 'let') IdentDecl ':' Type ('=' Expr)?
     VariableDecl() -> ASTVariableDecl* {
         mut isMutable : bool = false;
+        let line : int = .GetLine();
 
         if .IsType(TokenType::Mut) {
             isMutable = true;
@@ -765,7 +770,7 @@ class Parser {
             var->attr |= Attribute::Const;
             
             if var->value == null {
-                .PrintLine();
+                .PrintLine(line, .GetColumn());
                 .Error("Constant variable must be initialized");
             }
         }
@@ -1128,7 +1133,9 @@ class Parser {
             ret .FunctionDecl();
         }
         elif .IsType(TokenType::Include) {
-            ret .IncludeStmt();
+            let node : ASTNode* = .IncludeStmt();
+            .EatNewLine();
+            ret node;
         }
         elif .IsType(TokenType::Class) {
             ret .ClassDecl();

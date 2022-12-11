@@ -49,7 +49,7 @@ ArgsToVector(argc : int, argv : char**) -> std::vector<std::string> {
     ret args;
 }
 
-main(argc : int, argv : char*[]) -> int {
+main(argc : int, argv[] : char*) -> int {
     mut args : std::vector<std::string> = ArgsToVector(argc, argv);
     mut options : ProgramOptions = ParseArgs(args);
 

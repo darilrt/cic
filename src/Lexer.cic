@@ -74,6 +74,9 @@ class Lexer {
                 .SkipWhitespace();
                 continue;
             }
+            
+            let col : int = .column - 1;
+            let lin : int = .line;
 
             if .IsNewline() {
                 .Advance();
@@ -81,7 +84,7 @@ class Lexer {
             }
             
             if .IsAlpha() || .IsChar('_') { ret .ParseIdentifier(); }
-
+            
             if .IsDigit() { ret .ParseNumber(); }
 
             if .IsChar('"') { ret .ParseString(); }
@@ -94,56 +97,56 @@ class Lexer {
                     continue;
                 }
             }
-            
-            if .Switch3('.', '.', '.') { ret Token(TokenType::Ellipsis, "...", .column, .line); }
-            if .Switch3('<', '<', '=') { ret Token(TokenType::LShiftAssign, "<<=", .column, .line); }
-            if .Switch3('>', '>', '=') { ret Token(TokenType::RShiftAssign, ">>=", .column, .line); }
-            
-            if .Switch2('=', '=') { ret Token(TokenType::Equal, "==", .column, .line); }
-            if .Switch2('!', '=') { ret Token(TokenType::NotEqual, "!=", .column, .line); }
-            if .Switch2('<', '=') { ret Token(TokenType::LessEqual, "<=", .column, .line); }
-            if .Switch2('>', '=') { ret Token(TokenType::GreaterEqual, ">=", .column, .line); }
-            if .Switch2('+', '+') { ret Token(TokenType::Inc, "++", .column, .line); }
-            if .Switch2('-', '-') { ret Token(TokenType::Dec, "--", .column, .line); }
-            if .Switch2('&', '&') { ret Token(TokenType::And, "&&", .column, .line); }
-            if .Switch2('|', '|') { ret Token(TokenType::Or, "||", .column, .line); }
-            if .Switch2('+', '=') { ret Token(TokenType::AddAssign, "+=", .column, .line); }
-            if .Switch2('-', '=') { ret Token(TokenType::SubAssign, "-=", .column, .line); }
-            if .Switch2('*', '=') { ret Token(TokenType::MulAssign, "*=", .column, .line); }
-            if .Switch2('/', '=') { ret Token(TokenType::DivAssign, "/=", .column, .line); }
-            if .Switch2('%', '=') { ret Token(TokenType::ModAssign, "%=", .column, .line); }
-            if .Switch2('&', '=') { ret Token(TokenType::AndAssign, "&=", .column, .line); }
-            if .Switch2('|', '=') { ret Token(TokenType::OrAssign, "|=", .column, .line); }
-            if .Switch2('^', '=') { ret Token(TokenType::XorAssign, "^=", .column, .line); }
-            if .Switch2('>', '>') { ret Token(TokenType::RShift, ">>", .column, .line); }
-            if .Switch2('<', '<') { ret Token(TokenType::LShift, "<<", .column, .line); }
-            if .Switch2('-', '>') { ret Token(TokenType::Arrow, "->", .column, .line); }
-            if .Switch2(':', ':') { ret Token(TokenType::ScopeResolution, "::", .column, .line); }
 
-            if .Switch1('+') { ret Token(TokenType::Add, "+", .column, .line); }
-            if .Switch1('-') { ret Token(TokenType::Sub, "-", .column, .line); }
-            if .Switch1('*') { ret Token(TokenType::Mul, "*", .column, .line); }
-            if .Switch1('/') { ret Token(TokenType::Div, "/", .column, .line); }
-            if .Switch1('%') { ret Token(TokenType::Mod, "%", .column, .line); }
-            if .Switch1('=') { ret Token(TokenType::Assign, "=", .column, .line); }
-            if .Switch1('<') { ret Token(TokenType::Less, "<", .column, .line); }
-            if .Switch1('>') { ret Token(TokenType::Greater, ">", .column, .line); }
-            if .Switch1('!') { ret Token(TokenType::Not, "!", .column, .line); }
-            if .Switch1('&') { ret Token(TokenType::And, "&", .column, .line); }
-            if .Switch1('|') { ret Token(TokenType::Or, "|", .column, .line); }
-            if .Switch1('^') { ret Token(TokenType::Xor, "^", .column, .line); }
-            if .Switch1('~') { ret Token(TokenType::BitNot, "~", .column, .line); }
-            if .Switch1('?') { ret Token(TokenType::Question, "?", .column, .line); }
-            if .Switch1(':') { ret Token(TokenType::Colon, ":", .column, .line); }
-            if .Switch1(';') { ret Token(TokenType::Semicolon, ";", .column, .line); }
-            if .Switch1(',') { ret Token(TokenType::Comma, ",", .column, .line); }
-            if .Switch1('.') { ret Token(TokenType::Dot, ".", .column, .line); }
-            if .Switch1('(') { ret Token(TokenType::LParen, "(", .column, .line); }
-            if .Switch1(')') { ret Token(TokenType::RParen, ")", .column, .line); }
-            if .Switch1('[') { ret Token(TokenType::LBracket, "[", .column, .line); }
-            if .Switch1(']') { ret Token(TokenType::RBracket, "]", .column, .line); }
-            if .Switch1('{') { ret Token(TokenType::LBrace, "{", .column, .line); }
-            if .Switch1('}') { ret Token(TokenType::RBrace, "}", .column, .line); }
+            if .Switch3('.', '.', '.') { ret Token(TokenType::Ellipsis, "...", col, lin); }
+            if .Switch3('<', '<', '=') { ret Token(TokenType::LShiftAssign, "<<=", col, lin); }
+            if .Switch3('>', '>', '=') { ret Token(TokenType::RShiftAssign, ">>=", col, lin); }
+            
+            if .Switch2('=', '=') { ret Token(TokenType::Equal, "==", col, lin); }
+            if .Switch2('!', '=') { ret Token(TokenType::NotEqual, "!=", col, lin); }
+            if .Switch2('<', '=') { ret Token(TokenType::LessEqual, "<=", col, lin); }
+            if .Switch2('>', '=') { ret Token(TokenType::GreaterEqual, ">=", col, lin); }
+            if .Switch2('+', '+') { ret Token(TokenType::Inc, "++", col, lin); }
+            if .Switch2('-', '-') { ret Token(TokenType::Dec, "--", col, lin); }
+            if .Switch2('&', '&') { ret Token(TokenType::And, "&&", col, lin); }
+            if .Switch2('|', '|') { ret Token(TokenType::Or, "||", col, lin); }
+            if .Switch2('+', '=') { ret Token(TokenType::AddAssign, "+=", col, lin); }
+            if .Switch2('-', '=') { ret Token(TokenType::SubAssign, "-=", col, lin); }
+            if .Switch2('*', '=') { ret Token(TokenType::MulAssign, "*=", col, lin); }
+            if .Switch2('/', '=') { ret Token(TokenType::DivAssign, "/=", col, lin); }
+            if .Switch2('%', '=') { ret Token(TokenType::ModAssign, "%=", col, lin); }
+            if .Switch2('&', '=') { ret Token(TokenType::AndAssign, "&=", col, lin); }
+            if .Switch2('|', '=') { ret Token(TokenType::OrAssign, "|=", col, lin); }
+            if .Switch2('^', '=') { ret Token(TokenType::XorAssign, "^=", col, lin); }
+            if .Switch2('>', '>') { ret Token(TokenType::RShift, ">>", col, lin); }
+            if .Switch2('<', '<') { ret Token(TokenType::LShift, "<<", col, lin); }
+            if .Switch2('-', '>') { ret Token(TokenType::Arrow, "->", col, lin); }
+            if .Switch2(':', ':') { ret Token(TokenType::ScopeResolution, "::", col, lin); }
+
+            if .Switch1('+') { ret Token(TokenType::Add, "+", col, lin); }
+            if .Switch1('*') { ret Token(TokenType::Mul, "*", col, lin); }
+            if .Switch1('/') { ret Token(TokenType::Div, "/", col, lin); }
+            if .Switch1('%') { ret Token(TokenType::Mod, "%",col, lin); }
+            if .Switch1('-') { ret Token(TokenType::Sub, "-", col, lin); }
+            if .Switch1('=') { ret Token(TokenType::Assign, "=", col, lin); }
+            if .Switch1('<') { ret Token(TokenType::Less, "<", col, lin); }
+            if .Switch1('>') { ret Token(TokenType::Greater, ">", col, lin); }
+            if .Switch1('!') { ret Token(TokenType::Not, "!", col, lin); }
+            if .Switch1('&') { ret Token(TokenType::And, "&", col, lin); }
+            if .Switch1('|') { ret Token(TokenType::Or, "|", col, lin); }
+            if .Switch1('^') { ret Token(TokenType::Xor, "^", col, lin); }
+            if .Switch1('~') { ret Token(TokenType::BitNot, "~", col, lin); }
+            if .Switch1('?') { ret Token(TokenType::Question, "?", col, lin); }
+            if .Switch1(':') { ret Token(TokenType::Colon, ":", col, .line); }
+            if .Switch1(';') { ret Token(TokenType::Semicolon, ";", col, .line); }
+            if .Switch1(',') { ret Token(TokenType::Comma, ",", col, lin); }
+            if .Switch1('.') { ret Token(TokenType::Dot, ".", col, lin); }
+            if .Switch1('(') { ret Token(TokenType::LParen, "(", col, lin); }
+            if .Switch1(')') { ret Token(TokenType::RParen, ")", col, lin); }
+            if .Switch1('[') { ret Token(TokenType::LBracket, "[", col, lin); }
+            if .Switch1(']') { ret Token(TokenType::RBracket, "]", col, lin); }
+            if .Switch1('{') { ret Token(TokenType::LBrace, "{", col, lin); }
+            if .Switch1('}') { ret Token(TokenType::RBrace, "}", col, lin); }
 
             .Advance();
         }
@@ -195,7 +198,6 @@ class Lexer {
             .Advance();
         }
         if .currentChar == '.' {
-
             number += .currentChar;
             .Advance();
             while .IsDigit() {
@@ -211,7 +213,7 @@ class Lexer {
         let col : int = .column;
         .Advance();
         mut string : std::string;
-        while !.IsChar('"') {
+        while !.IsChar('"') && .IsNotNull() {
             string += .currentChar;
 
             if .IsChar(92) { // '\'
