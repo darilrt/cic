@@ -16,12 +16,6 @@ class IRNode {
         hs << "IRNode Header";
     }
 
-    // OLD Code
-    
-    pub virtual ToString() const -> std::string {
-        ret "";
-    }
-
     pub virtual GetName() const -> std::string {
         ret "";
     }
@@ -32,14 +26,6 @@ class IRNode {
 
     pub virtual IsTemplate() const -> bool {
         ret false;
-    }
-
-    pub virtual GetHeader() const -> std::string {
-        ret "";
-    }
-
-    pub virtual GetSource() const -> std::string {
-        ret "";
     }
 }
 
@@ -78,19 +64,13 @@ class IRInclude(pub IRNode) {
     }
 }
 
-// OLD
-
 class IRBody(pub IRNode) {
     pub mut decls : std::vector<IRNode*>;
 
     pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
         for decl : IRNode* in .decls {
-            if dynamic_cast<IRExpr*>(decl) != null {
-                ss << decl->ToString() << ";\n";
-            }
-            else {
-                decl->Generate(ss, hs);
-            }
+            decl->Generate(ss, hs);
+            if dynamic_cast<IRExpr*>(decl) != null { ss << ";\n"; }
         }
     }
 }
@@ -100,6 +80,10 @@ class IRExpr(pub IRNode) {
 
     pub IRExpr(expr : std::string) {
         .expr = expr;
+    }
+
+    pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
+        ss << .expr;
     }
 
     pub ToString() const -> std::string {
@@ -504,14 +488,12 @@ class IREnum(pub IRNode) {
 }
 
 class IRDel(pub IRNode) {
-    pub mut expr : IRNode*;
+    pub mut expr : IRExpr*;
     pub mut isArray : bool = false;
 
     pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
         ss << "delete ";
-        if .isArray {
-            ss << "[] ";
-        }
+        if .isArray { ss << "[] "; }
         ss << .expr->ToString() << ";\n";
     }
 }

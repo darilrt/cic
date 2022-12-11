@@ -492,7 +492,7 @@ class Parser {
     // New: 'new' Expr
     New() -> ASTNode* {
         .Eat(TokenType::New);
-        let node : ASTNode* = .Expr();
+        let node : ASTExpr* = .Expr();
         ret new ASTNew(node);
     }
 
@@ -500,13 +500,14 @@ class Parser {
     Del() -> ASTNode* {
         .Eat(TokenType::Del);
         mut isArray : bool = false;
+        
         if .IsType(TokenType::LBracket) {
             .Eat(TokenType::LBracket);
             .Eat(TokenType::RBracket);
             isArray = true;
         }
 
-        let node : ASTNode* = .Expr();
+        let node : ASTExpr* = .Expr();
         ret new ASTDel(node, isArray);
     }
 
@@ -660,7 +661,7 @@ class Parser {
         ret body;
     }
 
-    // Type: ScopeResolution ('*')* ('&')?
+    // Type: ScopeResolution ('*')* ('&')? ('[' Expr? ']')*
     Type() -> ASTType* {
         mut isConst : bool = false;
         if .IsType(TokenType::Const) {
@@ -680,7 +681,19 @@ class Parser {
             left = new ASTReferenceDecl(left);
         }
 
-        mut ntype : ASTType* = new ASTType(left);
+        mut arrDecl : std::vector<ASTNode*>;
+        while .IsType(TokenType::LBracket) {
+            .Eat(TokenType::LBracket);
+            
+            mut size : ASTNode* = null;
+            if !.IsType(TokenType::RBracket) { size = .Expr(); }
+
+            .Eat(TokenType::RBracket);
+            
+            arrDecl.push_back(size);
+        }
+
+        mut ntype : ASTType* = new ASTType(left, arrDecl);
         ntype->isConst = isConst;
 
         ret ntype;

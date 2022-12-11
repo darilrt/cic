@@ -13,6 +13,31 @@ class ASTNode {
     pub virtual GetType() const -> std::string { ret "ASTNode"; }
 }
 
+// Expression
+class ASTExpr(pub ASTNode) {
+    pub mut expr : ASTNode*;
+
+    pub ASTExpr(expr : ASTNode*) {
+        .expr = expr;
+    }
+
+    pub ~ASTExpr() {
+        del .expr;
+    }
+
+    pub ToString() const -> std::string {
+        ret .expr->ToString();
+    }
+
+    pub Get() const -> std::string {
+        ret .expr->Get();
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTExpr";
+    }
+}
+
 // Program, contains a list of declarations
 class ASTProgram(pub ASTNode) {
     pub mut decls : std::vector<ASTNode*>;
@@ -524,10 +549,10 @@ class ASTNew(pub ASTNode) {
 
 // Del Expression
 class ASTDel(pub ASTNode) {
-    pub mut node : ASTNode*;
+    pub mut node : ASTExpr*;
     pub mut isArray : bool;
 
-    pub ASTDel(node : ASTNode*, isArray : bool) {
+    pub ASTDel(node : ASTExpr*, isArray : bool) {
         .node = node;
         .isArray = isArray;
     }
@@ -643,14 +668,20 @@ class ASTBody(pub ASTNode) {
 // Type 
 class ASTType(pub ASTNode) {
     pub mut left : ASTNode*;
+    pub mut arrayDecl : std::vector<ASTNode*>;
     pub mut isConst : bool = false;
-
-    pub ASTType(left : ASTNode*) {
+    
+    pub ASTType(left : ASTNode*, arrayDecl : std::vector<ASTNode*>) {
         .left = left;
+        .arrayDecl = arrayDecl;
     }
 
     pub ~ASTType() {
         del .left;
+        mut i : int = 0;
+        while i < .arrayDecl.size() {
+            del .arrayDecl[i];
+        }
     }
 
     pub ToString() const -> std::string {
@@ -779,31 +810,6 @@ class ASTTemplateSpec(pub ASTNode) {
         while i < .args.size() {
             del .args[i];
         }
-    }
-}
-
-// Expression
-class ASTExpr(pub ASTNode) {
-    pub mut expr : ASTNode*;
-
-    pub ASTExpr(expr : ASTNode*) {
-        .expr = expr;
-    }
-
-    pub ~ASTExpr() {
-        del .expr;
-    }
-
-    pub ToString() const -> std::string {
-        ret .expr->ToString();
-    }
-
-    pub Get() const -> std::string {
-        ret .expr->Get();
-    }
-
-    pub GetType() const -> std::string {
-        ret "ASTExpr";
     }
 }
 

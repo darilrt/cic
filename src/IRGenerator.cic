@@ -4,13 +4,9 @@ include "tuple";
 include "AST.cic";
 include "IR.cic";
 
-IsA<T : type>(node : ASTNode*) -> bool {
-    ret dynamic_cast<T*>(node) != null;
-}
+IsA<T : type>(node : ASTNode*) -> bool { ret dynamic_cast<T*>(node) != null; }
 
-As<T : type>(node : ASTNode*) -> T* {
-    ret dynamic_cast<T*>(node);
-}
+As<T : type>(node : ASTNode*) -> T* { ret dynamic_cast<T*>(node); }
 
 class IRGenerator {
     pub Generate(ast : ASTNode*) -> IRNode* {
@@ -42,7 +38,6 @@ class IRGenerator {
         ret null;
     }
 
-    // Simple translation of a expression
     TranslateExpr(node : ASTExpr*) -> IRExpr* {
         if node == null { ret null; }
         ret new IRExpr(node->Get());
@@ -50,7 +45,7 @@ class IRGenerator {
 
     TranslateDel(node : ASTDel*) -> IRDel* {
         mut ir : IRDel* = new IRDel();
-        ir->expr = TranslateNode(node->node, null);
+        ir->expr = TranslateExpr(node->node);
         ir->isArray = node->isArray;
         ret ir;
     }
@@ -102,7 +97,15 @@ class IRGenerator {
         mut i : int = 0;
         while i < funcDecl->args.size() {
             let param : ASTArgDecl* = funcDecl->args[i];
-            let irParam : std::tuple<std::string, std::string> = std::make_tuple(param->right->Get(), param->left->Get());
+            mut name : std::string = param->left->Get();
+
+            let tp : ASTType* = dynamic_cast<ASTType*>(param->right);
+            for node : ASTNode* in tp->arrayDecl {
+                if node == null { name += "[]"; }
+                else { name += "[" + node->Get() + "]"; }
+            }
+
+            let irParam : std::tuple<std::string, std::string> = std::make_tuple(param->right->Get(), name);
             func->params.push_back(irParam);
             i++;
         }
@@ -178,6 +181,12 @@ class IRGenerator {
         let var : IRVariable* = new IRVariable();
         var->name = varDecl->name->Get();
         var->vType = varDecl->vType->Get();
+
+        for node : ASTNode* in varDecl->vType->arrayDecl {
+            if node == null { var->name += "[]"; }
+            else { var->name += "[" + node->Get() + "]"; }
+        }
+
         var->parent = parent;
         var->attr = varDecl->attr;
 
