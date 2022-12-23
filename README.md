@@ -2,6 +2,14 @@
 
 CIC is a language that compiles to c++ code. Focused in c++17.
 
+# Table of Contents
+1. [Hello, World!](#hello-world)
+2. [Variables](#variables)
+3. [Functions](#functions)
+4. [Classes](#classes)
+5. [Enum](#enum)
+6. [Roadmap](#roadmap)
+
 ## Hello, World!
 
 ```cic
