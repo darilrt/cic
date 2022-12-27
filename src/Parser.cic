@@ -433,7 +433,7 @@ class Parser {
         ret node;
     }
 
-    // Primary: Int | Float | '(' Expr ')' | Variable
+    // Primary: Int | Float | '(' Expr ')' | Variable | '[' ArgsValue? ']'
     Primary() -> ASTNode* {
         mut node : ASTNode*;
 
@@ -481,6 +481,17 @@ class Parser {
             .Eat(TokenType::Dot);
             node = .ScopeResolution();
             ret new ASTThisAccess(node);
+        }
+        elif .IsType(TokenType::LBracket) {
+            .Eat(TokenType::LBracket);
+            if .IsType(TokenType::RBracket) {
+                .Eat(TokenType::RBracket);
+                ret new ASTArray();
+            }
+
+            let args : std::vector<ASTNode*> = .ArgsValue();
+            .Eat(TokenType::RBracket);
+            ret new ASTArray(args);
         }
         else {
             if .IsInsideState("CheckingForPointer") {
@@ -541,7 +552,7 @@ class Parser {
         }
         else {
             .PrintLine();
-            .Error("Expected an identifier after this:" + .currentToken->literal);
+            .Error("Expected an identifier after this: " + .currentToken->literal);
         }
 
         if .IsType(TokenType::Less) {
@@ -652,7 +663,7 @@ class Parser {
         ret body;
     }
 
-    // Type: ScopeResolution ('*')* ('&')? ('[' Expr? ']')*
+    // Type: ScopeResolution ('*')* ('&')? ('[' Expr? ']')* '...'?
     Type() -> ASTType* {
         mut isConst : bool = false;
         if .IsType(TokenType::Const) {
@@ -684,7 +695,15 @@ class Parser {
             arrDecl.push_back(size);
         }
 
+        mut ellipsis : bool = false;
+        
+        if .IsType(TokenType::Ellipsis) {
+            .Eat(TokenType::Ellipsis);
+            ellipsis = true;
+        }
+
         mut ntype : ASTType* = new ASTType(left, arrDecl);
+        ntype->ellipsis = ellipsis;
         ntype->isConst = isConst;
 
         ret ntype;
@@ -740,7 +759,7 @@ class Parser {
         ret null;
     }
 
-    // VariableDecl: ('mut' | 'let') IdentDecl ':' Type ('=' Expr)?
+    // VariableDecl: ('mut' | 'let') IdentDecl (':' Type | ':=') ('=' Expr)?
     VariableDecl() -> ASTVariableDecl* {
         mut isMutable : bool = false;
         let line : int = .GetLine();
@@ -755,13 +774,26 @@ class Parser {
 
         let name : ASTNode* = .IdentDecl();
 
-        .Eat(TokenType::Colon);
-        let _type : ASTType* = .Type();
-
+        mut _type : ASTType* = null;
         mut expr : ASTExpr* = null;
-        if .IsType(TokenType::Assign) {
-            .Eat(TokenType::Assign);
+
+        if .IsType(TokenType::Colon) {
+            .Eat(TokenType::Colon);
+            _type = .Type();
+            
+            if .IsType(TokenType::Assign) {
+                .Eat(TokenType::Assign);
+                expr = .Expr();
+            }
+        }
+        elif .IsType(TokenType::ColonAssign) {
+            .Eat(TokenType::ColonAssign);
+            _type = new ASTType(new ASTVariable("auto"), std::vector<ASTNode*>());
             expr = .Expr();
+        }
+        else {
+            .PrintLine(line, .GetColumn());
+            .Error("Expected ':' or ':='");
         }
 
         mut var : ASTVariableDecl* = new ASTVariableDecl(name, _type, expr);

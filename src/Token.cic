@@ -61,6 +61,7 @@ enum TokenType {
     LShift, // <<
     RShift, // >>
     Assign, // =
+    ColonAssign, // :=
     AddAssign, // +=
     SubAssign, // -=
     MulAssign, // *=
@@ -154,6 +155,7 @@ TokenTypeToString(t : TokenType) -> std::string {
     if t == TokenType::LShift { ret "LShift"; }
     if t == TokenType::RShift { ret "RShift"; }
     if t == TokenType::Assign { ret "Assign"; }
+    if t == TokenType::ColonAssign { ret "ColonAssign"; }
     if t == TokenType::AddAssign { ret "AddAssign"; }
     if t == TokenType::SubAssign { ret "SubAssign"; }
     if t == TokenType::MulAssign { ret "MulAssign"; }

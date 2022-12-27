@@ -670,6 +670,7 @@ class ASTType(pub ASTNode) {
     pub mut left : ASTNode*;
     pub mut arrayDecl : std::vector<ASTNode*>;
     pub mut isConst : bool = false;
+    pub mut ellipsis : bool = false;
     
     pub ASTType(left : ASTNode*, arrayDecl : std::vector<ASTNode*>) {
         .left = left;
@@ -696,16 +697,61 @@ class ASTType(pub ASTNode) {
 
         mut name : std::string = .left->Get();
 
-        if name == "type" {
-            name = "typename";
-        }
+        if name == "type" { name = "typename"; }
 
         str += name;
+
+        if .ellipsis { str += "..."; }
+
         ret str;
     }
 
     pub GetType() const -> std::string {
         ret "ASTType";
+    }
+}
+
+// Array Declaration
+class ASTArray(pub ASTNode) {
+    mut args : std::vector<ASTNode*>;
+
+    pub ASTArray() {
+    }
+
+    pub ASTArray(args : std::vector<ASTNode*>) {
+        .args = args;
+    }
+
+    pub ~ASTArray() {
+        for arg : ASTNode* in .args {
+            del arg;
+        }
+    }
+
+    pub ToString() const -> std::string {
+        mut str : std::string = "{";
+
+        mut i : int = 0;
+        while i < .args.size() {
+            str += .args[i]->Get();
+
+            if i < .args.size() - 1 {
+                str += ", ";
+            }
+
+            i++;
+        }
+
+        str += "}";
+        ret str;
+    }
+
+    pub Get() const -> std::string {
+        ret .ToString();
+    }
+
+    pub GetType() const -> std::string {
+        ret "ASTArray";
     }
 }
 

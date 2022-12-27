@@ -118,6 +118,7 @@ class Lexer {
             if .Switch2('&', '=') { ret Token(TokenType::AndAssign, "&=", col, lin); }
             if .Switch2('|', '=') { ret Token(TokenType::OrAssign, "|=", col, lin); }
             if .Switch2('^', '=') { ret Token(TokenType::XorAssign, "^=", col, lin); }
+            if .Switch2(':', '=') { ret Token(TokenType::ColonAssign, ":=", col, lin); }
             if .Switch2('>', '>') { ret Token(TokenType::RShift, ">>", col, lin); }
             if .Switch2('<', '<') { ret Token(TokenType::LShift, "<<", col, lin); }
             if .Switch2('-', '>') { ret Token(TokenType::Arrow, "->", col, lin); }

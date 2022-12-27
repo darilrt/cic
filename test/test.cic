@@ -1,5 +1,43 @@
 include "iostream";
+include "string";
+include "sstream";
+include "tuple";
+
+str<T : type>(t : T) -> std::string {
+    mut out : std::ostringstream;
+    out << t;
+    ret out.str();
+}
+
+print<T : type>(t : T) -> void {
+    std::cout << t;
+}
+
+print<E : type, T : type...>(e : E, t : T...) -> void {
+    print(e);
+    print(t...);
+}
+
+format<Args : type...>(_fmt : std::string, _args : Args...) -> std::string {
+    mut out : std::ostringstream;
+    mut fmt := std::stringstream(_fmt);
+    mut args : std::string[] = [str(_args)...];
+
+    mut i := 0;
+    mut c : char;
+    while fmt >> c {
+        if c == '{' && fmt >> c && c == '}' {
+            out << args[i];
+            i++;
+        } else {
+            out << c;
+        }
+    }
+
+    ret out.str();
+}
 
 main(argc : int, argv : char*[]) -> int {
+    std::cout << format("Hello, {}", "KKCK!") << std::endl;
     ret 0;
 }
