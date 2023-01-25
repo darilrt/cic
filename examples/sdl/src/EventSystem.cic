@@ -1,0 +1,25 @@
+include "functional";
+include "map";
+include "iostream";
+
+class EventSystem {
+    static mut payload : void*;
+    static mut eventMap : std::map<std::string, std::vector<std::function<void()> > >;
+    
+    pub static RegisterEvent(event : const std::string&, callback : std::function<void()>) -> void {
+        mut it := eventMap.find(event);
+        if it == eventMap.end() {
+            eventMap[event] = std::vector<std::function<void()> >();
+        }
+        eventMap[event].push_back(callback);
+    }
+    
+    pub static TriggerEvent(event : const std::string&) -> void {
+        mut it := eventMap.find(event);
+        if it != eventMap.end() {
+            for callback : auto in it->second {
+                callback();
+            }
+        }
+    }
+}

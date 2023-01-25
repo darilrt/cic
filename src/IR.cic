@@ -519,6 +519,7 @@ class IRVariable(pub IRNode) {
     pub mut value : IRExpr*;
     pub mut parent : IRNode*;
     pub mut attr : int = 0;
+    pub mut isPointer : bool = false;
 
     pub Generate(ss : std::stringstream&, hs : std::stringstream&) -> void {
         if .parent == null {

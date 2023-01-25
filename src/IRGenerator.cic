@@ -182,6 +182,12 @@ class IRGenerator {
         var->name = varDecl->name->Get();
         var->vType = varDecl->vType->Get();
 
+        mut isPointer : bool = false;
+
+        if varDecl->vType->IsPointer() {
+            isPointer = true;
+        }
+
         for node : ASTNode* in varDecl->vType->arrayDecl {
             if node == null { var->name += "[]"; }
             else { var->name += "[" + node->Get() + "]"; }
@@ -192,6 +198,9 @@ class IRGenerator {
 
         if varDecl->value != null {
             var->value = TranslateExpr(varDecl->value);
+        }
+        elif isPointer {
+            var->value = new IRExpr("0");
         }
 
         ret var;

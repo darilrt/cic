@@ -1,0 +1,56 @@
+include "SDL2/SDL.h";
+include "iostream";
+
+class Window {
+    mut window : SDL_Window*;
+    pub mut surface : SDL_Surface*;
+
+    pub Window(title : const std::string&, w : int, h : int) {
+        window = SDL_CreateWindow(
+            title.c_str(),
+            SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+            w, h,
+            SDL_WINDOW_SHOWN
+        );
+
+        surface = SDL_GetWindowSurface(window);
+    }
+
+    pub ~Window() {
+        SDL_DestroyWindow(window);
+    }
+
+    pub Update() -> void {
+        SDL_UpdateWindowSurface(window);
+    }
+}
+
+main(argc : int, argv : char*[]) -> int {
+    SDL_Init(SDL_INIT_VIDEO);
+    
+    mut window := Window("Hello World", 640, 480);
+
+    mut event : SDL_Event;
+    mut running := true;
+    
+    mut rect : SDL_Rect = [0, 0, 100, 100];
+    
+    while running {
+        while SDL_PollEvent(&event) {
+            if event.type == SDL_QUIT {
+                running = false;
+            }
+        }
+
+        SDL_Delay(16);
+
+        SDL_FillRect(window.surface, null, SDL_MapRGB(window.surface->format, 100, 100, 100));
+        SDL_FillRect(window.surface, &rect, SDL_MapRGB(window.surface->format, 255, 0, 0));
+
+        window.Update();
+    }
+
+    SDL_Quit();
+
+    ret 0;
+}
